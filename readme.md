@@ -13,6 +13,14 @@ Python, docxtpl, and the OpenWeather API.
 - **Weather Data Integration**: The OpenWeather API is used to fetch real-time weather
   data, which can impact the performance of photovoltaic systems.
 
+## References
+
+Calculus model reference
+_[Explorador Solar Minenergía](https://solar.minenergia.cl/inicio)_
+
+- [Photovoltaic Calculus Model](https://solar.minenergia.cl/downloads/fotovoltaico.pdf),
+- [Solar Readiation Model](https://solar.minenergia.cl/downloads/radiacion.pdf)
+
 ## Installation
 
 1. Clone this repository.
