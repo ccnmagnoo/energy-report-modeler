@@ -17,9 +17,10 @@ Python, docxtpl, and the OpenWeather API.
 
 Calculus model reference
 _[Explorador Solar Minenergía](https://solar.minenergia.cl/inicio)_
-
+Data Resources
 - [Photovoltaic Calculus Model](https://solar.minenergia.cl/downloads/fotovoltaico.pdf),
-- [Solar Readiation Model](https://solar.minenergia.cl/downloads/radiacion.pdf)
+- [Solar Readiation Model](https://solar.minenergia.cl/downloads/radiacion.pdf),
+- [Nasa Power DAV](https://power.larc.nasa.gov/data-access-viewer/)
 
 ## Installation
 
