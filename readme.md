@@ -22,6 +22,11 @@ Data Resources
 - [Solar Readiation Model](https://solar.minenergia.cl/downloads/radiacion.pdf),
 - [Nasa Power DAV](https://power.larc.nasa.gov/data-access-viewer/)
 
+Dependencies
+- [sunCalc](https://pypi.org/project/suncalc/)
+- [docxtlp](https://docxtpl.readthedocs.io/en/latest/)
+- Pandas and Numpy
+
 ## Installation
 
 1. Clone this repository.
