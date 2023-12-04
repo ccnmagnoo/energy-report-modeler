@@ -16,13 +16,13 @@ class Component:
         specification:str|None = None,
         cost:Cost = Cost(),
         quantity:int = 1 ) -> None:
-        self.description = description
-        self.model = model
-        self.specification = specification
-        self.cost = cost
-        self.quantity = quantity
+        self.description:str = description
+        self.model:str = model
+        self.specification:str|None = specification
+        self.cost:float= cost
+        self.quantity:int = quantity
     
-    def totalCost(self):
+    def totalCost(self)->float:
         return self.quantity*self.cost
 
 class Photovoltaic(Component):
