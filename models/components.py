@@ -22,8 +22,10 @@ class Component:
         self.cost:float= cost
         self.quantity:int = quantity
     
-    def totalCost(self)->float:
+    def totalBruteCost(self)->float:
         return self.quantity*self.cost
+    def totalNetCost(self)->float:
+        return self.quantity*self.cost.netCost()
 
 class Photovoltaic(Component):
     def __init__(
@@ -41,3 +43,4 @@ class Photovoltaic(Component):
         
 
 Modules = list[Component]
+
