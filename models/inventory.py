@@ -13,6 +13,7 @@ class Building:
 
         
 class Project:
+    
     def __init__(
         self,
         building:Building,
