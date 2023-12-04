@@ -1,5 +1,7 @@
-
-
+from suncalc import get_position, get_times
+from sun_position_calculator import SunPositionCalculator
+from datetime import datetime
+import math
 class GeoPosition:
     def __init__(self,latitude:float,longitude:float,altitude:float|None = 0) -> None:
         self.latitude = latitude
@@ -9,10 +11,22 @@ class GeoPosition:
 class Orientation:
     def __init__(self,inclination:float = 33.0,azimuth:float = 0) -> None:
         self.inclination = inclination
+        self.normal:float = 90 - inclination
         self.azimuth = azimuth
     
     def angleDifference(self, inclination:float,azimuth:float)->float:
         azimuthDelta:float = self.azimuth - azimuth
         inclinationDelta:float = self.inclination - inclination
         return (azimuthDelta**2 + inclinationDelta**2)**(1/2)
-        
+
+
+# Create a datetime object from the string
+
+
+##use this config
+# date = datetime.utcnow()
+# ts = date.timestamp()*100
+# calculator = SunPositionCalculator()
+# pos = calculator.pos(ts,-33,-71.5)
+
+# print(math.degrees(pos.azimuth),90-math.degrees(pos.altitude))
