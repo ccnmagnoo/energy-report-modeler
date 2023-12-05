@@ -2,7 +2,12 @@ from sun_position_calculator import SunPositionCalculator
 from datetime import datetime
 import math
 class GeoPosition:
-    def __init__(self,latitude:float,longitude:float,altitude:float|None = 0) -> None:
+    def __init__(
+        self,
+        latitude:float=-31.6322,#seremi office lat
+        longitude:float=-71.2987,#seremi office lng
+        altitude:float|None = 0
+        ) -> None:
         self.latitude = latitude
         self.longitude = longitude
         self.altitude = altitude

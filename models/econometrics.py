@@ -10,8 +10,8 @@ class Currency(Enum):
 
 class Cost:
     IVA = 0.19
-    def __init__(self, bruteCost:float = 0,currency:Currency = Currency.CLP) -> None:
-        self.bruteCost:float = bruteCost
+    def __init__(self, value:float = 0,currency:Currency = Currency.CLP) -> None:
+        self.value:float = value
         self.currency:Currency = currency
     
     def tax(self)->float:
