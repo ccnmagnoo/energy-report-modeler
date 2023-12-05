@@ -1,4 +1,3 @@
-from suncalc import get_position, get_times
 from sun_position_calculator import SunPositionCalculator
 from datetime import datetime
 import math
