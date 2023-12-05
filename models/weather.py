@@ -7,7 +7,7 @@ import json
 import pandas as pd
 from pandas import DataFrame
 
-class Parameter(Enum):
+class WeatherParam(Enum):
     DIRECT = 'ALLSKY_SFC_SW_DNI'
     DIFFUSE = 'ALLSKY_SFC_SW_DIFF'
     ALBEDO = 'ALLSKY_SRF_ALB'
@@ -28,12 +28,12 @@ class Weather:
     # &end=20210331
     # &format=JSON
     
-    def __init__(self,geoPosition:GeoPosition) -> None:
+    def __init__(self,geoPosition:GeoPosition = GeoPosition()) -> None:
         self.geoPosition = geoPosition
         self.period = self._lastPeriod()
 
     
-    def fetchData(self,parameters:list[Parameter])->DataFrame:
+    def fetchData(self,parameters:list[WeatherParam])->DataFrame:
         requestURL = self._generateURL(parameters)
         response = requests.get(requestURL)
         result = json.loads(response.text)
@@ -70,7 +70,7 @@ class Weather:
         return str(date.year) + str(date.month) + str(date.day)
     
         
-    def _generateURL(self,parameters:list[Parameter],):
+    def _generateURL(self,parameters:list[WeatherParam],):
         paramChain = ','.join(map(lambda param:param.value,parameters))
         
         config = {
@@ -93,7 +93,7 @@ class Weather:
         return requestURL
             
 test =Weather(GeoPosition(latitude=-33,longitude=-71))
-data = test.fetchData([Parameter.TEMPERATURE,Parameter.ALBEDO])
+data = test.fetchData([WeatherParam.TEMPERATURE,WeatherParam.ALBEDO])
 
 print(data)
         
