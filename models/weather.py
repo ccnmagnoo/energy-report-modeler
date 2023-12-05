@@ -4,6 +4,8 @@ import pprint
 from geometry import GeoPosition
 import requests
 import json
+import pandas as pd
+from pandas import DataFrame
 
 class Parameter(Enum):
     DIRECT = 'ALLSKY_SFC_SW_DNI'
@@ -11,6 +13,8 @@ class Parameter(Enum):
     ALBEDO = 'ALLSKY_SRF_ALB'
     TEMPERATURE = 'T2M'
     ZENITH = 'SZA'
+
+
 
 class Weather:
     URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point?'
@@ -29,22 +33,29 @@ class Weather:
         self.period = self._lastPeriod()
 
     
-    def fetchData(self,parameters:list[Parameter])->None:
+    def fetchData(self,parameters:list[Parameter])->DataFrame:
         requestURL = self._generateURL(parameters)
         response = requests.get(requestURL)
         result = json.loads(response.text)
         
         data:dict[str,list[dict[str,float]]] = {}
+        
+        #create a list of data list
+        resultDataFrame = pd.DataFrame()
         for param,hourlyData in result['properties']['parameter'].items():
-            data[param] = (hourlyData)
+            #data[param] = (hourlyData)
+            colData = pd.DataFrame(list(hourlyData.items()),columns=['date',param])
+            resultDataFrame[['date',param]] = colData
           
-        return data
+        #loop for left right merge
+               
+        return resultDataFrame
         
     #period 365 days interval corresponding previous year
     def _lastPeriod(self)->dict[str,date]:
         current:datetime = datetime.now()
         previousYear:int = current.date().year-1
-        return {'start':date(previousYear,1,1),'end':date(previousYear,12,31)}
+        return {'start':date(previousYear,1,1),'end':date(previousYear,1,2)}
     
     #return YYYYMMDD
     def _dateApiFormat(self,date:date)->str:
@@ -74,9 +85,9 @@ class Weather:
         return requestURL
             
 test =Weather(GeoPosition(latitude=-33,longitude=-71))
-data = test.fetchData([Parameter.TEMPERATURE])
+data = test.fetchData([Parameter.TEMPERATURE,Parameter.ALBEDO])
 
-
+print(data)
         
 
         
