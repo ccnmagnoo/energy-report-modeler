@@ -18,6 +18,7 @@ class WeatherParam(Enum):
 
 class Weather:
     URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point?'
+    _data:DataFrame|None = None
     #https://power.larc.nasa.gov/api/temporal/hourly/point?
     # Time=LST
     # &parameters=SZA,T2M
@@ -28,13 +29,14 @@ class Weather:
     # &end=20210331
     # &format=JSON
     
-    def __init__(self,geoPosition:GeoPosition = GeoPosition()) -> None:
+    def __init__(self,geoPosition:GeoPosition = GeoPosition(),parameters:list[WeatherParam] = [WeatherParam.TEMPERATURE]) -> None:
         self.geoPosition = geoPosition
         self.period = self._lastPeriod()
+        self.parameters = parameters
 
     
-    def fetchData(self,parameters:list[WeatherParam])->DataFrame:
-        requestURL = self._generateURL(parameters)
+    def _fetchData(self)->None:
+        requestURL = self._generateURL()
         response = requests.get(requestURL)
         result = json.loads(response.text)
         
@@ -57,7 +59,7 @@ class Weather:
         #remove al inconsistent values
         resultDf = resultDf.replace(-999.00,None)
                
-        return resultDf
+        self._data = resultDf
         
     #period 365 days interval corresponding previous year
     def _lastPeriod(self)->dict[str,date]:
@@ -70,8 +72,8 @@ class Weather:
         return str(date.year) + str(date.month) + str(date.day)
     
         
-    def _generateURL(self,parameters:list[WeatherParam],):
-        paramChain = ','.join(map(lambda param:param.value,parameters))
+    def _generateURL(self):
+        paramChain = ','.join(map(lambda param:param.value,self.parameters))
         
         config = {
             'Time':'LST',
@@ -91,9 +93,16 @@ class Weather:
         print('api request URL',requestURL)
         
         return requestURL
-            
-test =Weather(GeoPosition(latitude=-33,longitude=-71))
-data = test.fetchData([WeatherParam.TEMPERATURE,WeatherParam.ALBEDO])
+    
+    def getData(self)->DataFrame:
+        if self._data == None:
+             self._fetchData()
+             return self._data
+        return self._data
+
+          
+test =Weather()
+data = test.getData()
 
 print(data)
         
