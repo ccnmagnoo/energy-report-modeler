@@ -8,11 +8,17 @@ import pandas as pd
 from pandas import DataFrame
 
 class WeatherParam(Enum):
+    ATMOSPHERIC = 'TOA_SW_DWN'
     DIRECT = 'ALLSKY_SFC_SW_DNI'
     DIFFUSE = 'ALLSKY_SFC_SW_DIFF'
     ALBEDO = 'ALLSKY_SRF_ALB'
     TEMPERATURE = 'T2M'
     ZENITH = 'SZA'
+    RAIN = 'PRECTOTCORR'
+    INSOLATION_INDEX = 'ALLSKY_KT'
+    PRESSURE = 'PS'
+    WIND_SPEED_10M = 'WS10M'
+    WIND_DIR_10M = 'WD10M'
 
 
 
