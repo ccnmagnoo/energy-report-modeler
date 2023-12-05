@@ -1,6 +1,9 @@
 from enum import Enum
-from models.econometrics import Cost
-from models.geometry import Orientation
+from econometrics import Cost
+from geometry import Orientation
+from weather import Weather, WeatherParam
+import pandas as pd
+from pandas import DataFrame
 
 
 class Tech(Enum):
@@ -28,6 +31,10 @@ class Component:
         return self.quantity*self.cost.netCost()
 
 class Photovoltaic(Component):
+    energy:DataFrame = pd.DataFrame()
+    weatherData:DataFrame|None = None
+    
+    
     def __init__(
         self, description: str, 
         model: str = 'generic', 
@@ -41,6 +48,20 @@ class Photovoltaic(Component):
         self.power = power
         self.orientation = orientation
         
+    def _fetchWeatherData(self,weather:Weather):
+                self.weatherData = weather.fetchData([WeatherParam.DIRECT,WeatherParam.DIFFUSE,WeatherParam.TEMPERATURE,WeatherParam.ZENITH])
+
+    def calcGeneration(self,weather:Weather):
+        #fetch nasa weather data
+        if self.weatherData == None:
+            self._fetchWeatherData(weather)
+        
+
+        return None #temp  
 
 Modules = list[Component]
+
+pack = Photovoltaic('Panel Policristalino 450W')
+pack.calcGeneration(Weather())
+print(pack.weatherData)
 
