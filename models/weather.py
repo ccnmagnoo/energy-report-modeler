@@ -52,6 +52,10 @@ class Weather:
         resultDf['month'] = resultDf['date'].str[4:6]
         resultDf['day'] = resultDf['date'].str[6:8]
         resultDf['hour'] = resultDf['date'].str[-2:]
+        #format date str to datetime
+        resultDf['date'] = resultDf['date'].apply(lambda datestr: datetime.strptime(datestr,'%Y%m%d%H'))
+        #remove al inconsistent values
+        resultDf = resultDf.replace(-999.00,None)
                
         return resultDf
         
