@@ -1,5 +1,6 @@
 from datetime import datetime,date
 from enum import Enum
+import pprint
 from geometry import GeoPosition
 import requests
 import json
@@ -28,29 +29,37 @@ class Weather:
         self.period = self._lastPeriod()
 
     
-    async def fetchData(self,parameters:list[Parameter])->None:
+    def fetchData(self,parameters:list[Parameter])->None:
         requestURL = self._generateURL(parameters)
         response = requests.get(requestURL)
-        data = json.loads(response.text)
-        print('api result',data)
+        result = json.loads(response.text)
         
-    
+        data:dict[str,list[dict[str,float]]] = {}
+        for param,hourlyData in result['properties']['parameter'].items():
+            data[param] = (hourlyData)
+          
+        return data
+        
+    #period 365 days interval corresponding previous year
     def _lastPeriod(self)->dict[str,date]:
         current:datetime = datetime.now()
         previousYear:int = current.date().year-1
         return {'start':date(previousYear,1,1),'end':date(previousYear,12,31)}
     
+    #return YYYYMMDD
     def _dateApiFormat(self,date:date)->str:
         return str(date.year) + str(date.month) + str(date.day)
     
         
     def _generateURL(self,parameters:list[Parameter],):
+        paramChain = ','.join(map(lambda param:param.value,parameters))
+        
         config = {
             'Time':'LTS',
-            'parameters':'parameters'+','.join(map(parameters,lambda param:param.value)),
+            'parameters':paramChain,
             'community':'RE',
             'latitude':self.geoPosition.latitude,
-            'altitude':self.geoPosition.altitude,
+            'longitude':self.geoPosition.longitude,
             'start':self._dateApiFormat(self.period['start']),
             'end':self._dateApiFormat(self.period['end']),
             'format':'JSON'
@@ -60,12 +69,13 @@ class Weather:
         for key,value in config.items():
             requestComponents.append(f'{key}={value}')
         requestURL = self.URL+ '&'.join(requestComponents)
-        print('api request URL',)
+        print('api request URL',requestURL)
         
         return requestURL
             
-        
-        
+test =Weather(GeoPosition(latitude=-33,longitude=-71))
+data = test.fetchData([Parameter.TEMPERATURE])
+
 
         
 
