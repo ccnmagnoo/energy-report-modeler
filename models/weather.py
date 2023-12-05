@@ -70,7 +70,7 @@ class Weather:
         paramChain = ','.join(map(lambda param:param.value,parameters))
         
         config = {
-            'Time':'LTS',
+            'Time':'LST',
             'parameters':paramChain,
             'community':'RE',
             'latitude':self.geoPosition.latitude,
