@@ -1,16 +1,23 @@
+import math
 from sun_position_calculator import SunPositionCalculator
 from datetime import datetime
-import math
 class GeoPosition:
+    _calculator = SunPositionCalculator()
     def __init__(
         self,
-        latitude:float=-31.6322,#seremi office lat
-        longitude:float=-71.2987,#seremi office lng
+        latitude:float=-31.6322,#viña del mar office lat
+        longitude:float=-71.2987,#viña del mar office lng
         altitude:float|None = 0
         ) -> None:
         self.latitude = latitude
         self.longitude = longitude
         self.altitude = altitude
+    
+    def sunPosition(self,date:datetime)->dict[str,float]:#in degrees
+        timestamp:float = date.timestamp()*1000
+        pos = self._calculator.pos(timestamp,self.latitude,self.longitude)
+        return {'azimuth':math.degrees(pos.azimuth),'elevation':math.degrees(pos.altitude)}
+        
         
 class Orientation:
     def __init__(self,inclination:float = 33.0,azimuth:float = 0) -> None:
@@ -29,8 +36,11 @@ class Orientation:
 
 ##use this config
 # date = datetime.utcnow()
-# ts = date.timestamp()*100
+# ts = date.timestamp()*1000
 # calculator = SunPositionCalculator()
 # pos = calculator.pos(ts,-33,-71.5)
 
 # print(math.degrees(pos.azimuth),90-math.degrees(pos.altitude))
+geo = GeoPosition()
+dt = datetime.now()
+print(geo.sunPosition(dt))
