@@ -41,15 +41,19 @@ class Weather:
         data:dict[str,list[dict[str,float]]] = {}
         
         #create a list of data list
-        resultDataFrame = pd.DataFrame()
+        resultDf = pd.DataFrame()
         for param,hourlyData in result['properties']['parameter'].items():
             #data[param] = (hourlyData)
             colData = pd.DataFrame(list(hourlyData.items()),columns=['date',param])
-            resultDataFrame[['date',param]] = colData
+            resultDf[['date',param]] = colData
           
-        #loop for left right merge
+        #split 'date' col
+        resultDf['year'] = resultDf['date'].str[:4]
+        resultDf['month'] = resultDf['date'].str[4:6]
+        resultDf['day'] = resultDf['date'].str[6:8]
+        resultDf['hour'] = resultDf['date'].str[-2:]
                
-        return resultDataFrame
+        return resultDf
         
     #period 365 days interval corresponding previous year
     def _lastPeriod(self)->dict[str,date]:
