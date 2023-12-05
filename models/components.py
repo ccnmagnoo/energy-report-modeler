@@ -32,7 +32,6 @@ class Component:
 
 class Photovoltaic(Component):
     energy:DataFrame = pd.DataFrame()
-    weatherData:DataFrame|None = None
     
     
     def __init__(
@@ -48,13 +47,11 @@ class Photovoltaic(Component):
         self.power = power
         self.orientation = orientation
         
-    def _fetchWeatherData(self,weather:Weather):
-                self.weatherData = weather.fetchData([WeatherParam.DIRECT,WeatherParam.DIFFUSE,WeatherParam.TEMPERATURE,WeatherParam.ZENITH])
 
     def calcGeneration(self,weather:Weather):
         #fetch nasa weather data
-        if self.weatherData == None:
-            self._fetchWeatherData(weather)
+        data = weather.getData()
+     
         
 
         return None #temp  
@@ -62,6 +59,6 @@ class Photovoltaic(Component):
 Modules = list[Component]
 
 pack = Photovoltaic('Panel Policristalino 450W')
-pack.calcGeneration(Weather())
+
 print(pack.weatherData)
 
