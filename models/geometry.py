@@ -7,8 +7,8 @@ class GeoPosition:
     _calculator = SunPositionCalculator()
     def __init__(
         self,
-        latitude:float=-31.6322,#viña del mar office lat
-        longitude:float=-71.2987,#viña del mar office lng
+        latitude:float=-31.6322,#default lat
+        longitude:float=-71.2987,#default lng
         altitude:float|None = 0
         ) -> None:
         self.latitude = latitude
@@ -16,13 +16,13 @@ class GeoPosition:
         self.altitude = altitude
 
     def sun_position(self,date:datetime)->dict[str,float]:#in degrees
-        """elevation and azimuth of the king sun"""
+        """elevation and azimuth of the king sun, in degrees"""
         timestamp:float = date.timestamp()*1000
         pos = self._calculator.pos(timestamp,self.latitude,self.longitude)
         return {'azimuth':math.degrees(pos.azimuth),'elevation':math.degrees(pos.altitude)}
 
 class Orientation:
-    "elevation and azimuth"
+    "elevation and azimuth in degrees"
     def __init__(self,inclination:float = 33.0,azimuth:float = 0) -> None:
         self.inclination = inclination
         self.normal:float = inclination
@@ -36,7 +36,8 @@ class Orientation:
             math.cos(math.radians(sun_elevation))*math.sin(math.radians(sun_azimuth)),
             math.sin(math.radians(sun_elevation))
             ]
-        normal = self.normal()
+        
+        normal = {'elevation':self.inclination,'azimuth':self.azimuth}
 
         [x_nor,y_nor,z_nor] = [
             math.sin(math.radians(normal['elevation']))*math.cos(math.radians(normal['azimuth'])),
