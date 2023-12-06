@@ -82,7 +82,7 @@ class Weather:
     def _date_api_format(self,user_date:date)->str:
         """return str with api YYYYMMDD format"""
 
-        return str(user_date.year) + str(user_date.month) + str(user_date.day)
+        return str(user_date.year) + str(user_date.month).zfill(2) + str(user_date.day).zfill(2)
 
     def _generate_url(self)->str:
         param_chain = ','.join(map(lambda param:param.value,self.parameters))
