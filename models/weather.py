@@ -1,13 +1,15 @@
+"""date dependency"""
 from datetime import datetime,date
+import json
 from enum import Enum
-import pprint
 from geometry import GeoPosition
 import requests
-import json
 import pandas as pd
 from pandas import DataFrame
 
 class WeatherParam(Enum):
+    """NASA api parameters"""
+
     ATMOSPHERIC = 'TOA_SW_DWN'
     DIRECT = 'ALLSKY_SFC_SW_DNI'
     DIFFUSE = 'ALLSKY_SFC_SW_DIFF'
@@ -23,6 +25,8 @@ class WeatherParam(Enum):
 
 
 class Weather:
+    """store data fetch from api"""
+
     URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point?'
     _data:DataFrame|None = None
     #https://power.larc.nasa.gov/api/temporal/hourly/point?
@@ -34,83 +38,77 @@ class Weather:
     # &start=20210101
     # &end=20210331
     # &format=JSON
-    
-    def __init__(self,geoPosition:GeoPosition = GeoPosition(),parameters:list[WeatherParam] = [WeatherParam.TEMPERATURE]) -> None:
-        self.geoPosition = geoPosition
-        self.period = self._lastPeriod()
+    def __init__(self,geo_position:GeoPosition = GeoPosition(),parameters:list[WeatherParam] = [WeatherParam.TEMPERATURE]) -> None:
+        self.geo_position = geo_position
+        self.period = self._last_period()
         self.parameters = parameters
 
-    
-    def _fetchData(self)->None:
-        requestURL = self._generateURL()
-        response = requests.get(requestURL)
+
+    def _fetch_data(self)->None:
+        request_url = self._generate_url()
+        response = requests.get(request_url,timeout=10000)
         result = json.loads(response.text)
-        
-        data:dict[str,list[dict[str,float]]] = {}
-        
+
+
         #create a list of data list
-        resultDf = pd.DataFrame()
-        for param,hourlyData in result['properties']['parameter'].items():
+        result_df = pd.DataFrame()
+        for param,data_by_hour in result['properties']['parameter'].items():
             #data[param] = (hourlyData)
-            colData = pd.DataFrame(list(hourlyData.items()),columns=['date',param])
-            resultDf[['date',param]] = colData
-          
+            column = pd.DataFrame(list(data_by_hour.items()),columns=['date',param])
+            result_df[['date',param]] = column
+
         #split 'date' col
-        resultDf['year'] = resultDf['date'].str[:4]
-        resultDf['month'] = resultDf['date'].str[4:6]
-        resultDf['day'] = resultDf['date'].str[6:8]
-        resultDf['hour'] = resultDf['date'].str[-2:]
+        result_df['year'] = result_df['date'].str[:4]
+        result_df['month'] = result_df['date'].str[4:6]
+        result_df['day'] = result_df['date'].str[6:8]
+        result_df['hour'] = result_df['date'].str[-2:]
+
         #format date str to datetime
-        resultDf['date'] = resultDf['date'].apply(lambda datestr: datetime.strptime(datestr,'%Y%m%d%H'))
+        result_df['date'] = result_df['date'].apply(
+            lambda datestr: datetime.strptime(datestr,'%Y%m%d%H')
+            )
+
         #remove al inconsistent values
-        resultDf = resultDf.replace(-999.00,None)
-               
-        self._data = resultDf
-        
+        result_df = result_df.replace(-999.00,None)
+
+        self._data = result_df
+
     #period 365 days interval corresponding previous year
-    def _lastPeriod(self)->dict[str,date]:
+    def _last_period(self)->dict[str,date]:
         current:datetime = datetime.now()
-        previousYear:int = current.date().year-1
-        return {'start':date(previousYear,1,1),'end':date(previousYear,1,2)}
-    
-    #return YYYYMMDD
-    def _dateApiFormat(self,date:date)->str:
-        return str(date.year) + str(date.month) + str(date.day)
-    
-        
-    def _generateURL(self):
-        paramChain = ','.join(map(lambda param:param.value,self.parameters))
-        
+        last_year:int = current.date().year-1
+        return {'start':date(last_year,1,1),'end':date(last_year,1,2)}
+
+    def _date_api_format(self,user_date:date)->str:
+        """return str with api YYYYMMDD format"""
+
+        return str(user_date.year) + str(user_date.month) + str(user_date.day)
+
+    def _generate_url(self)->str:
+        param_chain = ','.join(map(lambda param:param.value,self.parameters))
+
         config = {
             'Time':'LST',
-            'parameters':paramChain,
+            'parameters':param_chain,
             'community':'RE',
-            'latitude':self.geoPosition.latitude,
-            'longitude':self.geoPosition.longitude,
-            'start':self._dateApiFormat(self.period['start']),
-            'end':self._dateApiFormat(self.period['end']),
+            'latitude':self.geo_position.latitude,
+            'longitude':self.geo_position.longitude,
+            'start':self._date_api_format(self.period['start']),
+            'end':self._date_api_format(self.period['end']),
             'format':'JSON'
         }
+
+        request_components:list[str] = []
         
-        requestComponents:list[str] = []
         for key,value in config.items():
-            requestComponents.append(f'{key}={value}')
-        requestURL = self.URL+ '&'.join(requestComponents)
-        print('api request URL',requestURL)
-        
-        return requestURL
-    
-    def getData(self)->DataFrame:
-        if self._data == None:
-             self._fetchData()
-             return self._data
+            request_components.append(f'{key}={value}')
+        request_url = self.URL+ '&'.join(request_components)
+        print('api request URL',request_url)
+        return request_url
+
+    def get_data(self)->DataFrame:
+        """get weather data from api, or one stored in instance"""
+        if self._data is None:
+            self._fetch_data()
+
         return self._data
-
-          
-test =Weather()
-data = test.getData()
-
-print(data)
-        
-
-        
