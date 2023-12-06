@@ -1,7 +1,9 @@
+"""cos sin op"""
 import math
-from sun_position_calculator import SunPositionCalculator
 from datetime import datetime
+from sun_position_calculator import SunPositionCalculator
 class GeoPosition:
+    """geo location current project"""
     _calculator = SunPositionCalculator()
     def __init__(
         self,
@@ -12,24 +14,37 @@ class GeoPosition:
         self.latitude = latitude
         self.longitude = longitude
         self.altitude = altitude
-    
-    def sunPosition(self,date:datetime)->dict[str,float]:#in degrees
+
+    def sun_position(self,date:datetime)->dict[str,float]:#in degrees
+        """elevation and azimuth of the king sun"""
         timestamp:float = date.timestamp()*1000
         pos = self._calculator.pos(timestamp,self.latitude,self.longitude)
         return {'azimuth':math.degrees(pos.azimuth),'elevation':math.degrees(pos.altitude)}
-        
-        
+
 class Orientation:
+    "elevation and azimuth"
     def __init__(self,inclination:float = 33.0,azimuth:float = 0) -> None:
         self.inclination = inclination
-        self.normal:float = 90 - inclination
+        self.normal:float = inclination
         self.azimuth = azimuth
-    
-    def angleDifference(self, inclination:float,azimuth:float)->float:
-        azimuthDelta:float = self.azimuth - azimuth
-        inclinationDelta:float = self.inclination - inclination
-        return (azimuthDelta**2 + inclinationDelta**2)**(1/2)
 
+    def cos_phi(self, sun_azimuth:float,sun_elevation:float)->float:
+        """cos(Phi), phi: difference between normal and sun position"""
+
+        [x_sun,y_sun,z_sun] = [
+            math.cos(math.radians(sun_elevation))*math.cos(math.radians(sun_azimuth)),
+            math.cos(math.radians(sun_elevation))*math.sin(math.radians(sun_azimuth)),
+            math.sin(math.radians(sun_elevation))
+            ]
+        normal = self.normal()
+
+        [x_nor,y_nor,z_nor] = [
+            math.sin(math.radians(normal['elevation']))*math.cos(math.radians(normal['azimuth'])),
+            math.sin(math.radians(normal['elevation']))*math.sin(math.radians(normal['azimuth'])),
+            math.cos(math.radians(normal['elevation']))
+            ]
+        cos_phi = x_sun*x_nor + y_sun*y_nor + z_sun*z_nor
+        return cos_phi
 
 # Create a datetime object from the string
 
@@ -41,6 +56,6 @@ class Orientation:
 # pos = calculator.pos(ts,-33,-71.5)
 
 # print(math.degrees(pos.azimuth),90-math.degrees(pos.altitude))
-geo = GeoPosition()
-dt = datetime.now()
-print(geo.sunPosition(dt))
+# geo = GeoPosition()
+# dt = datetime.now()
+# print(geo.sun_position(dt))

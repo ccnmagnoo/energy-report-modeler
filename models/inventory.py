@@ -1,19 +1,17 @@
-
-from enum import Enum
+"""main wrapper dependencies"""
 from geometry import GeoPosition
-from models.components import Component, Modules, Photovoltaic, Tech
+from models.components import Tech
 
 class Building:
+
     def __init__(self,geolocation:GeoPosition,name:str,address:str,city:str):
         self.geolocation = geolocation
         self.name=name
         self.address=address
         self.city=city
-        
 
-        
 class Project:
-    
+    """main wrapper"""
     def __init__(
         self,
         building:Building,
