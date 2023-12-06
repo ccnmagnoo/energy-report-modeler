@@ -38,9 +38,14 @@ class Weather:
     # &start=20210101
     # &end=20210331
     # &format=JSON
-    def __init__(self,geo_position:GeoPosition = GeoPosition(),parameters:list[WeatherParam] = [WeatherParam.TEMPERATURE]) -> None:
+    def __init__(
+        self,geo_position:GeoPosition = GeoPosition(),
+        parameters:list[WeatherParam] = None
+        ) -> None:
         self.geo_position = geo_position
         self.period = self._last_period()
+        if parameters is None:
+            self.parameters = [WeatherParam.TEMPERATURE]
         self.parameters = parameters
 
 
