@@ -29,23 +29,21 @@ class Orientation:
         self.azimuth = azimuth
 
     def cos_phi(self, sun_azimuth:float,sun_elevation:float)->float:
-        """cos(Phi), phi: difference between normal and sun position"""
-
+        """cos(Phi), phi: difference between normal and sun position, angles input in degrees"""
         [x_sun,y_sun,z_sun] = [
             math.cos(math.radians(sun_elevation))*math.cos(math.radians(sun_azimuth)),
             math.cos(math.radians(sun_elevation))*math.sin(math.radians(sun_azimuth)),
             math.sin(math.radians(sun_elevation))
             ]
-        
-        normal = {'elevation':self.inclination,'azimuth':self.azimuth}
 
+        normal = {'elevation':self.inclination,'azimuth':self.azimuth}
         [x_nor,y_nor,z_nor] = [
             math.sin(math.radians(normal['elevation']))*math.cos(math.radians(normal['azimuth'])),
             math.sin(math.radians(normal['elevation']))*math.sin(math.radians(normal['azimuth'])),
             math.cos(math.radians(normal['elevation']))
             ]
         cos_phi = x_sun*x_nor + y_sun*y_nor + z_sun*z_nor
-        return cos_phi
+        return cos_phi if cos_phi>=0 else 0
 
 # Create a datetime object from the string
 

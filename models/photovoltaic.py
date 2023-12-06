@@ -86,6 +86,11 @@ class Photovoltaic(Component):
                 date=date,
                 location=weather.geo_position))
         
+        irradiation['cos_phi'] = weather_data['date'].apply(
+        lambda date:self.cos_phi(
+            date=date,
+            location=weather.geo_position))
+        
         cos_b = (1+math.cos(math.radians(self.orientation.inclination)))
         irradiation['IRR_dif_plane'] = weather_data[W.DIFFUSE.value] * 0.5 * cos_b
         irradiation['IRR_ground'] = weather_data[W.DIRECT.value] * 0.5 * weather_data[W.ALBEDO.value] * cos_b
@@ -102,8 +107,9 @@ class Photovoltaic(Component):
         self.energy[['date','month','day','hour']] = weather_data[['date','month','day','hour']]
         
         irr =self.irradiation_calc(weather=weather)
+        self.energy = self.energy.join(irr)
         
-        return irr
+        return self.energy
     #EOF (\n)
 
 
