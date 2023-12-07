@@ -44,7 +44,18 @@ class PvTechnicalSheet:
 
 
 class Photovoltaic(Component):
-    """pv panel tech"""
+    """
+    PV primary component
+    ~~~~
+    
+    global component for operate Weather fetch, solar irradiation calculus, and technical
+    lost. Not include shadow analysis.
+    ... .normal() -> normal azimuth and elevation
+    ... .cosPhi() -> angle between solar vector and normal vector
+    ... .irradiation_calc() -> al irradiation received by an inclined plane
+    ... .calc_energy() -> calc al lost, and irradiation performance to a nominal panel.
+     
+    """
     energy:DataFrame = pd.DataFrame()
     
     def __init__(
