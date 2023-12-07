@@ -3,7 +3,18 @@ import math
 from datetime import datetime
 from sun_position_calculator import SunPositionCalculator
 class GeoPosition:
-    """geo location current project"""
+    """
+    Geo position class
+    ~~~~
+    >>> params
+        ... latitude: degrees = -33°
+        ... longitude: degrees = -71°
+        ... altitude: degrees = None
+    >>> methods
+        ... .sun_position(datetime)->{elevation:degrees°,azimuth:degrees°}
+        azimuth = 0° north, 
+        azimuth = 180° south
+    """
     _calculator = SunPositionCalculator()
     def __init__(
         self,

@@ -8,7 +8,23 @@ import pandas as pd
 from pandas import DataFrame
 
 class WeatherParam(Enum):
-    """NASA api parameters"""
+    """
+    NASA api parameters
+    ~~~~
+    Enum
+    >>> WeatherParam.
+        ... ATMOSPHERIC = extraterrestrial irradiation W/m2
+        ... DIRECT = irradiation direct horizontal W/m2
+        ... DIFFUSE = irradiation diffuse W/m2
+        ... ALBEDO = ground reflexive coefficient
+        ... TEMPERATURE = temperature in C° at 2mt 
+        ... ZENITH = Sun's zenith angle
+        ... RAIN = precipitation mm
+        ... INSOLATION_INDEX = insolation index
+        ... PRESSURE = pressure at 2mt
+        ... WIND_SPEED_10M = wind speed at 10mt 
+        ... WIND_DIR_10M = wind direction at 10mt
+    """
 
     ATMOSPHERIC = 'TOA_SW_DWN'
     DIRECT = 'ALLSKY_SFC_SW_DNI'
@@ -25,7 +41,15 @@ class WeatherParam(Enum):
 
 
 class Weather:
-    """store data fetch from api"""
+    """
+    fetch/op Weather data from api
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+    weather = Weather(GeoPosition,WeatherParams)
+    >>> weather.get_data()->DataFrame
+
+    modify API request parameters
+    >>> weather.parameters = [WeatherParams]
+    """
 
     URL = 'https://power.larc.nasa.gov/api/temporal/hourly/point?'
     _data:DataFrame|None = None
