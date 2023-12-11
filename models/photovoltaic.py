@@ -1,4 +1,5 @@
 """photovoltaic model component"""
+from math import cos,sin,asin,acos,tan,radians,exp
 from enum import Enum
 from dataclasses import dataclass, field
 import datetime
@@ -8,7 +9,6 @@ import pandas as pd
 from pandas import DataFrame
 from components import Component
 from econometrics import Cost
-from math import cos,sin,asin,acos,tan,radians,exp
 class CellType(Enum):
     """crystal cell configuration"""
     POLI = 'policristalino'
