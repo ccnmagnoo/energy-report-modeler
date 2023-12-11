@@ -51,8 +51,8 @@ class Photovoltaic(Component):
     global component for operate Weather fetch, solar irradiation calculus, and technical
     lost. Not include shadow analysis.
     ... .normal() -> normal azimuth and elevation
-    ... .cosPhi() -> angle between solar vector and surface normal vector
-    ... .irradiation_calc() -> al irradiation received by an inclined plane
+    ... .calc_cosPhi() -> angle between solar vector and surface normal vector
+    ... .calc_irradiation() -> al irradiation received by an inclined plane
     ... .calc_energy() -> calc al lost, and irradiation performance to a nominal panel.
 
     """
@@ -97,15 +97,16 @@ class Photovoltaic(Component):
         irradiation:DataFrame = pd.DataFrame()
         weather_data = self._weather.get_data()
 
-        irradiation['IRR_dir_plane'] = weather_data[W.DIRECT.value] * weather_data['date'].apply(
-            lambda date:self.calc_cos_phi(
-                date=date,
-                location=self._weather.geo_position))
-
-        irradiation['cos_phi'] = weather_data['date'].apply(
-        lambda date:self.calc_cos_phi(
-            date=date,
-            location=self._weather.geo_position))
+        # irradiation['IRR_dir_plane'] = weather_data[W.DIRECT.value] * weather_data['date'].apply(
+        #     lambda date:self.calc_cos_phi(
+        #         date=date,
+        #         location=self._weather.geo_position))
+        irradiation['IRR_dir_plane'] = weather_data[W.DIRECT.value] * self._cos_phi
+        # irradiation['cos_phi'] = weather_data['date'].apply(
+        # lambda date:self.calc_cos_phi(
+        #     date=date,
+        #     location=self._weather.geo_position))
+        irradiation['cos_phi'] = self._cos_phi
 
         cos_b = (1+math.cos(math.radians(self.orientation.inclination)))
 
