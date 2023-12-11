@@ -46,12 +46,13 @@ class Photovoltaic(Component):
     """
     PV primary component
     ~~~~
-    
     global component for operate Weather fetch, solar irradiation calculus, and technical
     lost. Not include shadow analysis.
+    >>>  methods
     ... .normal() -> normal azimuth and elevation
     ... .calc_cosPhi() -> angle between solar vector and surface normal vector
-    ... .calc_irradiation() -> al irradiation received by an inclined plane
+    ... .calc_irradiation() -> al irradiation received by an inclined surface.
+    ... .calc_reflection() -> IAM reflection losses coefficient.
     ... .calc_energy() -> calc al lost, and irradiation performance to a nominal panel.
 
     """
@@ -130,7 +131,6 @@ class Photovoltaic(Component):
         The parameter that characterizes the loss by reflection
         
         >>> is called modification by angle of incidence (IAM).
-        
         ... The reflected amount depends on the material 
         ... of the cover and its thickness.
         '''
@@ -149,27 +149,31 @@ class Photovoltaic(Component):
         # print(reflex)
 
         #transmittance
-        def tau_reflex(phi:float,phi_r:float)->float:
+        def tau_reflex(row:DataFrame)->float:
+            #extract from row
+            phi = row['phi']
+            phi_r = row['phi_r']
+            #calc transmittance on surface
             tau =  exp(-1* glass_extinction*thickness/(cos(phi_r)))*\
             (1 -0.5*(\
                 (sin(phi_r-phi)**2 / sin(phi_r+phi)**2) +\
                 (tan(phi_r-phi)**2 / tan(phi_r+phi)**2) \
                     ))
-            return tau if tau>0.01 else 0
+            #values close to ZERO, turn into cero
+            return tau if tau>0.001 else 0
+        #transmittance on phi == 0°
+        tau_zero:float = exp(-1*glass_extinction*thickness)*\
+                (1-((1-surface_reflex)/(1+surface_reflex))**2)
 
         # transmittance_reflex:DataFrame = reflex[['phi','phi_r']].apply(lambda it: \
         #     exp(-1* glass_extinction*thickness/(cos(it['phi_r'])))*\
         #     (1 -0.5*(\
         #         sin(it['phi_r']-it['phi'])**2 / sin(it['phi_r']+it['phi'])**2 +\
         #         tan(it['phi_r']-it['phi'])**2 / tan(it['phi_r']+it['phi'])**2 )))
-        transmittance_reflex = reflex.apply(lambda it:tau_reflex(it['phi'],it['phi_r']),axis=1)
-
-        #transmittance on phi == 0°
-        transmittance_zero:float = exp(-1*glass_extinction*thickness)*\
-                (1-((1-surface_reflex)/(1+surface_reflex))**2)
+        transmittance_reflex = reflex.apply(tau_reflex,axis=1)
 
         #IAM
-        iam:DataFrame = transmittance_reflex/transmittance_zero
+        iam:DataFrame = transmittance_reflex/tau_zero
 
         return iam
 
@@ -189,7 +193,7 @@ class Photovoltaic(Component):
     #EOF (\n)
 
 
-
+#short test
 test_weather = Weather()
 panel = Photovoltaic(weather=test_weather)
 print(panel.calc_energy())
