@@ -136,28 +136,38 @@ class Photovoltaic(Component):
         '''
         reflex = pd.DataFrame()
     
-        surface_reflex_index=1.526
-        air_reflex_index= 1
+        surface_reflex=1.526
+        air_reflex= 1
         glass_extinction = 4 # [1/m]
-        thickness = 0.002 #[m]
+        thickness = 0.002 #[m] 2 mm
 
         #get angular
         reflex['phi']:DataFrame = self._cos_phi.apply(acos)
         reflex['phi_r']:DataFrame = reflex['phi'].apply(\
-            lambda phi:asin(sin(phi)*(air_reflex_index/surface_reflex_index)\
+            lambda phi:asin(sin(phi)*(air_reflex/surface_reflex)\
                 ))
-    
+        # print(reflex)
+
         #transmittance
-        transmittance_reflex:DataFrame = reflex.apply(lambda row: \
-            exp(-1*glass_extinction*thickness/cos(row['phi_r']))*\
+        def tau_reflex(phi:float,phi_r:float)->float:
+            tau =  exp(-1* glass_extinction*thickness/(cos(phi_r)))*\
             (1 -0.5*(\
-                sin(row['phi_r']-row['phi'])**2 / sin(row['phi_r']+row['phi'])**2 +\
-                tan(row['phi_r']-row['phi'])**2 / tan(row['phi_r']+row['phi'])**2 )))
-        
+                (sin(phi_r-phi)**2 / sin(phi_r+phi)**2) +\
+                (tan(phi_r-phi)**2 / tan(phi_r+phi)**2) \
+                    ))
+            return tau if tau>0.01 else 0
+
+        # transmittance_reflex:DataFrame = reflex[['phi','phi_r']].apply(lambda it: \
+        #     exp(-1* glass_extinction*thickness/(cos(it['phi_r'])))*\
+        #     (1 -0.5*(\
+        #         sin(it['phi_r']-it['phi'])**2 / sin(it['phi_r']+it['phi'])**2 +\
+        #         tan(it['phi_r']-it['phi'])**2 / tan(it['phi_r']+it['phi'])**2 )))
+        transmittance_reflex = reflex.apply(lambda it:tau_reflex(it['phi'],it['phi_r']),axis=1)
+
         #transmittance on phi == 0°
         transmittance_zero:float = exp(-1*glass_extinction*thickness)*\
-                (1-((1-glass_extinction)/(1+glass_extinction))**2)
-        
+                (1-((1-surface_reflex)/(1+surface_reflex))**2)
+
         #IAM
         iam:DataFrame = transmittance_reflex/transmittance_zero
 
@@ -183,3 +193,5 @@ class Photovoltaic(Component):
 test_weather = Weather()
 panel = Photovoltaic(weather=test_weather)
 print(panel.calc_energy())
+print(panel.calc_reflection())
+# End-of-file (EOF)
