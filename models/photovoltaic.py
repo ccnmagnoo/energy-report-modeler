@@ -6,7 +6,7 @@ import datetime
 from geometry import GeoPosition, Orientation
 from weather import Weather, WeatherParam as W
 import pandas as pd
-from pandas import DataFrame
+from pandas import DataFrame, Series
 from components import Component
 from econometrics import Cost
 class CellType(Enum):
@@ -19,10 +19,11 @@ class TempCoef(Enum):
     ROOF_MOUNT={"alpha":-2.98,"beta":-0.0471,"deltaT":1}
 
 class PvParam(Enum):
-    INCIDENT = 'IRR_incident'    
+    INCIDENT = 'IRR_incident'
     DIRECT = 'IRR_direct_surface'
     DIFFUSE = 'IRR_diffuse_surface'
     GROUND = 'IRR_ground'
+    T_CELL = 'Temperature_cell'
 
 @dataclass()
 class PowerCurve:
@@ -39,16 +40,27 @@ class Cell:
     quantity_col:int = 10
 @dataclass()
 class ThermalCoef:
-    """thermal behavior panel, units %/C° """
+    """
+    Thermal properties of PV Panels
+    ~~~~
+    >>> setup
+        ... short_circuit_t->short circuit temperature coefficient
+        ... open_circuit_t->open circuit temperature coefficient
+        ... power_coef_t->power temperature coefficient
+        ... power_coef_tmax->power max temperature coefficient
+    
+    thermal behavior panel, units %/C°
+    """
     short_circuit_t:float = 0.0814
     open_circuit_t:float = -0.3910
     power_coef_t:float = -0.5141
+    power_coef_tmax:float = 0.1
 @dataclass()
 class PvTechnicalSheet:
     "solar plane power technical specification"
     power:int = 100
-    width:float = 1
-    length:float = 1
+    area:float = 1 #m2
+    efficiency = 0.15  # w/m2
     power_curve:PowerCurve = field(default_factory=PowerCurve)
     cell:Cell = field(default_factory=Cell)
     thermal:ThermalCoef = field(default_factory=ThermalCoef)
@@ -69,7 +81,7 @@ class Photovoltaic(Component):
 
     """
     energy:DataFrame = pd.DataFrame()
-    PARAMS:list[W] = [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH]
+    PARAMS:list[W] = [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M]
 
     def __init__(
         self, 
@@ -134,7 +146,7 @@ class Photovoltaic(Component):
 
         return irr
 
-    def calc_reflection(self)->DataFrame:
+    def calc_reflection(self)->Series:
         '''
         reflection Module
         ~~~~
@@ -145,6 +157,9 @@ class Photovoltaic(Component):
         >>> is called modification by angle of incidence (IAM).
         ... The reflected amount depends on the material 
         ... of the cover and its thickness.
+        
+        Ref:
+        >>> https://solar.minenergia.cl/downloads/fotovoltaico.pdf#page=6
         '''
         reflex = pd.DataFrame()
     
@@ -176,12 +191,7 @@ class Photovoltaic(Component):
         #transmittance on phi == 0°
         tau_zero:float = exp(-1*glass_extinction*thickness)*\
                 (1-((1-surface_reflex)/(1+surface_reflex))**2)
-
-        # transmittance_reflex:DataFrame = reflex[['phi','phi_r']].apply(lambda it: \
-        #     exp(-1* glass_extinction*thickness/(cos(it['phi_r'])))*\
-        #     (1 -0.5*(\
-        #         sin(it['phi_r']-it['phi'])**2 / sin(it['phi_r']+it['phi'])**2 +\
-        #         tan(it['phi_r']-it['phi'])**2 / tan(it['phi_r']+it['phi'])**2 )))
+                
         transmittance_reflex = reflex.apply(tau_reflex,axis=1)
 
         #IAM
@@ -189,43 +199,61 @@ class Photovoltaic(Component):
 
         return iam
 
-    def calc_temperature_cell(self,irradiance:DataFrame,coef:TempCoef=TempCoef.ROOF_MOUNT)->DataFrame:
+    def calc_temperature_cell(self,irradiance:DataFrame,coef:TempCoef=TempCoef.ROOF_MOUNT)->Series:
+        """
+        Cell temperature
+        ~~~~
+        Calculation for temperature inside de cell , 
+        important! for temperature loss efficiency calc,
+        based in PVWatts model DOBOS,2014 used by NREL
+        ref: https://solar.minenergia.cl/downloads/fotovoltaico.pdf#page=8
+        """
         #calc panel over irradiation result
-        irr_weather:DataFrame = irradiance + self._weather.get_data()[W.WIND_SPEED_10M.value]
+        weather_data =  self._weather.get_data()
+        irradiance[W.WIND_SPEED_10M.value] = weather_data[W.WIND_SPEED_10M.value]
+
         
         #aux function
         def temperature_panel(row):
-            return row[PvParam.INCIDENT.value]*exp(coef["alpha"]+\
-                coef['beta']*row[W.WIND_SPEED_10M.value])
+            return row[PvParam.INCIDENT.value]*exp(coef.value['alpha']+\
+                coef.value['beta']*row[W.WIND_SPEED_10M.value])
 
         def temperature_cell(row):
-            return temperature_panel(row) + row[PvParam.INCIDENT.value]*coef['deltaT']
-        
-        irr_weather['Temperature_cell'] = irr_weather.apply(temperature_cell,axis=1)
-
-
-
-
-
-        return None
+            return temperature_panel(row) + row[PvParam.INCIDENT.value]*coef.value['deltaT']/1000
     
+        t_cell_result = irradiance.apply(temperature_cell,axis=1)
+        return t_cell_result
+    
+    def system_capacity(self,irradiation:DataFrame)->Series:
+        
+        nominal_capacity:float = self.technical_sheet.area * self.technical_sheet.efficiency * self.quantity
+        t_cel:Series = self.calc_temperature_cell(irradiation)
+        t_ref:float = 25.5 #C°
+        gamma:float = self.technical_sheet.thermal.power_coef_t#
+        irr_incident:Series = irradiation[PvParam.INCIDENT.value]
+        
+        return None
+        
+
+
     def calc_energy(self):
         """calc amount of energy generated by year"""
         #fetch nasa weather data
         weather_data = self._weather.get_data()
+        
         #tempo init values for energy
         self.energy[['date','month','day','hour']] = weather_data[['date','month','day','hour']]
         
+        
         #calc irradiation factors
         irradiation:DataFrame =self.calc_irradiation()
-        #calc reflection losses
-        reflection_factor:DataFrame  = self.calc_reflection()
+        
         #calc Irradiation Incident
-        return self.energy
-    #EOF (\n)
+        return irradiation
+
 
 #short test
 test_weather = Weather()
 panel = Photovoltaic(weather=test_weather)
-print(panel.calc_irradiation())
+print(panel.calc_energy())
 # End-of-file (EOF)
