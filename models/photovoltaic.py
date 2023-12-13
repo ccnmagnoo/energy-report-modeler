@@ -24,7 +24,7 @@ class PvParam(Enum):
     DIFFUSE = 'IRR_diffuse_surface'
     GROUND = 'IRR_ground'
     T_CELL = 'Temperature_cell'
-    SYS_CAP = 'System_capacity'
+    SYS_CAP = 'System_capacity_KW'
 
 @dataclass()
 class PowerCurve:
@@ -52,10 +52,10 @@ class ThermalCoef:
     
     thermal behavior panel, units %/C°
     """
-    short_circuit_t:float = 0.0814
-    open_circuit_t:float = -0.3910
-    power_coef_t:float = -0.5141
-    power_coef_tmax:float = 0.1
+    short_circuit_t:float = 0.0814#%/C°
+    open_circuit_t:float = -0.3910#%/C°
+    power_coef_t:float = -0.5141#%/C°
+    power_coef_tmax:float = 0.1#%/C°
 @dataclass()
 class PvTechnicalSheet:
     "solar plane power technical specification"
@@ -144,8 +144,9 @@ class Photovoltaic(Component):
         #calc global incident irradiation
         reflection = self.calc_reflection()
         irr[PvParam.INCIDENT.value] = irr[PvParam.DIRECT.value]*reflection+irr[PvParam.GROUND.value]+irr[PvParam.DIFFUSE.value]
+        irr.fillna(0.0,inplace=True)
 
-        return irr.fillna(0.0,inplace=True)
+        return irr
 
     def calc_reflection(self)->Series:
         '''
@@ -211,16 +212,21 @@ class Photovoltaic(Component):
         """
         #calc panel over irradiation result
         weather_data =  self._weather.get_data()
-
         irradiance[W.WIND_SPEED_10M.value] = weather_data[W.WIND_SPEED_10M.value]
-        print(irradiance)
+        #coeficient temperature
+        #alpha = self.technical_sheet.thermal.short_circuit_t
+        #beta = self.technical_sheet.thermal.open_circuit_t
+        alpha = coef.value['alpha']
+        beta = coef.value['beta']
+        delta = coef.value['deltaT']
+
         #aux function
         def temperature_panel(row):
-            return row[PvParam.INCIDENT.value]*exp(coef.value['alpha']+\
-                coef.value['beta']*row[W.WIND_SPEED_10M.value])
+            return row[PvParam.INCIDENT.value]*exp(alpha+\
+                beta*row[W.WIND_SPEED_10M.value])
 
         def temperature_cell(row):
-            return temperature_panel(row) + row[PvParam.INCIDENT.value]*coef.value['deltaT']/1000
+            return temperature_panel(row) + row[PvParam.INCIDENT.value]*delta/1000
 
         t_cell_result = irradiance.apply(temperature_cell,axis=1)
         return t_cell_result
@@ -231,33 +237,38 @@ class Photovoltaic(Component):
         ~~~~
         """
 
-        nominal_capacity:float = self.technical_sheet.area * self.technical_sheet.efficiency * self.quantity
+        nominal_capacity:float = self.technical_sheet.area *\
+            self.technical_sheet.efficiency *self.quantity
         t_cel:Series = self.calc_temperature_cell(irradiation)
         t_ref:float = 25.5 #C°
-        gamma:float = self.technical_sheet.thermal.power_coef_t#
+        gamma:float = self.technical_sheet.thermal.power_coef_t/100# %/C°
         irr_incident:Series = irradiation[PvParam.INCIDENT.value]
-        dobo_limit = 125#W/m^2
+        dobo_limit = 125.0#W/m^2
         ref_irr = 1000#W/m^2
 
         #init system capacity
-        system_capacity = pd.DataFrame()
-        system_capacity = pd.concat([t_cel,irr_incident])
+        system_capacity:DataFrame = pd.DataFrame()
+        system_capacity[PvParam.T_CELL.value] = t_cel
         system_capacity[PvParam.INCIDENT.value] = irr_incident
+        print(system_capacity.info())
 
         #system capacity
         def calc_capacity(row):
-
-            if row[PvParam.INCIDENT.value]>= dobo_limit:
-                return row[PvParam.INCIDENT.value]/ref_irr *\
+            #ref https://pvwatts.nrel.gov/downloads/pvwattsv5.pdf#page=9
+            #data extract
+            incident,t_cell = row[PvParam.INCIDENT.value],row[PvParam.T_CELL.value]
+            
+            if incident>= dobo_limit:
+                return (nominal_capacity*incident/ref_irr) *\
                     nominal_capacity *\
-                    (1+gamma*(row[PvParam.T_CELL.value]-t_ref))
+                    (1+gamma*(t_cell-t_ref))
 
 
-            return 0.008 * row[PvParam.INCIDENT.value]**2 / ref_irr *\
+            return 0.008 * nominal_capacity * (incident**2 / ref_irr) *\
                 nominal_capacity *\
-                (1+gamma*(row[PvParam.T_CELL.value]-t_ref))
+                (1+gamma*(t_cell-t_ref))
 
-        system_capacity[PvParam.SYS_CAP.value] = system_capacity.apply(calc_capacity)
+        system_capacity[PvParam.SYS_CAP.value] = system_capacity.apply(calc_capacity,axis=1)
 
 
         return system_capacity
@@ -275,6 +286,8 @@ class Photovoltaic(Component):
 
         #calc irradiation factors
         irradiation:DataFrame =self.calc_irradiation()
+        print(irradiation.info())
+
 
         #calc system_capacity
         system_capacity = self.calc_system_capacity(irradiation=irradiation)
