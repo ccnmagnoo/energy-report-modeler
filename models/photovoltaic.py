@@ -289,7 +289,7 @@ class Photovoltaic(Component):
         print(irradiation.info())
 
 
-        #calc system_capacity
+        #calc system_capacity in KW 
         system_capacity = self.calc_system_capacity(irradiation=irradiation)
 
         return system_capacity
