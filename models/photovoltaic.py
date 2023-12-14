@@ -213,7 +213,7 @@ class Photovoltaic(Component):
         #calc panel over irradiation result
         weather_data =  self._weather.get_data()
         irradiance[W.WIND_SPEED_10M.value] = weather_data[W.WIND_SPEED_10M.value]
-        #coeficient temperature
+        #coefficient temperature
         #alpha = self.technical_sheet.thermal.short_circuit_t
         #beta = self.technical_sheet.thermal.open_circuit_t
         alpha = coef.value['alpha']
@@ -230,15 +230,38 @@ class Photovoltaic(Component):
 
         t_cell_result = irradiance.apply(temperature_cell,axis=1)
         return t_cell_result
+    
+    def operational_loss(self)->float:
+        '''
+        Total losses for operational causes
+        '''
+        model_loss = {
+            'dirt':0.02,
+            'shadows':0.03,
+            'imperfections':0.02,
+            'wiring':0.02,
+            'connectors':0.005,
+            'degradation':0.015,
+            'off_timer':0.03,
+            'lab_error':0.01,
+        }
+        
+        total_loss = 0;
+        for _,loss in model_loss.items():
+            total_loss += loss
+        
+        return total_loss
+
 
     def calc_system_capacity(self,irradiation:DataFrame)->DataFrame:
         """
         System capacity Global [W]
         ~~~~
         """
-
+        #capacity under lab conditions
         nominal_capacity:float = self.technical_sheet.area *\
             self.technical_sheet.efficiency *self.quantity
+        #temperature performance
         t_cel:Series = self.calc_temperature_cell(irradiation)
         t_ref:float = 25.5 #C°
         gamma:float = self.technical_sheet.thermal.power_coef_t/100# %/C°
@@ -246,11 +269,13 @@ class Photovoltaic(Component):
         dobo_limit = 125.0#W/m^2
         ref_irr = 1000#W/m^2
 
-        #init system capacity
+        #init calc system capacity
         system_capacity:DataFrame = pd.DataFrame()
         system_capacity[PvParam.T_CELL.value] = t_cel
         system_capacity[PvParam.INCIDENT.value] = irr_incident
         print(system_capacity.info())
+        
+        
 
         #system capacity
         def calc_capacity(row):
@@ -269,9 +294,15 @@ class Photovoltaic(Component):
                 (1+gamma*(t_cell-t_ref))
 
         system_capacity[PvParam.SYS_CAP.value] = system_capacity.apply(calc_capacity,axis=1)
-
+        
+        #operational losses
+        inverter_efficiency = 0.96
+        op_loss = self.operational_loss()
+        system_capacity[PvParam.SYS_CAP.value] = system_capacity[PvParam.SYS_CAP.value]\
+            .apply(lambda cap: cap *inverter_efficiency* (1-op_loss))
 
         return system_capacity
+    
 
 
 
