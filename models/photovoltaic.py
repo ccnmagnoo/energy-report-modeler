@@ -304,7 +304,8 @@ class Photovoltaic(Component):
         return system_capacity
     
 
-
+    def get_power(self):
+        return self.power * self.quantity/1000
 
     def calc_energy(self):
         """
@@ -334,5 +335,7 @@ class Photovoltaic(Component):
 #short test
 test_weather = Weather()
 panel = Photovoltaic(weather=test_weather)
-print(panel.calc_energy())
+panel.quantity = 20
+panel.power = 250
+print(panel.calc_energy(),panel.get_power())
 # End-of-file (EOF)
