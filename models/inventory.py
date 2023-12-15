@@ -3,20 +3,40 @@ from geometry import GeoPosition
 from models.components import Tech
 
 class Building:
-    """building config like geolocation, name and basics operations"""
-    def __init__(self,geolocation:GeoPosition,name:str,address:str,city:str):
+    """
+    Site configuration
+    ~~~~
+    >>> initializer
+    ... geolocation
+    ... name
+    ... address
+    ... city
+
+    building config like geolocation, name and basics operations"""
+    def __init__(self,
+                 geolocation:GeoPosition,
+                 name:str,
+                 address:str,
+                 city:str):
         self.geolocation = geolocation
         self.name=name
         self.address=address
         self.city=city
 
 class Project:
-    """main wrapper"""
+    """
+    Main Wrapper, globing all installs
+    ~~~~
+    ... building: @Building Class
+    ... technology: @Tech Enum Class
+
+    """
     def __init__(
         self,
         building:Building,
-        technology:Tech = Tech.PHOTOVOLTAIC,
+        technology:list[Tech]|None = None,
         ) -> None:
-        self.technology = technology
+        self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
-        self.name:str = f'Proyecto {technology} {building.name}'
+        
+        self.name:str = f'Proyecto {technology[0]} {building.name}'
