@@ -2,7 +2,7 @@
 from datetime import datetime,date
 import json
 from enum import Enum
-from geometry import GeoPosition
+from models.geometry import GeoPosition
 import requests
 import pandas as pd
 from pandas import DataFrame

@@ -1,6 +1,7 @@
 """main wrapper dependencies"""
-from geometry import GeoPosition
+from models.geometry import GeoPosition
 from models.components import Tech
+from models.weather import Weather,WeatherParam as W
 
 class Building:
     """
@@ -31,6 +32,7 @@ class Project:
     ... technology: @Tech Enum Class
 
     """
+    
     def __init__(
         self,
         building:Building,
@@ -38,5 +40,7 @@ class Project:
         ) -> None:
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
-        
         self.name:str = f'Proyecto {technology[0]} {building.name}'
+        self.weather = Weather(building.geolocation,\
+            [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M])
+        self.weather.get_data()
