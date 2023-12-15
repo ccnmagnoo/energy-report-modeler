@@ -15,10 +15,28 @@ class CellType(Enum):
     MONO = 'monocristalino'
     
 class TempCoef(Enum):
+    """
+    Temperature coefficient loss
+    ~~~~
+    >>> Factors
+    OPEN_RACK = factor on modular rack.
+    ROOF_MOUNT = module mounted on roof (default)
+    """
     OPEN_RACK={"alpha":-3.47,"beta":-0.0594,"deltaT":3}
     ROOF_MOUNT={"alpha":-2.98,"beta":-0.0471,"deltaT":1}
 
 class PvParam(Enum):
+    """
+    Photovoltaic Parameters
+    ~~~~
+    DataFrame Result columns names enumerate
+    >>> List
+    ... INCIDENT-> incident irradiance in W/m2 over surface.
+    ... DIRECT-> irradiance over surface normal.
+    ... DIFFUSE-> diffuse irradiance over surface.
+    ... GROUND-> irradiance received by the ground. 
+    ... SYS_CAP-> total system capacity module in kW
+    """
     INCIDENT = 'IRR_incident'
     DIRECT = 'IRR_direct_surface'
     DIFFUSE = 'IRR_diffuse_surface'
@@ -140,7 +158,7 @@ class Photovoltaic(Component):
         #calc ground irradiation
         irr[PvParam.GROUND.value] = weather_data[W.DIRECT.value] * 0.5 * \
             weather_data[W.ALBEDO.value] * cos_b
-        
+
         #calc global incident irradiation
         reflection = self.calc_reflection()
         irr[PvParam.INCIDENT.value] = irr[PvParam.DIRECT.value]*reflection+irr[PvParam.GROUND.value]+irr[PvParam.DIFFUSE.value]
@@ -193,7 +211,7 @@ class Photovoltaic(Component):
         #transmittance on phi == 0°
         tau_zero:float = exp(-1*glass_extinction*thickness)*\
                 (1-((1-surface_reflex)/(1+surface_reflex))**2)
-                
+
         transmittance_reflex = reflex.apply(tau_reflex,axis=1)
 
         #IAM
@@ -230,7 +248,7 @@ class Photovoltaic(Component):
 
         t_cell_result = irradiance.apply(temperature_cell,axis=1)
         return t_cell_result
-    
+
     def operational_loss(self)->float:
         '''
         Total losses for operational causes
@@ -245,11 +263,10 @@ class Photovoltaic(Component):
             'off_timer':0.03,
             'lab_error':0.01,
         }
-        
+
         total_loss = 0;
         for _,loss in model_loss.items():
             total_loss += loss
-        
         return total_loss
 
 
@@ -274,8 +291,7 @@ class Photovoltaic(Component):
         system_capacity[PvParam.T_CELL.value] = t_cel
         system_capacity[PvParam.INCIDENT.value] = irr_incident
         print(system_capacity.info())
-        
-        
+
 
         #system capacity
         def calc_capacity(row):
@@ -294,7 +310,7 @@ class Photovoltaic(Component):
                 (1+gamma*(t_cell-t_ref))
 
         system_capacity[PvParam.SYS_CAP.value] = system_capacity.apply(calc_capacity,axis=1)
-        
+
         #operational losses
         inverter_efficiency = 0.96
         op_loss = self.operational_loss()
@@ -302,9 +318,11 @@ class Photovoltaic(Component):
             .apply(lambda cap: cap *inverter_efficiency* (1-op_loss))
 
         return system_capacity
-    
 
-    def get_power(self):
+    def nominal_power(self):
+        """
+        power in kW = 1000 Watt
+        """
         return self.power * self.quantity/1000
 
     def calc_energy(self):
@@ -325,7 +343,6 @@ class Photovoltaic(Component):
         irradiation:DataFrame =self.calc_irradiation()
         print(irradiation.info())
 
-
         #calc system_capacity in KW 
         system_capacity = self.calc_system_capacity(irradiation=irradiation)
 
@@ -337,5 +354,5 @@ test_weather = Weather()
 panel = Photovoltaic(weather=test_weather)
 panel.quantity = 20
 panel.power = 250
-print(panel.calc_energy(),panel.get_power())
+print(panel.calc_energy(),panel.nominal_power())
 # End-of-file (EOF)
