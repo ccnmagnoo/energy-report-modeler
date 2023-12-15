@@ -264,7 +264,7 @@ class Photovoltaic(Component):
             'lab_error':0.01,
         }
 
-        total_loss = 0;
+        total_loss = 0
         for _,loss in model_loss.items():
             total_loss += loss
         return total_loss
