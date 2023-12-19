@@ -15,10 +15,10 @@ class Building:
 
     building config like geolocation, name and basics operations"""
     def __init__(self,
-                 geolocation:GeoPosition,
-                 name:str,
-                 address:str,
-                 city:str):
+                geolocation:GeoPosition,
+                name:str,
+                address:str,
+                city:str):
         self.geolocation = geolocation
         self.name=name
         self.address=address
