@@ -32,7 +32,6 @@ class Project:
     ... technology: @Tech Enum Class
 
     """
-    
     def __init__(
         self,
         building:Building,
