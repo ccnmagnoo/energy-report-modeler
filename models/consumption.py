@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import date
 from enum import Enum
 
@@ -14,10 +15,34 @@ class Energetic(Enum):
     '''
     ELI = 'electricidad'
     GLP = 'gas licuado'
-    GNL = 'gas natural'
-    OIL = 'petroleo'
+    GNL = 'gas natural licuado',
+    GN = 'gas natural cañería',
+    DIESEL = 'diesel oil'
     WOOD = 'leña'
     CARBON = 'carbón'
+    D95 = '95 octanos'
+    
+@dataclass
+class Property:
+    """
+    Fuel Chemical properties
+    """
+    calorific_power:float # kWh/unit
+    density:float # weight/volume
+    unit:str # billing unit measure kg,m3,...
+
+    def energy_equivalent(self,quantity:float)->float:
+        """returning kWh equivalent energy"""
+        return self.calorific_power*quantity
+
+properties:dict[Energetic,Property] = {
+    Energetic.ELI: Property(calorific_power=1,density=1,unit='kWh'),
+    Energetic.GNL: Property(calorific_power=12.53,density=341,unit='kg'),
+    Energetic.DIESEL: Property(calorific_power=11.82,density=850,unit='kg'),
+    Energetic.GLP:Property(calorific_power=12.69, density=350,unit='kg'),
+    Energetic.GN: Property(calorific_power=40.474,density=0.737, unit='m3')
+            }
+
 
 
 class Energy:
@@ -26,7 +51,7 @@ class Energy:
     """
     def __init__(self,
                 date_billing:date,
-                energetic:Energetic=Energetic.ELI,
+                energetic:Energetic,
                 cost:Cost = Cost()
                 ) -> None:
         self.energetic = energetic
