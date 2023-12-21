@@ -71,15 +71,15 @@ class EnergyBill:
 
 class ElectricityBill(EnergyBill):
     '''
-    Electricity billing detail consumption
+    Electricity billing details consumption
     '''
-    def __init__(self, 
+    def __init__(self,
                 contract_type:str,
                 energy_consumption:int,
                 date_billing: date,
                 cost: Cost = Cost(),
                 ) -> None:
         super().__init__(date_billing, Energetic.ELI, cost)
-        self.energy_consumption = energy_consumption,
-        self.energy_unit = 'kWh' 
-        self.contract_type = contract_type,
+        self.energy_consumption = energy_consumption
+        self.energy_unit:Unit = Unit.KWH
+        self.contract_type = contract_type
