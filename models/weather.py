@@ -86,7 +86,8 @@ class Weather:
             column = pd.DataFrame(list(data_by_hour.items()),columns=['date',param])
             result_df[['date',param]] = column
 
-        result_df[['year','month','day','hour']] = result_df['date'].str.extract(r'^(\d{4})(\d{2})(\d{2})(\d{2})$')
+        result_df[['year','month','day','hour']] = result_df['date']\
+            .str.extract(r'^(\d{4})(\d{2})(\d{2})(\d{2})$')
 
         #format date str to datetime
         result_df['date'] = result_df['date'].apply(
