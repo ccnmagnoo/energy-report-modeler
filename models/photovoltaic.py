@@ -161,7 +161,10 @@ class Photovoltaic(Component):
 
         #calc global incident irradiation
         reflection = self.calc_reflection()
-        irr[PvParam.INCIDENT.value] = irr[PvParam.DIRECT.value]*reflection+irr[PvParam.GROUND.value]+irr[PvParam.DIFFUSE.value]
+        irr[PvParam.INCIDENT.value] = \
+            irr[PvParam.DIRECT.value]*reflection\
+            +irr[PvParam.GROUND.value]\
+            +irr[PvParam.DIFFUSE.value]
         irr.fillna(0.0,inplace=True)
 
         return irr
