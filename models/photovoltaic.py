@@ -13,7 +13,7 @@ class CellType(Enum):
     """crystal cell configuration"""
     POLI = 'policristalino'
     MONO = 'monocristalino'
-    
+
 class TempCoef(Enum):
     """
     Temperature coefficient loss
@@ -346,7 +346,7 @@ class Photovoltaic(Component):
         irradiation:DataFrame =self.calc_irradiation()
         print(irradiation.info())
 
-        #calc system_capacity in KW 
+        #calc system_capacity in KW
         system_capacity = self.calc_system_capacity(irradiation=irradiation)
 
         return system_capacity
@@ -358,4 +358,4 @@ panel = Photovoltaic(weather=test_weather)
 panel.quantity = 20
 panel.power = 250
 print(panel.calc_energy(),panel.nominal_power())
-# End-of-file (EOF)
+#End-of-file (EOF)
