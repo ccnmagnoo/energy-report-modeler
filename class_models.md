@@ -166,7 +166,10 @@ namespace photovoltaic{
 
     Component <.. Cost
     Cost <.. Currency
+    Component <|-- Photovoltaic
 
+    Photovoltaic <.. Orientation
+    Photovoltaic <.. PvTechnicalSheet
     PvTechnicalSheet <.. Cell
     Cell <.. CellType
     PvTechnicalSheet <.. PowerCurve
