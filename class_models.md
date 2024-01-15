@@ -2,6 +2,8 @@
 
 ```mermaid
 classDiagram
+namespace inventory{
+
     class Building{
         +GeoPosition geolocation
         +String name
@@ -17,11 +19,37 @@ classDiagram
         +List~Tech~ technology
         -Weather weather
     }
+}
 
     class Tech{
         <<Enum>>
         PHOTOVOLTAIC
         SOLAR_THERMAL
+    }
+
+    class Component{
+        +String description
+        +String model
+        +String specification
+        +Cost cost
+        +Int quantity
+        +total_brute_cost() Float
+        +total_cost_plus_taxes() Float
+    }
+
+    class Cost{
+        -Int IVA
+        +Float value
+        +Currency currency
+        +tax() Float
+        +net_cost() Float
+    }
+
+    class Currency{
+        <<Enum>>
+        CLP
+        EURO
+        USD
     }
 
     class Weather{
@@ -50,11 +78,101 @@ classDiagram
         WIND_DIR_10M
     }
 
-    Project <.. Building
-    Project o-- Tech
-    Project <.. Weather
+    class GeoPosition{
+        +Float latitude
+        +Float longitude
+        +Float altitude
+        -Function _calculator
+        +sun_position(date) ~String,Float~
+    }
+    class Orientation{
+        +Float sun_azimuth
+        +Float sun_elevation
+        +Float normal
+        +cos_phi(sun_azimuth,sun_elevation) Float
+    }
 
-    Weather o-- WeatherParam
+namespace photovoltaic{
+    class CellType{
+        <<Enum>>
+        POLI
+        MONO
+    }
+    class TempCoef{
+        <<Enum>>
+        OPEN_RACK
+        ROOF_MOUNT
+    }
+    class PvParam{
+        <<Enum>>
+        INCIDENT
+        DIFFUSE
+        GROUND
+        T_CELL
+        SYS_CAP
+    }
+    class PowerCurve{
+        <<dataclass>>
+        +Float max_tension
+        +Float short_tension
+        +Float max_ampere
+        +Float short_ampere
+
+    }
+    class Cell{
+        <<dataclass>>
+        +CellType cell_type
+        +Int quantity_row
+        +Int quantity_col
+    }
+    class ThermalCoef{
+        <<dataclass>>
+        +Float short_circuit_t
+        +Float open_circuit_t
+        +Float power_coef_t
+        +Float power_coef_tmax
+    }
+    class PvTechnicalSheet{
+        <<dataclass>>
+        +Int power
+        +Float area
+        +PowerCurve power_curve
+        +Cell cell
+        +ThermalCoef thermal
+    }
+
+    class Photovoltaic{
+        -DataFrame energy
+        -List~WeatherParam~ PARAMS
+        +Int power
+        +Orientation orientation
+        +PvTechnicalSheet technical_sheet
+        -Weather _weather
+        -DataFrame _cos_phi
+        +normal()~String,Float~
+        +calc_cos_phi(date,location~Location~)Float
+        +calc_irradiation()~DataFrame~
+        +calc_reflection()~Series~
+        +calc_temperature_cell(irradiance,coef)
+    }
+}
+
+    Project <.. Building
+    Project o-- Tech : aggregation
+    Project <.. Weather : auto init
+
+    Weather o-- WeatherParam : aggregation
+    Weather <.. GeoPosition
+
+    Component <.. Cost
+    Cost <.. Currency
+
+    PvTechnicalSheet <.. Cell
+    Cell <.. CellType
+    PvTechnicalSheet <.. PowerCurve
+    PvTechnicalSheet <.. ThermalCoef
+
+
 
 
 
