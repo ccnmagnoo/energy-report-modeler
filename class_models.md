@@ -78,6 +78,7 @@ namespace inventory{
         WIND_DIR_10M
     }
 
+namespace geometry{
     class GeoPosition{
         +Float latitude
         +Float longitude
@@ -91,6 +92,7 @@ namespace inventory{
         +Float normal
         +cos_phi(sun_azimuth,sun_elevation) Float
     }
+}
 
 namespace photovoltaic{
     class CellType{
@@ -157,12 +159,14 @@ namespace photovoltaic{
     }
 }
 
+
+    rProject o-- Tech : aggregation
     Project <.. Building
-    Project o-- Tech : aggregation
     Project <.. Weather : auto init
 
-    Weather o-- WeatherParam : aggregation
     Weather <.. GeoPosition
+    Weather o-- WeatherParam : aggregation
+    Building <.. GeoPosition
 
     Component <.. Cost
     Cost <.. Currency
@@ -170,6 +174,10 @@ namespace photovoltaic{
 
     Photovoltaic <.. Orientation
     Photovoltaic <.. PvTechnicalSheet
+    Photovoltaic .. TempCoef : calc_temperature_cell()
+    Photovoltaic .. PvParam : calc_irradiation()
+
+
     PvTechnicalSheet <.. Cell
     Cell <.. CellType
     PvTechnicalSheet <.. PowerCurve
