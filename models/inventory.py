@@ -1,7 +1,7 @@
 """main wrapper dependencies"""
 from models.consumption import Energetic, EnergyBill
 from models.geometry import GeoPosition
-from models.components import Tech
+from models.components import Component, Tech
 from models.weather import Weather,WeatherParam as W
 
 class Building:
@@ -36,8 +36,12 @@ class Project:
     ~~~~
     ... building: @Building Class
     ... technology: @Tech Enum Class
-
     """
+    components:dict[str,list[Component]] = {
+            'generation':list[Component],
+            'operation':list[Component],
+            'installation':list[Component]}
+ 
     def __init__(
         self,
         building:Building,
