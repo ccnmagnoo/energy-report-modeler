@@ -161,6 +161,7 @@ namespace photovoltaic{
 }
 
 
+
     Project o-- Tech : aggregation
     Project <.. Building
     Project <.. Weather : auto init
@@ -185,6 +186,56 @@ namespace photovoltaic{
     PvTechnicalSheet <.. PowerCurve
     PvTechnicalSheet <.. ThermalCoef
 
+
+namespace consumption{
+    class Energetic{
+        <<Enum>>
+        ELI
+        GLP
+        ...
+    }
+    class Unit{
+        <<Enum>>
+        KG
+        M3
+        KWH
+        M
+        LT
+    }
+    class Property{
+        <<Dataclass>>
+        +Float kwh_per_kg
+        +Float kg_per_m3
+        +Unit unit
+        +energy_equivalent(quantity,measure_unit) Float
+    }
+
+    class properties{
+        <<Object>>
+        +Energetic : Property()
+    }
+
+    class EnergyBill{
+        +Date date_billing
+        +Energetic energetic
+        +Cost cost
+    }
+    class ElectricityBill{
+        +String contract_type
+        +Int energy_consumption
+        +Date date_billing
+        +Cost cost
+        -Unit energy_unit
+    }
+
+}
+properties "1" *.. "1" Energetic
+properties *.. Property
+Property <.. Unit
+EnergyBill <-- ElectricityBill
+EnergyBill <.. Cost
+ElectricityBill <.. Unit
+Building *.. EnergyBill
 
 
 
