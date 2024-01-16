@@ -18,7 +18,8 @@ namespace inventory{
         +Building building
         +List~Tech~ technology
         -Weather weather
-    }
+        +~Object,List[Component]~ components
+        }
 }
 
     class Tech{
@@ -160,9 +161,10 @@ namespace photovoltaic{
 }
 
 
-    rProject o-- Tech : aggregation
+    Project o-- Tech : aggregation
     Project <.. Building
     Project <.. Weather : auto init
+    Project o-- Component
 
     Weather <.. GeoPosition
     Weather o-- WeatherParam : aggregation

@@ -41,7 +41,7 @@ class Project:
             'generation':list[Component],
             'operation':list[Component],
             'installation':list[Component]}
- 
+
     def __init__(
         self,
         building:Building,
