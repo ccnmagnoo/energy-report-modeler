@@ -353,9 +353,9 @@ class Photovoltaic(Component):
 
 
 #short test
-test_weather = Weather()
-panel = Photovoltaic(weather=test_weather)
-panel.quantity = 20
-panel.power = 250
-print(panel.calc_energy(),panel.nominal_power())
+# test_weather = Weather()
+# panel = Photovoltaic(weather=test_weather)
+# panel.quantity = 20
+# panel.power = 250
+# print(panel.calc_energy(),panel.nominal_power())
 #End-of-file (EOF)
