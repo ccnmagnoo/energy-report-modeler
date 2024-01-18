@@ -1,7 +1,22 @@
 # Report gen models
 
 ```mermaid
+%%{
+  init: {
+    'theme': 'dark',
+    'themeVariables': {
+      'primaryColor': '#BB2528',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#7C0000',
+      'lineColor': '#fff',
+      'secondaryColor': '#006100',
+      'tertiaryColor': '#fafafa',
+      'fontSize':'20px',
+    }
+  }
+}%%
 classDiagram
+
 namespace inventory{
 
     class Building{
