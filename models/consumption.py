@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from enum import Enum
 
-from models.econometrics import Cost
+from econometrics import Cost
 
 
 class Energetic(Enum):

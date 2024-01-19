@@ -124,13 +124,13 @@ class Photovoltaic(Component):
         weather_date = weather.get_data()
         #calc reusable cos_phi
         self._cos_phi:DataFrame = weather_date['date']\
-            .apply(lambda date:self.calc_cos_phi(date=date,location=weather.geo_position))
+            .apply(lambda date:self._calc_cos_phi(date=date,location=weather.geo_position))
 
-    def normal(self)->dict[str,float]:
+    def _normal(self)->dict[str,float]:
         """elevation and azimuth surface´s normal"""
         return {'azimuth':self.orientation.inclination,'elevation':self.orientation.inclination}
 
-    def calc_cos_phi(self,date:datetime,location:GeoPosition)->float:
+    def _calc_cos_phi(self,date:datetime,location:GeoPosition)->float:
         """or angle between sun and normal or surface"""
         sun= location.sun_position(date)
 
@@ -140,7 +140,7 @@ class Photovoltaic(Component):
 
         return cos_phi
 
-    def calc_irradiation(self)->DataFrame:
+    def _calc_irradiation(self)->DataFrame:
         """calc irradiation on plane, direct,diffuse, ground and global on plane """
         irr:DataFrame = pd.DataFrame()
         #setting angle sun->surface
@@ -160,7 +160,7 @@ class Photovoltaic(Component):
             weather_data[W.ALBEDO.value] * cos_b
 
         #calc global incident irradiation
-        reflection = self.calc_reflection()
+        reflection = self._calc_reflection()
         irr[PvParam.INCIDENT.value] = \
             irr[PvParam.DIRECT.value]*reflection\
             +irr[PvParam.GROUND.value]\
@@ -169,7 +169,7 @@ class Photovoltaic(Component):
 
         return irr
 
-    def calc_reflection(self)->Series:
+    def _calc_reflection(self)->Series:
         '''
         reflection Module
         ~~~~
@@ -199,7 +199,7 @@ class Photovoltaic(Component):
         # print(reflex)
 
         #transmittance
-        def tau_reflex(row:DataFrame)->float:
+        def _tau_reflex(row:DataFrame)->float:
             #extract from row
             phi = row['phi']
             phi_r = row['phi_r']
@@ -215,14 +215,14 @@ class Photovoltaic(Component):
         tau_zero:float = exp(-1*glass_extinction*thickness)*\
                 (1-((1-surface_reflex)/(1+surface_reflex))**2)
 
-        transmittance_reflex = reflex.apply(tau_reflex,axis=1)
+        transmittance_reflex = reflex.apply(_tau_reflex,axis=1)
 
         #IAM
         iam = transmittance_reflex/tau_zero
 
         return iam
 
-    def calc_temperature_cell(self,irradiance:DataFrame,coef:TempCoef=TempCoef.ROOF_MOUNT)->Series:
+    def _calc_temperature_cell(self,irradiance:DataFrame,coef:TempCoef=TempCoef.ROOF_MOUNT)->Series:
         """
         Cell temperature
         ~~~~
@@ -242,17 +242,17 @@ class Photovoltaic(Component):
         delta = coef.value['deltaT']
 
         #aux function
-        def temperature_panel(row):
+        def _temperature_panel(row):
             return row[PvParam.INCIDENT.value]*exp(alpha+\
                 beta*row[W.WIND_SPEED_10M.value])
 
-        def temperature_cell(row):
-            return temperature_panel(row) + row[PvParam.INCIDENT.value]*delta/1000
+        def _temperature_cell(row):
+            return _temperature_panel(row) + row[PvParam.INCIDENT.value]*delta/1000
 
-        t_cell_result = irradiance.apply(temperature_cell,axis=1)
+        t_cell_result = irradiance.apply(_temperature_cell,axis=1)
         return t_cell_result
 
-    def operational_loss(self)->float:
+    def _operational_loss(self)->float:
         '''
         Total losses for operational causes
         '''
@@ -273,7 +273,7 @@ class Photovoltaic(Component):
         return total_loss
 
 
-    def calc_system_capacity(self,irradiation:DataFrame)->DataFrame:
+    def _calc_system_capacity(self,irradiation:DataFrame)->DataFrame:
         """
         System capacity Global [W]
         ~~~~
@@ -282,7 +282,7 @@ class Photovoltaic(Component):
         nominal_capacity:float = self.technical_sheet.area *\
             self.technical_sheet.efficiency *self.quantity
         #temperature performance
-        t_cel:Series = self.calc_temperature_cell(irradiation)
+        t_cel:Series = self._calc_temperature_cell(irradiation)
         t_ref:float = 25.5 #C°
         gamma:float = self.technical_sheet.thermal.power_coef_t/100# %/C°
         irr_incident:Series = irradiation[PvParam.INCIDENT.value]
@@ -297,7 +297,7 @@ class Photovoltaic(Component):
 
 
         #system capacity
-        def calc_capacity(row):
+        def calc_capacity(row)->DataFrame:
             #ref https://pvwatts.nrel.gov/downloads/pvwattsv5.pdf#page=9
             #data extract
             incident,t_cell = row[PvParam.INCIDENT.value],row[PvParam.T_CELL.value]
@@ -316,7 +316,7 @@ class Photovoltaic(Component):
 
         #operational losses
         inverter_efficiency = 0.96
-        op_loss = self.operational_loss()
+        op_loss = self._operational_loss()
         system_capacity[PvParam.SYS_CAP.value] = system_capacity[PvParam.SYS_CAP.value]\
             .apply(lambda cap: cap *inverter_efficiency* (1-op_loss))
 
@@ -328,7 +328,7 @@ class Photovoltaic(Component):
         """
         return self.power * self.quantity/1000
 
-    def calc_energy(self):
+    def get_energy(self):
         """
         Module Energy Calc
         ~~~~
@@ -343,19 +343,19 @@ class Photovoltaic(Component):
 
 
         #calc irradiation factors
-        irradiation:DataFrame =self.calc_irradiation()
+        irradiation:DataFrame =self._calc_irradiation()
         print(irradiation.info())
 
         #calc system_capacity in KW
-        system_capacity = self.calc_system_capacity(irradiation=irradiation)
+        system_capacity = self._calc_system_capacity(irradiation=irradiation)
 
         return system_capacity
 
 
 #short test
-# test_weather = Weather()
-# panel = Photovoltaic(weather=test_weather)
-# panel.quantity = 20
-# panel.power = 250
-# print(panel.calc_energy(),panel.nominal_power())
-#End-of-file (EOF)
+test_weather = Weather()
+panel = Photovoltaic(weather=test_weather)
+panel.quantity = 20
+panel.power = 250
+print(panel.get_energy(),panel.nominal_power())
+# End-of-file (EOF)

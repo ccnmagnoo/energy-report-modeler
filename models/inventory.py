@@ -1,8 +1,8 @@
 """main wrapper dependencies"""
-from models.consumption import Energetic, EnergyBill
-from models.geometry import GeoPosition
-from models.components import Component, Tech
-from models.weather import Weather,WeatherParam as W
+from consumption import Energetic, EnergyBill
+from geometry import GeoPosition
+from components import Component, Tech
+from weather import Weather,WeatherParam as W
 
 class Building:
     """

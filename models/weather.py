@@ -5,7 +5,7 @@ from enum import Enum
 import pandas as pd
 from pandas import DataFrame
 import requests
-from models.geometry import GeoPosition
+from geometry import GeoPosition
 
 class WeatherParam(Enum):
     """
