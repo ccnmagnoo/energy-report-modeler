@@ -3,12 +3,12 @@ from math import cos,sin,asin,acos,tan,radians,exp
 from enum import Enum
 from dataclasses import dataclass, field
 import datetime
-from geometry import GeoPosition, Orientation
-from weather import Weather, WeatherParam as W
 import pandas as pd
 from pandas import DataFrame, Series
-from components import Component
-from econometrics import Cost
+from models.geometry import GeoPosition, Orientation
+from models.weather import Weather, WeatherParam as W
+from models.components import Component
+from models.econometrics import Cost
 class CellType(Enum):
     """crystal cell configuration"""
     POLI = 'policristalino'

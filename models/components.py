@@ -1,7 +1,7 @@
 """data"""
 from enum import Enum
 
-from econometrics import Cost
+from models.econometrics import Cost
 
 
 class Tech(Enum):
