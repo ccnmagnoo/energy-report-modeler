@@ -167,11 +167,15 @@ namespace photovoltaic{
         +PvTechnicalSheet technical_sheet
         -Weather _weather
         -DataFrame _cos_phi
-        +normal()~String,Float~
-        +calc_cos_phi(date,location~Location~)Float
-        +calc_irradiation()~DataFrame~
-        +calc_reflection()~Series~
-        +calc_temperature_cell(irradiance,coef)
+        -_normal()~String,Float~
+        -_calc_cos_phi(date,location~Location~)Float
+        -_calc_irradiation() DataFrame
+        -_calc_reflection() Series
+        -_calc_temperature_cell(irradiance,coef)
+        -_calc_system_capacity() DataFrame
+        +calc_capacity() DataFrame
+        +nominal_power() Float
+        +get_energy() Float
     }
 }
 
