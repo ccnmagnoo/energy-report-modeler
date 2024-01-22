@@ -37,10 +37,7 @@ class Project:
     ... building: @Building Class
     ... technology: @Tech Enum Class
     """
-    components:dict[str,list[Component]] = {
-            'generation':list[Component],
-            'operation':list[Component],
-            'installation':list[Component]}
+    components:dict[str,list[Component]] = {}
 
     def __init__(
         self,
@@ -53,3 +50,13 @@ class Project:
         self.weather = Weather(building.geolocation,\
             [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M])
         self.weather.get_data()
+
+    def add_component(self,item:str,*args:Component):
+        """
+        Add component, in requires and identifier,
+        """
+        if item in self.components:
+            self.components[item].append(args)
+        
+        self.components[item] = list(args)
+    
