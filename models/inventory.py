@@ -3,6 +3,7 @@ from models.consumption import Energetic, EnergyBill
 from models.geometry import GeoPosition
 from models.components import Component, Tech
 from models.weather import Weather,WeatherParam as W
+from models.photovoltaic import Photovoltaic
 
 class Building:
     """
@@ -57,6 +58,5 @@ class Project:
         """
         if item in self.components:
             self.components[item].append(args)
-        
+       
         self.components[item] = list(args)
-    
