@@ -8,7 +8,7 @@ from pandas import DataFrame, Series
 from models.geometry import GeoPosition, Orientation
 from models.weather import Weather, WeatherParam as W
 from models.components import Component
-from models.econometrics import Cost
+from models.econometrics import Cost, Currency
 class CellType(Enum):
     """crystal cell configuration"""
     POLI = 'policristalino'
@@ -101,6 +101,7 @@ class Photovoltaic(Component):
     """
     energy:DataFrame = pd.DataFrame()
     PARAMS:list[W] = [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M]
+    price_model = lambda size_kw: -2.5256*size_kw+1440.5 #clp/kw
 
     def __init__(
         self, 
@@ -108,13 +109,17 @@ class Photovoltaic(Component):
         description: str = 'Panel Fotovoltaico',
         model: str = 'generic',
         specification: str | None = None,
-        cost: Cost = Cost(),
-        quantity: int = 1,
-        power:int = 100,
+        quantity: int = 1,#units
+        power:int = 100,#watt
         orientation:Orientation = Orientation(),
         technical_sheet:PvTechnicalSheet = PvTechnicalSheet(),
         ) -> None:
-        super().__init__(description, model, specification, cost, quantity)
+        #auxiliary values
+        nominal_power_kw = power*quantity/1000
+        cost = Cost(self.price_model(nominal_power_kw)*nominal_power_kw)
+        
+        super().__init__(description, model, specification,cost, quantity)
+        
         self.power = power
         self.orientation = orientation
         self.technical_sheet = technical_sheet
@@ -125,6 +130,9 @@ class Photovoltaic(Component):
         #calc reusable cos_phi
         self._cos_phi:DataFrame = weather_date['date']\
             .apply(lambda date:self._calc_cos_phi(date=date,location=weather.geo_position))
+            
+    def set_cost(self,cost:Cost):
+        self.cost = cost
 
     def _normal(self)->dict[str,float]:
         """elevation and azimuth surface´s normal"""
