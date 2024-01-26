@@ -3,6 +3,7 @@ from math import cos,sin,asin,acos,tan,radians,exp
 from enum import Enum
 from dataclasses import dataclass, field
 import datetime
+from typing import Callable
 import pandas as pd
 from pandas import DataFrame, Series
 from models.geometry import GeoPosition, Orientation
@@ -91,6 +92,11 @@ class Photovoltaic(Component):
     ~~~~
     global component for operate Weather fetch, solar irradiation calculus, and technical
     lost. Not include shadow analysis.
+    >>> init
+        power: in nominal Watts each panel
+        orientation : Orientation() class
+        technical_sheet: has some default in PvTechnicalSheet() class
+        cost or cost_model_fun: one of them has to me None, or Cost() zero by default
     >>>  methods
     ... .normal() -> normal azimuth and elevation
     ... .calc_cosPhi() -> angle between solar vector and surface normal vector
@@ -101,7 +107,6 @@ class Photovoltaic(Component):
     """
     energy:DataFrame = pd.DataFrame()
     PARAMS:list[W] = [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M]
-    price_model = lambda size_kw: -2.5256*size_kw+1440.5 #clp/kw
 
     def __init__(
         self, 
@@ -111,13 +116,18 @@ class Photovoltaic(Component):
         specification: str | None = None,
         quantity: int = 1,#units
         power:int = 100,#watt
+        cost:Cost|None = None,
+        cost_model:Callable[[float],float]|None = None,
         orientation:Orientation = Orientation(),
         technical_sheet:PvTechnicalSheet = PvTechnicalSheet(),
         ) -> None:
         #auxiliary values
-        nominal_power_kw = power*quantity/1000
-        cost = Cost(self.price_model(nominal_power_kw)*nominal_power_kw)
-        
+        if (not cost) and cost_model:
+
+            self.cost = Cost(cost_model(quantity*power)*quantity*power,currency=Currency.CLP)
+        else:
+            self.cost = Cost()
+
         super().__init__(description, model, specification,cost, quantity)
         
         self.power = power
@@ -131,9 +141,10 @@ class Photovoltaic(Component):
         self._cos_phi:DataFrame = weather_date['date']\
             .apply(lambda date:self._calc_cos_phi(date=date,location=weather.geo_position))
             
+    
     def set_cost(self,cost:Cost):
         self.cost = cost
-
+    
     def _normal(self)->dict[str,float]:
         """elevation and azimuth surface´s normal"""
         return {'azimuth':self.orientation.inclination,'elevation':self.orientation.inclination}

@@ -18,12 +18,6 @@ class Cost:
         self.value:float = value
         self.currency:Currency = currency
 
-    @classmethod
-    def _exchange_ratio (cls,input_curr:Currency,output_curr:Currency|None)->float:
-        """calc exchange ratio convertion"""
-        if not output_curr:
-            return 1.
-        return cls._exchange[output_curr]/cls._exchange[input_curr] #exchange ratio
 
     def tax(self,output_currency:Currency|None)->float:
         """calc iva"""
@@ -46,6 +40,13 @@ class Cost:
             return self.tax(None) + self.cost_before_tax(None)
         
         return self.tax(output_currency) + self.cost_before_tax(output_currency) # LF (\n)
+    
+    @classmethod
+    def _exchange_ratio (cls,input_curr:Currency,output_curr:Currency|None)->float:
+        """calc exchange ratio convertion"""
+        if not output_curr:
+            return 1.
+        return cls._exchange[output_curr]/cls._exchange[input_curr] #exchange ratio
 
     @classmethod
     def set_exchange(cls,currency:Currency,exchange:float):
