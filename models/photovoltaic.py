@@ -122,13 +122,13 @@ class Photovoltaic(Component):
         technical_sheet:PvTechnicalSheet = PvTechnicalSheet(),
         ) -> None:
         #auxiliary values
-        if (not cost) and cost_model:
-
-            self.cost = Cost(cost_model(quantity*power)*quantity*power,currency=Currency.CLP)
+        aux_cost:Cost
+        if (cost is None) and cost_model:
+            aux_cost = Cost(cost_model(quantity*power)*quantity*power,currency=Currency.CLP)
         else:
-            self.cost = Cost()
+            aux_cost = Cost()
 
-        super().__init__(description, model, specification,cost, quantity)
+        super().__init__(description, model, specification,aux_cost, quantity)
         
         self.power = power
         self.orientation = orientation
@@ -143,7 +143,8 @@ class Photovoltaic(Component):
             
     
     def set_cost(self,cost:Cost):
-        self.cost = cost
+        """change cost value"""
+        super().cost = cost
     
     def _normal(self)->dict[str,float]:
         """elevation and azimuth surface´s normal"""
