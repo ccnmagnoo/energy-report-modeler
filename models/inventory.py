@@ -15,9 +15,7 @@ class Building:
     ... address
     ... city
     building config like geolocation, name and basics operations"""
-    consumption:dict[Energetic,list[EnergyBill]] = {
-        Energetic.ELI:[]
-    }
+    consumption:dict[Energetic,list[EnergyBill]] = {}
     def __init__(self,
                 geolocation:GeoPosition,
                 name:str,
@@ -42,12 +40,13 @@ class Project:
 
     def __init__(
         self,
+        title:str,
         building:Building,
         technology:list[Tech]|None = None,
         ) -> None:
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
-        self.name:str = f'Proyecto {technology[0]} {building.name}'
+        self.title:str = title
         self.weather = Weather(building.geolocation,\
             [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M])
         self.weather.get_data()
@@ -58,5 +57,12 @@ class Project:
         """
         if item in self.components:
             self.components[item].append(args)
-       
+
         self.components[item] = list(args)
+
+    def add_consumption(self, energetic:Energetic,*energy_bills):
+        """add energy bill with detailed consumptions data, 
+        requires an energetic topic as electricity"""
+        if energetic in self.building.consumption[energetic]:
+            self.building.consumption[energetic].append(energy_bills)
+        self.building.consumption[energetic] = list(energy_bills)
