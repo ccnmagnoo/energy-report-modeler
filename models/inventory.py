@@ -1,9 +1,10 @@
 """main wrapper dependencies"""
 from models.consumption import Energetic, EnergyBill
+from models.econometrics import Currency
 from models.geometry import GeoPosition
 from models.components import Component, Tech
 from models.weather import Weather,WeatherParam as W
-from models.photovoltaic import Photovoltaic
+# from models.photovoltaic import Photovoltaic
 
 class Building:
     """
@@ -59,6 +60,16 @@ class Project:
             self.components[item].append(args)
 
         self.components[item] = list(args)
+
+    def get_total_cost(self,currency:Currency|None)->list[tuple[str,str,float,str]]:
+        "get all cost related by components"
+        container:list[tuple[str,str,float,str]] = []
+        for gloss,item in self.components.items():
+            for component in item:
+                value,curr = component.total_cost_after_tax(currency)
+                container.append((gloss,component.description,value,curr.value))
+            
+        return container
 
     def add_consumption(self, energetic:Energetic,*energy_bills):
         """add energy bill with detailed consumptions data, 
