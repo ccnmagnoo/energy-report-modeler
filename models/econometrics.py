@@ -1,6 +1,10 @@
 """currency types dep"""
 from enum import Enum
+from math import floor
 
+def curr_round(value:float,padding:int)->float:
+    return floor(value*padding*10)/(padding*10)
+    
 
 class Currency(Enum):
     """currency type"""
@@ -26,26 +30,28 @@ class Cost:
 
         return self.value*self.IVA*self._exchange_ratio(self.currency,output_currency)
 
-    def cost_before_tax(self,output_currency:Currency|None)->float:
+    def cost_before_tax(self,output_currency:Currency|None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if not output_currency:
-            return self.value
-        
-        return self.value*self._exchange_ratio(self.currency,output_currency) # LF (\n)
+            return [self.value,self.currency]
+        rounded = curr_round(self.value*self._exchange_ratio(self.currency,output_currency),2)
+
+        return rounded,output_currency # LF (\n)
 
     
-    def cost_after_tax(self,output_currency:Currency|None)->float:
+    def cost_after_tax(self,output_currency:Currency|None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if not output_currency:
-            return self.tax(None) + self.cost_before_tax(None)
+            return [self.tax(None) + self.cost_before_tax(None)[0],self.currency]
         
-        return self.tax(output_currency) + self.cost_before_tax(output_currency) # LF (\n)
+        rounded = curr_round(self.tax(output_currency) + self.cost_before_tax(output_currency)[0],2)
+        return rounded,output_currency # LF (\n)
     
     @classmethod
     def _exchange_ratio (cls,input_curr:Currency,output_curr:Currency|None)->float:
         """calc exchange ratio convertion"""
         if not output_curr:
-            return 1.
+            return 1
         return cls._exchange[output_curr]/cls._exchange[input_curr] #exchange ratio
 
     @classmethod

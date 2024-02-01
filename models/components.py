@@ -1,7 +1,7 @@
 """data"""
 from enum import Enum
 
-from models.econometrics import Cost
+from models.econometrics import Cost, Currency
 
 
 class Tech(Enum):
@@ -22,12 +22,12 @@ class Component:
         self.description:str = description
         self.model:str = model
         self.specification:str|None = specification
-        self.cost:float= cost
+        self.cost:Cost= cost
         self.quantity:int = quantity
     
-    def total_brute_cost(self)->float:
+    def total_cost_before_tax(self,currency:Currency|None)->tuple[float,Currency]:
         """cost before taxes"""
-        return self.quantity*self.cost
-    def total_cost_plus_taxes(self)->float:
+        return self.quantity*self.cost.cost_before_tax(currency)[0],currency or self.cost.currency
+    def total_cost_after_tax(self,currency:Currency|None):
         """cost after taxes"""
-        return self.quantity*self.cost.netCost()
+        return self.quantity*self.cost.cost_after_tax(currency)[0],currency or self.cost.currency
