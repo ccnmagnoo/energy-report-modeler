@@ -124,10 +124,10 @@ class Photovoltaic(Component):
         #auxiliary values
         aux_cost:Cost
         if (cost is None) and cost_model:
-            aux_cost = Cost(cost_model(quantity*power)*quantity*power,currency=Currency.CLP)
+            aux_cost = Cost(cost_model(power)*power,currency=Currency.CLP)
         else:
             aux_cost = Cost()
-
+        print('inside cost pv : ',aux_cost.value,aux_cost.currency)
         super().__init__(description, model, specification,aux_cost, quantity)
         
         self.power = power
