@@ -61,13 +61,24 @@ class Project:
 
         self.components[item] = list(args)
 
-    def get_total_cost(self,currency:Currency|None)->list[tuple[str,str,float,str]]:
+    def bucket_list(self,currency:Currency|None)->dict[str,str|float]:
         "get all cost related by components"
         container:list[tuple[str,str,float,str]] = []
         for gloss,item in self.components.items():
             for component in item:
+                
                 value,curr = component.total_cost_after_tax(currency)
-                container.append((gloss,component.description,value,curr.value))
+
+                #auxiliar object
+                obj_item = {
+                    'gloss':gloss,
+                    'description':component.description,
+                    'quantity':component.quantity,
+                    'amount':value,
+                    'currency':curr.value
+                    
+                }
+                container.append(obj_item)
             
         return container
 
