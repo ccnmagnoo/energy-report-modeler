@@ -17,12 +17,12 @@ class Component:
         description:str,
         model:str = 'generic',
         specification:str|None = None,
-        cost:Cost = Cost(),
+        cost_per_unit:Cost = Cost(),
         quantity:int = 1 ) -> None:
         self.description:str = description
         self.model:str = model
         self.specification:str|None = specification
-        self.cost:Cost= cost
+        self.cost:Cost= cost_per_unit
         self.quantity:int = quantity
     
     def total_cost_before_tax(self,currency:Currency|None)->tuple[float,Currency]:
