@@ -12,11 +12,13 @@ class Currency(Enum):
     CLP ='peso chileno'
     USD ='dolar'
     EUR ='euro'
+    UF = 'UF'
+    UTM = 'UTM'
 
 class Cost:
     """component cost dataclass"""
     IVA = 0.19
-    _exchange = {Currency.USD:1,Currency.CLP:900,Currency.EUR:0.9}
+    _exchange = {Currency.USD:1,Currency.CLP:900,Currency.EUR:0.9,Currency.UF:0.026,Currency.UTM:0.01482679} # values in 1 dolar
 
     def __init__(self, value:float = 0,currency:Currency = Currency.CLP) -> None:
         self.value:float = value
