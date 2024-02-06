@@ -6,7 +6,6 @@ import pandas as pd
 from pandas import DataFrame
 import requests
 from models.geometry import GeoPosition
-
 class WeatherParam(Enum):
     """
     NASA api parameters
@@ -68,8 +67,10 @@ class Weather:
         ) -> None:
         self.geo_position = geo_position
         self.period = self._last_period()
+
         if parameters is None:
             self.parameters = [WeatherParam.TEMPERATURE]
+
         self.parameters = parameters
 
 
@@ -93,14 +94,15 @@ class Weather:
         result_df['date'] = result_df['date'].apply(
             lambda datestr: datetime.strptime(datestr,'%Y%m%d%H')
             )
-
         #remove al inconsistent values
         result_df = result_df.replace(-999.00,None)
 
         self._data = result_df
 
-    #period 365 days interval corresponding previous year
     def _last_period(self)->dict[str,date]:
+        '''
+        period 365 days interval corresponding previous year
+        '''
         current:datetime = datetime.now()
         last_year:int = current.date().year-1
         return {'start':date(last_year,1,1),'end':date(last_year,1,2)}
@@ -125,7 +127,7 @@ class Weather:
         }
 
         request_components:list[str] = []
-        
+
         for key,value in config.items():
             request_components.append(f'{key}={value}')
         request_url = self.URL+ '&'.join(request_components)
