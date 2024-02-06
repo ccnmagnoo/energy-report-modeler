@@ -114,6 +114,7 @@ class Photovoltaic(Component):
         description: str = 'Panel Fotovoltaico',
         model: str = 'generic',
         specification: str | None = None,
+        reference: str | None = None,
         quantity: int = 1,#units
         power:int = 100,#watt
         cost:Cost|None = None,
@@ -128,8 +129,8 @@ class Photovoltaic(Component):
         else:
             aux_cost = Cost()
         print('inside cost pv : ',aux_cost.value,aux_cost.currency)
-        super().__init__(description, model, specification,aux_cost, quantity)
-        
+        super().__init__(description, model, specification,reference,aux_cost, quantity)
+
         self.power = power
         self.orientation = orientation
         self.technical_sheet = technical_sheet

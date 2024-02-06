@@ -17,11 +17,15 @@ class Component:
         description:str,
         model:str = 'generic',
         specification:str|None = None,
+        reference:str|None = None,
         cost_per_unit:Cost = Cost(),
         quantity:int = 1 ) -> None:
+        
         self.description:str = description
         self.model:str = model
         self.specification:str|None = specification
+        self.reference:str|None = reference
+
         self.cost:Cost= cost_per_unit
         self.quantity:int = quantity
     
