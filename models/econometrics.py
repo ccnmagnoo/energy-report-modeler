@@ -18,7 +18,12 @@ class Currency(Enum):
 class Cost:
     """component cost dataclass"""
     IVA = 0.19
-    _exchange = {Currency.USD:1,Currency.CLP:900,Currency.EUR:0.9,Currency.UF:0.026,Currency.UTM:0.01482679} # values in 1 dolar
+    _exchange = {
+        Currency.USD:1,
+        Currency.CLP:900,
+        Currency.EUR:0.9,
+        Currency.UF:0.026,
+        Currency.UTM:0.01482679} # values in 1 dolar
 
     def __init__(self, value:float = 0,currency:Currency = Currency.CLP) -> None:
         self.value:float = value
@@ -40,7 +45,6 @@ class Cost:
 
         return rounded,output_currency # LF (\n)
 
-    
     def cost_after_tax(self,output_currency:Currency|None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if not output_currency:
@@ -48,7 +52,7 @@ class Cost:
         
         rounded = curr_round(self.tax(output_currency) + self.cost_before_tax(output_currency)[0],2)
         return rounded,output_currency # LF (\n)
-    
+
     @classmethod
     def _exchange_ratio (cls,input_curr:Currency,output_curr:Currency|None)->float:
         """calc exchange ratio convertion"""
