@@ -1,5 +1,6 @@
 """main wrapper dependencies"""
 from pandas import DataFrame
+import pandas as pd
 from models.consumption import Energetic, EnergyBill
 from models.econometrics import Currency
 from models.geometry import GeoPosition
@@ -63,7 +64,7 @@ class Project:
 
         self.components[item] = list(args)
 
-    def get_energy_generation(self, generation_source:str)->[]|None:
+    def get_energy_generation(self, generation_source:str)->DataFrame|None:
         """extract and sum all energy generation component"""
 
         #check for generation component content
@@ -76,7 +77,7 @@ class Project:
                 raise ValueError(f'{energy_component}is not a energy gen component')
 
         #proceed for loop addition
-        container:DataFrame 
+        container:DataFrame = DataFrame()
         for energy_component in self.components[generation_source]:
             container += energy_component.get_energy()
 
