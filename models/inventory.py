@@ -3,6 +3,7 @@ from models.consumption import Energetic, EnergyBill
 from models.econometrics import Currency
 from models.geometry import GeoPosition
 from models.components import Component, Tech
+from models.photovoltaic import Photovoltaic
 from models.weather import Weather,WeatherParam as W
 # from models.photovoltaic import Photovoltaic
 
@@ -26,7 +27,7 @@ class Building:
         self.name=name
         self.address=address
         self.city=city
-       
+
     def set_consumption(self,consumption:dict[Energetic,list[EnergyBill]]):
         '''defining energy bill, '''
         self.consumption = consumption
@@ -61,25 +62,32 @@ class Project:
 
         self.components[item] = list(args)
 
+    def get_energy_generation(self, generation_source:str)->[]|None:
+        """extract and sum all energy generation component"""
+        if len(self.components[generation_source]) == 0:
+            raise ValueError('no component found')
+        for energy_component in self.components[generation_source]:
+            if not isinstance(energy_component,Photovoltaic):
+                raise ValueError('is not a energy gen component') 
+        return []
+
     def bucket_list(self,currency:Currency|None)->dict[str,str|float]:
         "get all cost related by components"
         container:list[tuple[str,str,float,str]] = []
         for gloss,item in self.components.items():
             for component in item:
-                
+
                 value,curr = component.total_cost_after_tax(currency)
 
-                #auxiliar object
+                #auxiliary object
                 obj_item = {
                     'gloss':gloss,
                     'description':component.description,
                     'quantity':component.quantity,
                     'amount':value,
                     'currency':curr.value
-                    
                 }
                 container.append(obj_item)
-            
         return container
 
     def add_consumption(self, energetic:Energetic,*energy_bills):
