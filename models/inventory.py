@@ -1,4 +1,5 @@
 """main wrapper dependencies"""
+from pandas import DataFrame
 from models.consumption import Energetic, EnergyBill
 from models.econometrics import Currency
 from models.geometry import GeoPosition
@@ -64,12 +65,22 @@ class Project:
 
     def get_energy_generation(self, generation_source:str)->[]|None:
         """extract and sum all energy generation component"""
+
+        #check for generation component content
         if len(self.components[generation_source]) == 0:
             raise ValueError('no component found')
+
+        #check for Photovoltaic component
         for energy_component in self.components[generation_source]:
             if not isinstance(energy_component,Photovoltaic):
-                raise ValueError('is not a energy gen component') 
-        return []
+                raise ValueError(f'{energy_component}is not a energy gen component')
+
+        #proceed for loop addition
+        container:DataFrame 
+        for energy_component in self.components[generation_source]:
+            container += energy_component.get_energy()
+
+        return container
 
     def bucket_list(self,currency:Currency|None)->dict[str,str|float]:
         "get all cost related by components"
@@ -93,6 +104,7 @@ class Project:
     def add_consumption(self, energetic:Energetic,*energy_bills):
         """add energy bill with detailed consumptions data, 
         requires an energetic topic as electricity"""
+
         if energetic in self.building.consumption[energetic]:
             self.building.consumption[energetic].append(energy_bills)
         self.building.consumption[energetic] = list(energy_bills)
