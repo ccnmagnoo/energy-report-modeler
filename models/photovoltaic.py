@@ -349,7 +349,7 @@ class Photovoltaic(Component):
         """
         return self.power * self.quantity/1000
 
-    def get_energy(self):
+    def get_energy(self) -> DataFrame:
         """
         Module Energy Calc
         ~~~~
