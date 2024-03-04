@@ -64,11 +64,12 @@ class Project:
 
         self.components[item] = list(args)
 
-    def get_energy_generation(self, generation_source:str)->DataFrame|None:
+    def get_energy(self, generation_source:str)->DataFrame|None:
         """extract and sum all energy generation component"""
+        number_of_components  = len(self.components[generation_source])
 
         #check for generation component content
-        if len(self.components[generation_source]) == 0:
+        if number_of_components == 0:
             raise ValueError('no component found')
 
         #check for Photovoltaic component
@@ -77,9 +78,11 @@ class Project:
                 raise ValueError(f'{energy_component}is not a energy gen component')
 
         #proceed for loop addition
-        container:DataFrame = DataFrame()
-        for energy_component in self.components[generation_source]:
-            container += energy_component.get_energy()
+        container:DataFrame = self.components[generation_source][0]
+        if number_of_components>1:
+            for energy_component in self.components[generation_source][1:]:
+                capacity = energy_component.get_energy()
+                container['System_capacity_KW'] += capacity['System_capacity_KW']
 
         return container
 
