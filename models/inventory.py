@@ -1,6 +1,5 @@
 """main wrapper dependencies"""
 from pandas import DataFrame
-import pandas as pd
 from models.consumption import Energetic, EnergyBill
 from models.econometrics import Currency
 from models.geometry import GeoPosition
@@ -55,7 +54,7 @@ class Project:
             [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M])
         self.weather.get_data()
 
-    def add_component(self,item:str,*args:Component):
+    def add_component(self,item:str,*args:Component|Photovoltaic):
         """
         Add component, in requires and identifier,
         """
@@ -78,11 +77,13 @@ class Project:
                 raise ValueError(f'{energy_component}is not a energy gen component')
 
         #proceed for loop addition
-        container:DataFrame = self.components[generation_source][0]
+        container:DataFrame = self.components[generation_source][0].get_energy()
         if number_of_components>1:
             for energy_component in self.components[generation_source][1:]:
-                capacity = energy_component.get_energy()
-                container['System_capacity_KW'] += capacity['System_capacity_KW']
+                aux_component:DataFrame = energy_component.get_energy()
+                container['System_capacity_KW'] += aux_component['System_capacity_KW']
+                container['Temperature_cell'] = (container['Temperature_cell'] + aux_component['Temperature_cell'])/2
+                container['IRR_incident'] = (container['IRR_incident'] + aux_component['IRR_incident'])/2
 
         return container
 

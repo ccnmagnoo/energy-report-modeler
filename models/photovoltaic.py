@@ -371,7 +371,7 @@ class Photovoltaic(Component):
         #calc system_capacity in KW
         system_capacity = self._calc_system_capacity(irradiation=irradiation)
         system_capacity[['date','month','day','hour']] = weather_data[['date','month','day','hour']]
-        
+
         #rename columns
         system_capacity=system_capacity.rename(columns={'date':'date UTC'})
 
