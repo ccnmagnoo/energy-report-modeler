@@ -105,7 +105,7 @@ class Weather:
         '''
         current:datetime = datetime.now()
         last_year:int = current.date().year-1
-        return {'start':date(last_year,1,1),'end':date(last_year,1,2)}
+        return {'start':date(last_year,1,1),'end':date(last_year,1,2)} #TODO:on production change period.
 
     def _date_api_format(self,user_date:date)->str:
         """return str with api YYYYMMDD format"""
