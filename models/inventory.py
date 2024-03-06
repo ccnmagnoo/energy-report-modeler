@@ -100,7 +100,7 @@ class Project:
                     'gloss':gloss,
                     'description':component.description,
                     'quantity':component.quantity,
-                    'amount':value,
+                    'cost_after_tax':value,
                     'currency':curr.value
                 }
                 container.append(obj_item)
