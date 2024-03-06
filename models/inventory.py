@@ -1,4 +1,6 @@
 """main wrapper dependencies"""
+import math
+from typing import Any
 from pandas import DataFrame
 from models.consumption import Energetic, EnergyBill
 from models.econometrics import Currency
@@ -87,13 +89,16 @@ class Project:
 
         return container
 
-    def bucket_list(self,currency:Currency|None)->dict[str,str|float]:
+    def bucket_list(self,currency:Currency|None)->dict[str,Any]:
         "get all cost related by components"
-        container:list[tuple[str,str,float,str]] = []
+        #generate bucket
+        container:list[tuple[str,str,int,float,str]] = []
+        total_cost:float = 0
         for gloss,item in self.components.items():
             for component in item:
 
                 value,curr = component.total_cost_after_tax(currency)
+                total_cost += value
 
                 #auxiliary object
                 obj_item = {
@@ -104,7 +109,7 @@ class Project:
                     'currency':curr.value
                 }
                 container.append(obj_item)
-        return container
+        return {'cost':math.floor(total_cost*100)/100 ,'bucket':container}
 
     def add_consumption(self, energetic:Energetic,*energy_bills):
         """add energy bill with detailed consumptions data, 
