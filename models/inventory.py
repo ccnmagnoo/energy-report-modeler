@@ -31,9 +31,12 @@ class Building:
         self.address=address
         self.city=city
 
-    def set_consumption(self,consumption:dict[Energetic,list[EnergyBill]]):
+    def set_consumption(self,energetic:Energetic,consumption:list[EnergyBill]):
         '''defining energy bill, '''
-        self.consumption = consumption
+        if energetic in self.consumption.values():
+            self.consumption[energetic] = [*self.consumption[energetic],*consumption]
+        else:
+            self.consumption[energetic] = consumption
 class Project:
     """
     Main Wrapper, globing all installs
@@ -111,10 +114,10 @@ class Project:
                 container.append(obj_item)
         return {'cost':math.floor(total_cost*100)/100 ,'bucket':container}
 
-    def add_consumption(self, energetic:Energetic,*energy_bills):
+    def add_consumption(self, energetic:Energetic,bills:list[EnergyBill]):
         """add energy bill with detailed consumptions data, 
         requires an energetic topic as electricity"""
 
         if energetic in self.building.consumption[energetic]:
-            self.building.consumption[energetic].append(energy_bills)
-        self.building.consumption[energetic] = list(energy_bills)
+            self.building.consumption[energetic].append(bills)
+        self.building.consumption[energetic] = list(bills)
