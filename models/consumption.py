@@ -69,17 +69,54 @@ class EnergyBill:
         self.cost = cost
         self.date_billing = date_billing
 
-class ElectricityBill(EnergyBill):
+class FareTension(Enum):
+    '''fare type'''
+    AT='AT',
+    BT='BT'
+
+class FareType(Enum):
     '''
-    Electricity billing details consumption
+    Fare contract model
     '''
+    A1 = '1A',
+    B1 = '1B',
+    T2 = '2',
+    T3 = '3PP',
+    T41 = '4.1',
+    T42 = '4.2',
+    T43 = '4.3'
+
+class FareSubType(Enum):
+    '''
+    Fare contract model
+    '''
+    PP = 'PP',
+    PPP = 'PPP'
+
+class Fare:
+    '''Fare electric billing'''
     def __init__(self,
-                contract_type:str,
+                tension:FareTension = FareTension.BT,
+                contract:FareType = FareType.A1,
+                sub_type:FareSubType|None = None
+                ) -> None:
+        self.tension = tension,
+        self.contract = contract,
+        self.sub_type = sub_type
+
+    def get_fare(self)->str:
+        '''return properly compose fare'''
+        return self.tension + self.contract + self.sub_type
+
+class ElectricityBill(EnergyBill):
+    '''Electricity billing details consumption'''
+    def __init__(self,
                 energy_consumption:int,
                 date_billing: date,
+                fare:Fare = Fare(),
                 cost: Cost = Cost(),
                 ) -> None:
         super().__init__(date_billing, Energetic.ELI, cost)
         self.energy_consumption = energy_consumption
         self.energy_unit:Unit = Unit.KWH
-        self.contract_type = contract_type
+        self.fare = fare

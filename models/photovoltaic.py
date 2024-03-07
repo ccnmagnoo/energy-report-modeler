@@ -214,7 +214,7 @@ class Photovoltaic(Component):
         thickness = 0.002 #[m] 2 mm
 
         #get angular
-        reflex['phi']:DataFrame = self._cos_phi.apply(acos)
+        reflex['phi']:DataFrame = self._cos_phi.apply(acos) # type: ignore
         reflex['phi_r']:DataFrame = reflex['phi'].apply(\
             lambda phi:asin(sin(phi)*(air_reflex/surface_reflex)\
                 ))
