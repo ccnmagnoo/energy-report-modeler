@@ -117,7 +117,7 @@ class Project:
     def add_consumption(self, energetic:Energetic,bills:list[EnergyBill]):
         """add energy bill with detailed consumptions data, 
         requires an energetic topic as electricity"""
-
-        if energetic in self.building.consumption[energetic]:
-            self.building.consumption[energetic].append(bills)
-        self.building.consumption[energetic] = list(bills)
+        self.building.set_consumption(energetic,bills)
+        # if energetic in self.building.consumption[energetic]:
+        #     self.building.consumption[energetic].append(bills)
+        # self.building.consumption[energetic] = list(bills)
