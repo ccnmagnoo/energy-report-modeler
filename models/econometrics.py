@@ -9,11 +9,14 @@ def curr_round(value:float,padding:int)->float:
 class Currency(Enum):
     """currency type"""
     #cspell:disable
-    CLP ='peso chileno'
-    USD ='dolar'
-    EUR ='euro'
+    CLP ='Peso Chileno'
+    USD ='Dolar'
+    EUR ='Euro'
     UF = 'UF'
+    GBP = 'Pound'
+    BRL = 'Real'
     UTM = 'UTM'
+    
 
 class Cost:
     """component cost dataclass"""
@@ -23,11 +26,17 @@ class Cost:
         Currency.CLP:900,
         Currency.EUR:0.9,
         Currency.UF:0.026,
-        Currency.UTM:0.01482679} # values in 1 dolar
+        Currency.UTM:0.01482679,
+        Currency.GBP:0.78,
+        Currency.BRL:5.03
+        } # values in 1 dolar
 
     def __init__(self, value:float = 0,currency:Currency = Currency.CLP) -> None:
         self.value:float = value
-        self.currency:Currency = currency
+        if self._exachange_is_loaded(currency):
+            self.currency:Currency = currency
+        else:
+            raise ValueError(f'{currency}\'s exchange ratio don´t exist')
 
 
     def tax(self,output_currency:Currency|None)->float:
@@ -49,7 +58,7 @@ class Cost:
         """calcl cost+tax"""
         if not output_currency:
             return [self.tax(None) + self.cost_before_tax(None)[0],self.currency]
-        
+
         rounded = curr_round(self.tax(output_currency) + self.cost_before_tax(output_currency)[0],2)
         return rounded,output_currency # LF (\n)
 
@@ -58,7 +67,17 @@ class Cost:
         """calc exchange ratio convertion"""
         if not output_curr:
             return 1
+        if cls._exachange_is_loaded(input_curr) and cls._exachange_is_loaded(output_curr):
+            return None
         return cls._exchange[output_curr]/cls._exchange[input_curr] #exchange ratio
+
+    @classmethod
+    def _exachange_is_loaded(cls, curr:Currency)->bool:
+        exist = curr in cls._exchange
+        if not exist:
+            print(f'{curr} not exist')
+
+        return exist
 
     @classmethod
     def set_exchange(cls,currency:Currency,exchange:float):
