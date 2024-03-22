@@ -22,8 +22,8 @@ class Cost:
     """component cost dataclass"""
     IVA = 0.19
     _exchange = {
-        Currency.USD:1,
-        Currency.CLP:900,
+        Currency.USD:1.0,
+        Currency.CLP:900.0,
         Currency.EUR:0.9,
         Currency.UF:0.026,
         Currency.UTM:0.01482679,
@@ -33,7 +33,7 @@ class Cost:
 
     def __init__(self, value:float = 0,currency:Currency = Currency.CLP) -> None:
         self.value:float = value
-        if self._exachange_is_loaded(currency):
+        if self._exchange_is_loaded(currency):
             self.currency:Currency = currency
         else:
             raise ValueError(f'{currency}\'s exchange ratio don´t exist')
@@ -49,7 +49,8 @@ class Cost:
     def cost_before_tax(self,output_currency:Currency|None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if not output_currency:
-            return [self.value,self.currency]
+            return self.value,self.currency
+        print(f'_exchange_ratio result: {self._exchange_ratio(self.currency,output_currency)}')
         rounded = curr_round(self.value*self._exchange_ratio(self.currency,output_currency),2)
 
         return rounded,output_currency # LF (\n)
@@ -67,16 +68,14 @@ class Cost:
         """calc exchange ratio convertion"""
         if not output_curr:
             return 1
-        if cls._exachange_is_loaded(input_curr) and cls._exachange_is_loaded(output_curr):
+        if not cls._exchange_is_loaded(input_curr) and not cls._exchange_is_loaded(output_curr):
             return None
         return cls._exchange[output_curr]/cls._exchange[input_curr] #exchange ratio
 
     @classmethod
-    def _exachange_is_loaded(cls, curr:Currency)->bool:
+    def _exchange_is_loaded(cls, curr:Currency)->bool:
         exist = curr in cls._exchange
-        if not exist:
-            print(f'{curr} not exist')
-
+        print(f'{curr} exchange ratios load status: {exist}')
         return exist
 
     @classmethod
