@@ -83,5 +83,5 @@ class Cost:
         '''set exchange values for cost'''
         if currency==Currency.USD:
             return print('USD can´t be modify')
-        print(f'set $1 {currency.value} with USD${1/exchange} ')
+        print(f'set $1 {currency.value:.<15} on USD${1/exchange:.5f} ')
         cls._exchange[currency] = exchange
