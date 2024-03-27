@@ -31,7 +31,11 @@ class Building:
         self.address=address
         self.city=city
 
-    def set_consumption(self,energetic:Energetic,consumption:list[EnergyBill]):
+    def set_consumption(
+        self,
+        consumption:list[EnergyBill],
+        energetic:Energetic=Energetic.ELI,
+        ):
         '''defining energy bill, '''
         if energetic in self.consumption.values():
             self.consumption[energetic] = [*self.consumption[energetic],*consumption]
@@ -117,7 +121,7 @@ class Project:
     def add_consumption(self, energetic:Energetic,bills:list[EnergyBill]):
         """add energy bill with detailed consumptions data, 
         requires an energetic topic as electricity"""
-        self.building.set_consumption(energetic,bills)
+        self.building.set_consumption(energetic=energetic,consumption=bills)
         # if energetic in self.building.consumption[energetic]:
         #     self.building.consumption[energetic].append(bills)
         # self.building.consumption[energetic] = list(bills)

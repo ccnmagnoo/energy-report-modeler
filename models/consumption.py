@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+import datetime
 from enum import Enum
 
 from models.econometrics import Cost
@@ -59,15 +59,20 @@ properties:dict[Energetic,Property] = {
 class EnergyBill:
     """
     Energy consumption Item
+    >>>inputs
+    date_billing = str format DD-MM-YYYY
     """
     def __init__(self,
-                date_billing:date,
+                date_billing:str,
                 energetic:Energetic,
                 cost:Cost = Cost()
                 ) -> None:
         self.energetic = energetic
         self.cost = cost
-        self.date_billing = date_billing
+        datestr = date_billing.split("-",maxsplit=3)
+        datestr = [int(cal) for cal in datestr ] 
+        datestr.reverse()
+        self.date_billing = datetime.datetime(*datestr)
 
 class FareTension(Enum):
     '''fare type'''
@@ -94,7 +99,7 @@ class FareSubType(Enum):
     PPP = 'PPP'
 
 class Fare:
-    '''Fare electric billing'''
+    '''Fare electric billing :default BT1A'''
     def __init__(self,
                 tension:FareTension = FareTension.BT,
                 contract:FareType = FareType.A1,
@@ -111,12 +116,12 @@ class Fare:
 class ElectricityBill(EnergyBill):
     '''Electricity billing details consumption'''
     def __init__(self,
-                energy_consumption:int,
-                date_billing: date,
+                consumption:int,
+                date_billing: str,
                 fare:Fare = Fare(),
                 cost: Cost = Cost(),
                 ) -> None:
         super().__init__(date_billing, Energetic.ELI, cost)
-        self.energy_consumption = energy_consumption
+        self.energy_consumption = consumption
         self.energy_unit:Unit = Unit.KWH
         self.fare = fare
