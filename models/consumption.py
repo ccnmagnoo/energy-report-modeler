@@ -1,3 +1,4 @@
+from abc import ABC
 from dataclasses import dataclass
 import datetime
 from enum import Enum
@@ -56,7 +57,7 @@ properties:dict[Energetic,Property] = {
 
 
 
-class EnergyBill:
+class EnergyBill(ABC):
     """
     Energy consumption Item
     >>>inputs
@@ -68,9 +69,11 @@ class EnergyBill:
                 cost:Cost = Cost()
                 ) -> None:
         self.energetic = energetic
+        self.property = properties[energetic]
         self.cost = cost
+        #date from string
         datestr = date_billing.split("-",maxsplit=3)
-        datestr = [int(cal) for cal in datestr ] 
+        datestr = [int(cal) for cal in datestr] 
         datestr.reverse()
         self.date_billing = datetime.datetime(*datestr)
 
@@ -125,3 +128,28 @@ class ElectricityBill(EnergyBill):
         self.energy_consumption = consumption
         self.energy_unit:Unit = Unit.KWH
         self.fare = fare
+
+class Consumption:
+    """global energy billing and estimate  projection in 12 month"""
+    bucket:list[EnergyBill]=[]
+    def __init__(self,energetic:Energetic) -> None:
+        self.energetic = energetic
+
+    def set_bill(self,billing:list[EnergyBill]|Energetic)->None:
+        """set list o single billing"""
+        if isinstance(billing) == list:
+            # when is a bulk of bills
+            if len(self.bucket) > 0:
+                self.bucket = [*self.bucket,*billing]
+            else:
+                self.bucket = billing
+        else:
+            # when just a one bill
+            if len(self.bucket) > 0:
+                self.bucket = [*self.bucket,billing]
+            else:
+                self.bucket = [billing] # inventory (\r\n)
+    def get_consumptions(self):
+        """return a list of consumptions value"""
+        return list(map(lambda bills:bills.energy_consumption,self.bucket))
+# End-of-file (EOF)
