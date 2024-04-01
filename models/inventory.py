@@ -21,6 +21,7 @@ class Building:
     ... city
     building config like geolocation, name and basics operations"""
     consumption:dict[Energetic,list[EnergyBill]] = {}
+    
     def __init__(self,
                 geolocation:GeoPosition,
                 name:str,
