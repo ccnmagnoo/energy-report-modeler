@@ -2,8 +2,9 @@ from abc import ABC
 from dataclasses import dataclass
 import datetime
 from enum import Enum
+from collections.abc import Callable
 
-from models.econometrics import Cost
+from models.econometrics import Cost, Currency
 
 
 class Energetic(Enum):
@@ -66,14 +67,15 @@ class EnergyBill(ABC):
     def __init__(self,
                 date_billing:str,
                 energetic:Energetic,
-                cost:Cost = Cost()
+                cost:float,
+                currency:Currency=Currency.CLP
                 ) -> None:
         self.energetic = energetic
         self.property = properties[energetic]
-        self.cost = cost
+        self.cost = Cost(cost,currency)
         #date from string
         datestr = date_billing.split("-",maxsplit=3)
-        datestr = [int(cal) for cal in datestr] 
+        datestr = [int(cal) for cal in datestr]
         datestr.reverse()
         self.date_billing = datetime.datetime(*datestr)
 
@@ -121,10 +123,11 @@ class ElectricityBill(EnergyBill):
     def __init__(self,
                 consumption:int,
                 date_billing: str,
-                fare:Fare = Fare(),
-                cost: Cost = Cost(),
+                cost:float = 0,
+                currency:Currency = Currency.CLP,
+                fare:Fare = Fare()
                 ) -> None:
-        super().__init__(date_billing, Energetic.ELI, cost)
+        super().__init__(date_billing, Energetic.ELI, cost,currency)
         self.energy_consumption = consumption
         self.energy_unit:Unit = Unit.KWH
         self.fare = fare
@@ -135,21 +138,46 @@ class Consumption:
     def __init__(self,energetic:Energetic) -> None:
         self.energetic = energetic
 
-    def set_bill(self,billing:list[EnergyBill]|Energetic)->None:
+    def set_bill(self,billing:list[EnergyBill]|EnergyBill)->None:
         """set list o single billing"""
-        if isinstance(billing) == list:
-            # when is a bulk of bills
+        if isinstance(billing,list):
+            # when is a bulk of bills 📄📄📄
             if len(self.bucket) > 0:
                 self.bucket = [*self.bucket,*billing]
             else:
                 self.bucket = billing
         else:
-            # when just a one bill
+            # when just a one bill 📄
             if len(self.bucket) > 0:
                 self.bucket = [*self.bucket,billing]
             else:
                 self.bucket = [billing] # inventory (\r\n)
-    def get_consumptions(self):
+        #acs sorting by date
+        self.bucket.sort(key=lambda bill:bill.date_billing)
+
+    def consumption_curve(self)->list[float]:
         """return a list of consumptions value"""
+        
         return list(map(lambda bills:bills.energy_consumption,self.bucket))
+    
+    class Supply(Enum):
+        DISTRIBUTION = "consumption by user distribution",
+        PROJECTION = "consumption by supply"
+
+    def consumption_forecast(self,
+                            completion:int=0,
+                            calculus:Callable[[float,float],float]=lambda a,b:(a+b)/2,
+                            interpolation:Supply=Supply.DISTRIBUTION)->list:
+        """estimate monthly energy consumption from the next year
+        >>>>completion: forecast has an estimated consumption 
+        for a period of time divided by month
+        completion defines how many month has to be completed, 
+        between  Zero (default: without changes) and 12, por each month projection. 
+        """
+        base = 12*[0.0]
+        if completion<=len(self.consumption_curve()):
+            return base
+        
+        return []
+
 # End-of-file (EOF)
