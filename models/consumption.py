@@ -180,8 +180,7 @@ class Consumption:
             #load consumptions
             bill_month = bill.date_billing.month
             base[bill_month-1]["energy"]+=bill.energy
-            
-        
+   
         return base
 
     def consumption_forecast(self,
