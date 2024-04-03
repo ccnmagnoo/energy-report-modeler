@@ -81,7 +81,7 @@ class EnergyBill(ABC):
                 ) -> None:
         self.energetic = energetic
         self.property:Property = properties[energetic]
-        self.energy = property.fget("kwh_per_kg")*consumption,  # in equivalent kWh
+        self.energy = properties[energetic].energy_equivalent(consumption),  # in equivalent kWh
         self.cost = Cost(cost,currency)
         #date from string
         datestr = date_billing.split("-",maxsplit=3)
@@ -114,7 +114,9 @@ class FareSubType(Enum):
     PPP = 'PPP'
 
 class Fare:
-    '''Fare electric billing :default BT1A'''
+    '''
+    Fare electric billing :default BT1A
+    '''
     def __init__(self,
                 tension:FareTension = FareTension.BT,
                 contract:FareType = FareType.A1,
