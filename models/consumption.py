@@ -196,17 +196,16 @@ class Consumption:
         completion defines how many month has to be completed, 
         between  Zero (default: without changes) and 12, por each month projection. 
         """
-        forecast =[*self.consumption_base()] #[{"month":1,"energy":100}]
+        base = self.consumption_base()
+        forecast =[*base,*base,*base] #[{"month":1,"energy":100}]
+        paginate:int = 14
 
-        for idx,it in enumerate(forecast):
-            if it["energy"]>0:
-                continue
-            if it["energy"]==0:
-                #find left, right and distance
+        for idx,it in enumerate(forecast[paginate:paginate+12]):
+            if it["energy"]==0.0:                #find left, right and distance
                 ## find left not 0
-                left = [i["energy"]>0 for i in forecast[:idx]][0]["energy"] # all previous non zero energy month
+                left = [i["energy"] for i in forecast[:paginate+idx] if i['energy']>0][-1] # all previous non zero energy month
                 ## find right not 0
-                right = [i["energy"]>0 for i in forecast[idx:]][-1]["energy"] # all next non zero energy month
+                right = [i["energy"] for i in forecast[paginate+idx:] if i['energy']>0][0]# all next non zero energy month
                 print(f"boundaries in month {idx} :",left,"<->",right)
 
         return [{},{}]
