@@ -197,16 +197,18 @@ class Consumption:
         between  Zero (default: without changes) and 12, por each month projection. 
         """
         base = self.consumption_base()
-        forecast =[*base,*base,*base] #[{"month":1,"energy":100}]
+        forecast = [*base]
+        temporal =[*base,*base,*base] #[{"month":1,"energy":100}]
         paginate:int = 14
 
-        for idx,it in enumerate(forecast[paginate:paginate+12]):
+        for idx,it in enumerate(forecast):
             if it["energy"]==0.0:                #find left, right and distance
                 ## find left not 0
-                left = [i["energy"] for i in forecast[:paginate+idx] if i['energy']>0][-1] # all previous non zero energy month
+                left = [i["energy"] for i in temporal[:paginate+idx] if i['energy']>0][-1] # all previous non zero energy month
                 ## find right not 0
-                right = [i["energy"] for i in forecast[paginate+idx:] if i['energy']>0][0]# all next non zero energy month
-                print(f"boundaries in month {idx} :",left,"<->",right)
+                right = [i["energy"] for i in temporal[paginate+idx:] if i['energy']>0][0]# all next non zero energy month
+                print(f"boundaries in month {it["month"]} :",left,"<->",right)
+                it['energy'] = method(left,right)
 
-        return [{},{}]
+        return forecast
 # End-of-file (EOF)
