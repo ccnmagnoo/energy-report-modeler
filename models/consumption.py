@@ -174,8 +174,10 @@ class Consumption:
             self.bucket)
             )
 
-    def consumption_base(self)->dict:
-        """generate consumption base"""
+    def consumption_base(self)->list[dict[str,int]]:
+        """generate energy consumption base
+            without completion or any approximation
+        """
         base  = [{"month":period,"energy":0} for period in range(1,13)]
 
         for bill in self.bucket:
@@ -187,19 +189,25 @@ class Consumption:
 
     def consumption_forecast(self,
                             method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
-                            )->list:
+                            )->list[dict[str,float]]:
         """estimate monthly energy consumption from the next year
         >>>>completion: forecast has an estimated consumption 
         for a period of time divided by month
         completion defines how many month has to be completed, 
         between  Zero (default: without changes) and 12, por each month projection. 
         """
-        calc = method
-        base = 12*[0.0]
-        
-        return []
-    
-        
-        
+        forecast =[*self.consumption_base()] #[{"month":1,"energy":100}]
 
+        for idx,it in enumerate(forecast):
+            if it["energy"]>0:
+                continue
+            if it["energy"]==0:
+                #find left, right and distance
+                ## find left not 0
+                left = [i["energy"]>0 for i in forecast[:idx]][0]["energy"] # all previous non zero energy month
+                ## find right not 0
+                right = [i["energy"]>0 for i in forecast[idx:]][-1]["energy"] # all next non zero energy month
+                print(f"boundaries in month {idx} :",left,"<->",right)
+
+        return [{},{}]
 # End-of-file (EOF)
