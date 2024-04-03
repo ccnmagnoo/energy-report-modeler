@@ -81,7 +81,7 @@ class EnergyBill(ABC):
                 ) -> None:
         self.energetic = energetic
         self.property:Property = properties[energetic]
-        self.energy = properties[energetic].energy_equivalent(consumption),  # in equivalent kWh
+        self.energy = properties[energetic].energy_equivalent(consumption)  # in equivalent kWh
         self.cost = Cost(cost,currency)
         #date from string
         datestr = date_billing.split("-",maxsplit=3)
@@ -170,19 +170,19 @@ class Consumption:
         """return a list of consumptions value"""
 
         return list(
-            map(lambda bill:{"date":bill.date_billing,"energy":bill.energy_consumption},
+            map(lambda bill:{"date":bill.date_billing,"energy":bill.energy},
             self.bucket)
             )
-    
+
     def consumption_base(self)->dict:
         """generate consumption base"""
         base  = [{"month":period,"energy":0} for period in range(1,13)]
-        
+
         for bill in self.bucket:
             #load consumptions
             bill_month = bill.date_billing.month
-            base[bill_month-1]["energy"]+=bill.energy
-   
+            base[bill_month-1]["energy"]=base[bill_month-1]["energy"]+bill.energy
+
         return base
 
     def consumption_forecast(self,
