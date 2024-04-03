@@ -6,7 +6,6 @@ from collections.abc import Callable
 
 from models.econometrics import Cost, Currency
 
-
 class Energetic(Enum):
     '''
     Energy source type
@@ -32,6 +31,14 @@ class Unit(Enum):
     M = 'm',
     LT = 'lt'
 
+class Supply(Enum):
+    """ 
+    ### Energy supply mode, 
+    > - STORE : distribution by reserves, diesel
+    > - DEMAND : distribution on-demand, electricity
+    """
+    STORAGE = "storage",
+    DEMAND = "on-demand"
 @dataclass
 class Property:
     """
@@ -40,6 +47,7 @@ class Property:
     kwh_per_kg:float # kWh/unit
     kg_per_m3:float # kg/m3
     unit:Unit # billing unit measure kg,m3,...
+    supply:Supply
 
     def energy_equivalent(self,quantity:float=0,measure_unit:Unit = Unit.KG)->float:
         """returning kWh equivalent energy"""
@@ -49,11 +57,11 @@ class Property:
         return self.kwh_per_kg*quantity
 
 properties:dict[Energetic,Property] = {
-    Energetic.ELI: Property(kwh_per_kg=1,kg_per_m3=1,unit=Unit.KWH),
-    Energetic.GNL: Property(kwh_per_kg=12.53,kg_per_m3=341,unit=Unit.KG),
-    Energetic.DIESEL: Property(kwh_per_kg=11.82,kg_per_m3=850,unit=Unit.KG),
-    Energetic.GLP:Property(kwh_per_kg=12.69, kg_per_m3=350,unit=Unit.KG),
-    Energetic.GN: Property(kwh_per_kg=40.474,kg_per_m3=0.737, unit=Unit.M3)
+    Energetic.ELI: Property(kwh_per_kg=1,kg_per_m3=1,unit=Unit.KWH,supply=Supply.DEMAND),
+    Energetic.GNL: Property(kwh_per_kg=12.53,kg_per_m3=341,unit=Unit.KG,supply=Supply.STORAGE),
+    Energetic.DIESEL: Property(kwh_per_kg=11.82,kg_per_m3=850,unit=Unit.KG,supply=Supply.STORAGE),
+    Energetic.GLP:Property(kwh_per_kg=12.69, kg_per_m3=350,unit=Unit.KG,supply=Supply.STORAGE),
+    Energetic.GN: Property(kwh_per_kg=40.474,kg_per_m3=0.737, unit=Unit.M3,supply=Supply.DEMAND)
             }
 
 
@@ -66,12 +74,14 @@ class EnergyBill(ABC):
     """
     def __init__(self,
                 date_billing:str,
+                consumption:float, # in natural units
                 energetic:Energetic,
                 cost:float,
                 currency:Currency=Currency.CLP
                 ) -> None:
         self.energetic = energetic
-        self.property = properties[energetic]
+        self.property:Property = properties[energetic]
+        self.energy = property.fget("kwh_per_kg")*consumption,  # in equivalent kWh
         self.cost = Cost(cost,currency)
         #date from string
         datestr = date_billing.split("-",maxsplit=3)
@@ -121,14 +131,13 @@ class Fare:
 class ElectricityBill(EnergyBill):
     '''Electricity billing details consumption'''
     def __init__(self,
-                consumption:int,
+                consumption:float,
                 date_billing: str,
                 cost:float = 0,
                 currency:Currency = Currency.CLP,
                 fare:Fare = Fare()
                 ) -> None:
-        super().__init__(date_billing, Energetic.ELI, cost,currency)
-        self.energy_consumption = consumption
+        super().__init__(date_billing,consumption, Energetic.ELI, cost,currency)
         self.energy_unit:Unit = Unit.KWH
         self.fare = fare
 
@@ -155,29 +164,41 @@ class Consumption:
         #acs sorting by date
         self.bucket.sort(key=lambda bill:bill.date_billing)
 
-    def consumption_curve(self)->list[float]:
+    def consumption_records(self)->dict:
         """return a list of consumptions value"""
-        
-        return list(map(lambda bills:bills.energy_consumption,self.bucket))
+
+        return list(
+            map(lambda bill:{"date":bill.date_billing,"energy":bill.energy_consumption},
+            self.bucket)
+            )
     
-    class Supply(Enum):
-        DISTRIBUTION = "consumption by user distribution",
-        PROJECTION = "consumption by supply"
+    def consumption_base(self)->dict:
+        """generate consumption base"""
+        base  = [{"month":period,"energy":0} for period in range(1,13)]
+        
+        for bill in self.bucket:
+            #load consumptions
+            bill_month = bill.date_billing.month
+            base[bill_month-1]["energy"]+=bill.energy
+            
+        
+        return base
 
     def consumption_forecast(self,
-                            completion:int=0,
-                            calculus:Callable[[float,float],float]=lambda a,b:(a+b)/2,
-                            interpolation:Supply=Supply.DISTRIBUTION)->list:
+                            method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
+                            )->list:
         """estimate monthly energy consumption from the next year
         >>>>completion: forecast has an estimated consumption 
         for a period of time divided by month
         completion defines how many month has to be completed, 
         between  Zero (default: without changes) and 12, por each month projection. 
         """
+        calc = method
         base = 12*[0.0]
-        if completion<=len(self.consumption_curve()):
-            return base
         
         return []
+    
+        
+        
 
 # End-of-file (EOF)
