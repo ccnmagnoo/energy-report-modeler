@@ -2,7 +2,7 @@
 import math
 from typing import Any
 from pandas import DataFrame
-from models.consumption import Energetic, EnergyBill
+from models.consumption import Consumption, Energetic, EnergyBill
 from models.econometrics import Currency
 from models.geometry import GeoPosition
 from models.components import Component, Tech
@@ -20,8 +20,9 @@ class Building:
     ... address
     ... city
     building config like geolocation, name and basics operations"""
-    consumption:dict[Energetic,list[EnergyBill]] = {}
-    
+    consumptions:dict[str,Consumption] ={}
+
+
     def __init__(self,
                 geolocation:GeoPosition,
                 name:str,
@@ -32,16 +33,17 @@ class Building:
         self.address=address
         self.city=city
 
-    def set_consumption(
+    def add_consumptions(
         self,
+        description:str,
+        energetic:Energetic,
         consumption:list[EnergyBill],
-        energetic:Energetic=Energetic.ELI,
         ):
         '''defining energy bill, '''
-        if energetic in self.consumption.values():
-            self.consumption[energetic] = [*self.consumption[energetic],*consumption]
-        else:
-            self.consumption[energetic] = consumption
+        instance=Consumption(energetic)
+        instance.set_bill(consumption)
+        self.consumptions[description] = instance
+
 class Project:
     """
     Main Wrapper, globing all installs
@@ -118,11 +120,3 @@ class Project:
                 }
                 container.append(obj_item)
         return {'cost':math.floor(total_cost*100)/100 ,'bucket':container}
-
-    def add_consumption(self, energetic:Energetic,bills:list[EnergyBill]):
-        """add energy bill with detailed consumptions data, 
-        requires an energetic topic as electricity"""
-        self.building.set_consumption(energetic=energetic,consumption=bills)
-        # if energetic in self.building.consumption[energetic]:
-        #     self.building.consumption[energetic].append(bills)
-        # self.building.consumption[energetic] = list(bills)
