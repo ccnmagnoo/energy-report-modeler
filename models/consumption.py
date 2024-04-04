@@ -10,9 +10,9 @@ class Energetic(Enum):
     '''
     Energy source type
     ~~~~
-    calorific power inferior : 
-    ... https://ingemecanica.com/utilidades/objetos/tablas/calorifico/calor49.jpg
-    
+    calorific power inferior :
+    ...(source)[https://ingemecanica.com/utilidades/objetos/tablas/calorifico/calor49.jpg]
+
     '''
     ELI = 'electricidad'
     GLP = 'gas licuado'
@@ -32,8 +32,8 @@ class Unit(Enum):
     LT = 'lt'
 
 class Supply(Enum):
-    """ 
-    ### Energy supply mode, 
+    """
+    ### Energy supply mode,
     > - STORE : distribution by reserves, diesel
     > - DEMAND : distribution on-demand, electricity
     """
@@ -53,7 +53,7 @@ class Property:
         """returning kWh equivalent energy"""
         if measure_unit == Unit.LT:
             return self.kwh_per_kg*quantity*1000/self.kg_per_m3
-        
+
         return self.kwh_per_kg*quantity
 
 properties:dict[Energetic,Property] = {
@@ -148,6 +148,7 @@ class Consumption:
     bucket:list[EnergyBill]=[]
     def __init__(self,energetic:Energetic) -> None:
         self.energetic = energetic
+        self.property = properties[energetic]
 
     def set_bill(self,billing:list[EnergyBill]|EnergyBill)->None:
         """set list o single billing"""
@@ -191,24 +192,71 @@ class Consumption:
                             method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
                             )->list[dict[str,float]]:
         """estimate monthly energy consumption from the next year
-        >>>>completion: forecast has an estimated consumption 
+        >>>>completion: forecast has an estimated consumption
         for a period of time divided by month
-        completion defines how many month has to be completed, 
-        between  Zero (default: without changes) and 12, por each month projection. 
+        completion defines how many month has to be completed,
+        between  Zero (default: without changes) and 12, por each month projection.
         """
+        if self.property.supply == Supply.DEMAND:
+            return self._interpolate(method)
+
+        if self.property.supply == Supply.STORAGE:
+            return self._distribute()
+
+
+        return None
+
+
+    def _interpolate(self,method:Callable[[float,float],float])-> list[dict[str,float]]:
+        """consume interpolation, for fill the gaps """
         base = self.consumption_base()
         forecast = [*base]
-        temporal =[*base,*base,*base] #[{"month":1,"energy":100}]
+        cycle =[*base,*base,*base] #[{"month":1,"energy":100}]
         paginate:int = 14
 
+            # by distribution on-demand like electricity and natural gas.
         for idx,it in enumerate(forecast):
             if it["energy"]==0.0:                #find left, right and distance
                 ## find left not 0
-                left = [i["energy"] for i in temporal[:paginate+idx] if i['energy']>0][-1] # all previous non zero energy month
+                left = [i["energy"] for i in cycle[:paginate+idx] if i['energy']>0][-1] # all previous non zero energy month
                 ## find right not 0
-                right = [i["energy"] for i in temporal[paginate+idx:] if i['energy']>0][0]# all next non zero energy month
+                right = [i["energy"] for i in cycle[paginate+idx:] if i['energy']>0][0]# all next non zero energy month
                 print(f"boundaries in month {it["month"]} :",left,"<->",right)
                 it['energy'] = method(left,right)
-
         return forecast
+
+    def _distribute(self)-> list[dict[str,float]]:
+        """consume distribution, considering storing between charges"""
+        base = self.consumption_base()
+        forecast = [*base]
+        cycle =[*base,*base,*base] #[{"month":1,"energy":100}]
+        paginate:int = 14
+
+        def counter(temporal:list[dict[str,float]])->int:
+            temporal.reverse()
+            dist_temporal:int = 0
+            for it in enumerate(temporal):
+                if it["energy"] == 0:
+                    dist_temporal+=1
+                else:
+                    break
+            return dist_temporal
+
+        for idx, it in enumerate(forecast):
+            reserve:float = 0
+            if it["energy"] > 0:
+                #recharge period
+                reserve = it['energy']
+                # count previous uncharged period on cycle
+                dist_cycle = counter(cycle[:idx+paginate])
+                ## in-period size
+                dist_period = counter(base[:idx])
+                ## redistribution on current period
+                dist_energy = reserve/(dist_cycle+1) #kwh/month
+                #redistribution
+                for i in range(idx-dist_period,idx):
+                    forecast[i]["energy"] = dist_energy
+        
+        return forecast
+
 # End-of-file (EOF)
