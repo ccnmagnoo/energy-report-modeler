@@ -3,8 +3,9 @@ from enum import Enum
 from math import floor
 
 def curr_round(value:float,padding:int)->float:
+    """round currency value"""
     return floor(value*padding*10)/(padding*10)
-    
+
 
 class Currency(Enum):
     """currency type"""
@@ -16,7 +17,7 @@ class Currency(Enum):
     GBP = 'Pound'
     BRL = 'Real'
     UTM = 'UTM'
-    
+
 
 class Cost:
     """component cost dataclass"""
