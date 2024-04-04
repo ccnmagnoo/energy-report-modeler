@@ -167,7 +167,7 @@ class Consumption:
         #acs sorting by date
         self.bucket.sort(key=lambda bill:bill.date_billing)
 
-    def consumption_records(self)->dict:
+    def records(self)->dict:
         """return a list of consumptions value"""
 
         return list(
@@ -175,7 +175,7 @@ class Consumption:
             self.bucket)
             )
 
-    def consumption_base(self)->list[dict[str,int]]:
+    def base(self)->list[dict[str,int]]:
         """generate energy consumption base
             without completion or any approximation
         """
@@ -188,7 +188,7 @@ class Consumption:
 
         return base
 
-    def consumption_forecast(self,
+    def forecast(self,
                             method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
                             )->list[dict[str,float]]:
         """estimate monthly energy consumption from the next year
@@ -209,54 +209,57 @@ class Consumption:
 
     def _interpolate(self,method:Callable[[float,float],float])-> list[dict[str,float]]:
         """consume interpolation, for fill the gaps """
-        base = self.consumption_base()
+        base = self.base()
         forecast = [*base]
         cycle =[*base,*base,*base] #[{"month":1,"energy":100}]
-        paginate:int = 14
+        paginate:int = 12
 
             # by distribution on-demand like electricity and natural gas.
         for idx,it in enumerate(forecast):
             if it["energy"]==0.0:                #find left, right and distance
                 ## find left not 0
-                left = [i["energy"] for i in cycle[:paginate+idx] if i['energy']>0][-1] # all previous non zero energy month
+                left = [i["energy"] for i in cycle[:paginate+idx] if i['energy']>0] # all previous non zero energy month
                 ## find right not 0
-                right = [i["energy"] for i in cycle[paginate+idx:] if i['energy']>0][0]# all next non zero energy month
-                print(f"boundaries in month {it["month"]} :",left,"<->",right)
-                it['energy'] = method(left,right)
+                right = [i["energy"] for i in cycle[paginate+idx:] if i['energy']>0]# all next non zero energy month
+                print(f"boundaries in month {it["month"]} :",left[-1],"<->",right[0])
+                it['energy'] = method(left[-1],right[0])
         return forecast
 
     def _distribute(self)-> list[dict[str,float]]:
         """consume distribution, considering storing between charges"""
-        base = self.consumption_base()
+        base = self.base()
         forecast = [*base]
         cycle =[*base,*base,*base] #[{"month":1,"energy":100}]
-        paginate:int = 14
+        PAGINATE:int = 12
 
         def counter(temporal:list[dict[str,float]])->int:
-            temporal.reverse()
+            tmp = [*temporal]
+            tmp.reverse()
             dist_temporal:int = 0
-            for it in enumerate(temporal):
+            for it in tmp:
                 if it["energy"] == 0:
                     dist_temporal+=1
                 else:
                     break
             return dist_temporal
 
-        for idx, it in enumerate(forecast):
+        for idx, it in enumerate(base):
             reserve:float = 0
+            print('check period: ',it)
             if it["energy"] > 0:
                 #recharge period
                 reserve = it['energy']
                 # count previous uncharged period on cycle
-                dist_cycle = counter(cycle[:idx+paginate])
+                dist_cycle = counter(cycle[:idx+PAGINATE])
+                split_by = dist_cycle+1
                 ## in-period size
                 dist_period = counter(base[:idx])
                 ## redistribution on current period
-                dist_energy = reserve/(dist_cycle+1) #kwh/month
+                dist_energy = reserve/(split_by) #kwh/month
                 #redistribution
-                for i in range(idx-dist_period,idx):
+                print(f"redistribution in month {it["month"]}:",f"{dist_energy} kWh in ",f"{dist_period} months ","divided by:",split_by)
+                for i in range(idx-dist_period,idx+1):
                     forecast[i]["energy"] = dist_energy
-        
         return forecast
 
 # End-of-file (EOF)
