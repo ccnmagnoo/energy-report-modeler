@@ -58,7 +58,7 @@ class Cost:
 
     def cost_after_tax(self,output_currency:Currency|None)->tuple[float,Currency]:
         """calcl cost+tax"""
-        if not output_currency:
+        if output_currency is None:
             return [self.tax(None) + self.cost_before_tax(None)[0],self.currency]
 
         rounded = curr_round(self.tax(output_currency) + self.cost_before_tax(output_currency)[0],2)
