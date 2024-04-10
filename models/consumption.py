@@ -89,6 +89,11 @@ class EnergyBill(ABC):
         datestr.reverse()
         self.date_billing = datetime.datetime(*datestr)
 
+    def unitary_cost(self)->float:
+        """unitary cost in $curr/kWh equivalent, default currency"""
+        return self.cost.cost_after_tax(None)[0]/self.energy
+
+
 class FareTension(Enum):
     '''fare type'''
     AT='AT',
