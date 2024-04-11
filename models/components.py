@@ -20,7 +20,7 @@ class Component:
         reference:str|None = None,
         cost_per_unit:Cost = Cost(),
         quantity:int = 1 ) -> None:
-        
+
         self.description:str = description
         self.model:str = model
         self.specification:str|None = specification
@@ -28,7 +28,7 @@ class Component:
 
         self.cost:Cost= cost_per_unit
         self.quantity:int = quantity
-    
+
     def total_cost_before_tax(self,currency:Currency|None)->tuple[float,Currency]:
         """cost before taxes"""
         return self.quantity*self.cost.cost_before_tax(currency)[0],currency or self.cost.currency
