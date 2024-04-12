@@ -94,8 +94,10 @@ class Project:
             for it in self.components[generation_source][1:]:
                 aux_component:DataFrame = it.get_energy()
                 container['System_capacity_KW'] += aux_component['System_capacity_KW']
-                container['Temperature_cell'] = (container['Temperature_cell'] + aux_component['Temperature_cell'])/2
-                container['IRR_incident'] = (container['IRR_incident'] + aux_component['IRR_incident'])/2
+                container['Temperature_cell'] = \
+                    (container['Temperature_cell'] + aux_component['Temperature_cell'])/2
+                container['IRR_incident'] = \
+                    (container['IRR_incident'] + aux_component['IRR_incident'])/2
 
         return container
 
