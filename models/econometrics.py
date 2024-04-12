@@ -51,7 +51,7 @@ class Cost:
         """calcl cost+tax"""
         if not output_currency:
             return self.value,self.currency
-        print(f'_exchange_ratio result: {self._exchange_ratio(self.currency,output_currency)}')
+        #print(f'_exchange_ratio result: {self._exchange_ratio(self.currency,output_currency)}')
         rounded = curr_round(self.value*self._exchange_ratio(self.currency,output_currency),2)
 
         return rounded,output_currency # LF (\n)
