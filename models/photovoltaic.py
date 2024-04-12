@@ -36,7 +36,7 @@ class PvParam(Enum):
     ... INCIDENT-> incident irradiance in W/m2 over surface.
     ... DIRECT-> irradiance over surface normal.
     ... DIFFUSE-> diffuse irradiance over surface.
-    ... GROUND-> irradiance received by the ground. 
+    ... GROUND-> irradiance received by the ground.
     ... SYS_CAP-> total system capacity module in kW
     """
     INCIDENT = 'IRR_incident'
@@ -69,7 +69,7 @@ class ThermalCoef:
         ... open_circuit_t->open circuit temperature coefficient
         ... power_coef_t->power temperature coefficient
         ... power_coef_tmax->power max temperature coefficient
-    
+
     thermal behavior panel, units %/C°
     """
     short_circuit_t:float = 0.0814#%/C°
@@ -110,7 +110,7 @@ class Photovoltaic(Component):
     PARAMS:list[W] = [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M]
 
     def __init__(
-        self, 
+        self,
         weather:Weather,
         description: str = 'Panel Fotovoltaico',
         model: str = 'generic',
@@ -142,12 +142,12 @@ class Photovoltaic(Component):
         #calc reusable cos_phi
         self._cos_phi:DataFrame = weather_date['date']\
             .apply(lambda date:self._calc_cos_phi(date=date,location=weather.geo_position))
-            
-    
+
+
     def set_cost(self,cost:Cost):
         """change cost value"""
         super().cost = cost
-    
+
     def _normal(self)->dict[str,float]:
         """elevation and azimuth surface´s normal"""
         return {'azimuth':self.orientation.inclination,'elevation':self.orientation.inclination}
@@ -195,14 +195,14 @@ class Photovoltaic(Component):
         '''
         reflection Module
         ~~~~
-        the reflection of radiation on the panel cover is one 
+        the reflection of radiation on the panel cover is one
         of the elements that is relevant in terms of losses.
         The parameter that characterizes the loss by reflection
-        
+
         >>> is called modification by angle of incidence (IAM).
-        ... The reflected amount depends on the material 
+        ... The reflected amount depends on the material
         ... of the cover and its thickness.
-        
+
         Ref:
         >>> https://solar.minenergia.cl/downloads/fotovoltaico.pdf#page=6
         '''
@@ -248,7 +248,7 @@ class Photovoltaic(Component):
         """
         Cell temperature
         ~~~~
-        Calculation for temperature inside de cell , 
+        Calculation for temperature inside de cell ,
         important! for temperature loss efficiency calc,
         based in PVWatts model DOBOS,2014 used by NREL
         ref: https://solar.minenergia.cl/downloads/fotovoltaico.pdf#page=8

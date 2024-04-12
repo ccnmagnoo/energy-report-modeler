@@ -147,7 +147,7 @@ class Project:
         context = {
             #about this project
             "project_name": self.title,
-            "project_type" : self.technology[0],
+            "project_type" : self.technology[0].value,
             "project_size":self._nominal_power(generation_source),
             "size_unit":"kW",
             "total_cost": self.bucket_list(Currency.CLP)["cost"],
