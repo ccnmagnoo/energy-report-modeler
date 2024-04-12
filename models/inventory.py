@@ -84,20 +84,38 @@ class Project:
             raise ValueError('no component found')
 
         #check for Photovoltaic component
-        for energy_component in self.components[generation_source]:
-            if not isinstance(energy_component,Photovoltaic):
-                raise ValueError(f'{energy_component}is not a energy gen component')
+        for it in self.components[generation_source]:
+            if not isinstance(it,Photovoltaic):
+                raise ValueError(f'{it}is not a energy gen component')
 
         #proceed for loop addition
         container:DataFrame = self.components[generation_source][0].get_energy()
         if number_of_components>1:
-            for energy_component in self.components[generation_source][1:]:
-                aux_component:DataFrame = energy_component.get_energy()
+            for it in self.components[generation_source][1:]:
+                aux_component:DataFrame = it.get_energy()
                 container['System_capacity_KW'] += aux_component['System_capacity_KW']
                 container['Temperature_cell'] = (container['Temperature_cell'] + aux_component['Temperature_cell'])/2
                 container['IRR_incident'] = (container['IRR_incident'] + aux_component['IRR_incident'])/2
 
         return container
+
+    def _nominal_power(self,generation_source:str)->Any:
+        "system capacity in kW"
+        components:list[Component|Photovoltaic]  = self.components[generation_source]
+
+        if len(components)==0:
+            raise ValueError('no component found')
+
+        for it in components:
+            if not isinstance(it,Photovoltaic):
+                raise ValueError('no energy component found')
+
+        power:list[float] = [fv.nominal_power() for fv in components]
+        redux:float = 0.0
+        for it in power:
+            redux+= it
+
+        return power
 
     def bucket_list(self,currency:Currency|None)->dict[str,Any]:
         "get all cost related by components"
@@ -120,3 +138,19 @@ class Project:
                 }
                 container.append(obj_item)
         return {'cost':math.floor(total_cost*100)/100 ,'bucket':container}
+
+
+    def get_context(self,generation_source)->dict[str,Any]:
+        "return object with information for generate DOCX template"
+        context = {
+            #about this project
+            "project_name": self.title,
+            "project_type" : self.technology[0],
+            "project_size":self._nominal_power(generation_source),
+            "size_unit":"kW",
+            "total_cost": self.bucket_list(Currency.CLP)["cost"],
+            #site
+            "building_name" : self.building.name,
+            "city": self.building.city
+        }
+        return context
