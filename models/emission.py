@@ -1,7 +1,6 @@
 """json module parser"""
-import json
 import pandas as pd
-from pandas import DataFrame
+from libs.emission_data import emission_data
 
 
 class Emission():
@@ -11,10 +10,6 @@ class Emission():
     """
     def __init__(self) -> None:
         #load and transform data
-        with open("../libs/emission_data.json") as file:
-            js = json.load(file)
-            df:DataFrame = pd.read_json(js)
+        self.data = pd.DataFrame.from_dict(data=emission_data)
 
-        self.data = df
-
-data = Emission()
+emission = Emission()

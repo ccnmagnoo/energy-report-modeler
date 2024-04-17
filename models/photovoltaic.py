@@ -10,7 +10,6 @@ from models.geometry import GeoPosition, Orientation
 from models.weather import Weather, WeatherParam as W
 from models.components import Component
 from models.econometrics import Cost, Currency
-import pytz
 class CellType(Enum):
     """crystal cell configuration"""
     POLI = 'policristalino'

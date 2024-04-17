@@ -1,4 +1,5 @@
-[
+"""emission factor historic in 10 years in Ton_CO2/MWh"""
+emission_data = [
   {
     "year": "2018",
     "month": "1",
