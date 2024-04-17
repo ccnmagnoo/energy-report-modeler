@@ -1,10 +1,12 @@
 {
   "cSpell.words": [
     "ALLSKY",
+    "astype",
     "bucalemu",
     "cañería",
     "carbón",
     "dataclass",
+    "dateutil",
     "DOBO",
     "docxtpl",
     "dolar",
@@ -27,6 +29,7 @@
     "PRECTOTCORR",
     "Proyecto",
     "pytz",
+    "relativedelta",
     "reporte",
     "térmico"
   ]
