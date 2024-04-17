@@ -28,7 +28,7 @@ class Emission():
         """anual emission projection in Ton CO2/MWh"""
         data = self.annual_avg()
         reg = LinearRegression()
-        reg.fit(X=data['year'],y=data['emission'])
+        reg.fit(X=data['year'].values,y=data['emission'].values)
         prediction = reg.predict(year) 
         return prediction
 
