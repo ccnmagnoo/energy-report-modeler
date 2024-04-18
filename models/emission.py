@@ -1,8 +1,8 @@
 """json module parser"""
 from dateutil.relativedelta import relativedelta
 import pandas as pd
-from libs.emission_data import emission_data
 from sklearn.linear_model import LinearRegression
+from libs.emission_data import emission_data
 
 
 class Emission():
@@ -22,14 +22,16 @@ class Emission():
 
     def annual_avg(self)->pd.DataFrame:
         """average emission per year"""
-        return self.data[["year","emission"]].groupby(['year']).mean()
-    
+        return self.data[["year","emission"]].groupby(['year'],as_index=False).mean()
+
     def annual_projection(self,year)->float:
-        """anual emission projection in Ton CO2/MWh"""
+        """annual emission projection in Ton CO2/MWh"""
         data = self.annual_avg()
         reg = LinearRegression()
         reg.fit(X=data['year'].values,y=data['emission'].values)
-        prediction = reg.predict(year) 
+        prediction = reg.predict(year)
         return prediction
 
 emission = Emission()
+if __name__ == '__main__':
+    emission.annual_projection(2024)
