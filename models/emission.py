@@ -30,16 +30,16 @@ class Emission():
     def annual_projection(self,year)->float:
         """annual emission projection in Ton CO2/MWh"""
         data = self.annual_avg()
-        reg = LinearRegression()
+        lg = LinearRegression()
         #print("shape ",data.year.shape)
         # print("X => ", self._reshape(data.year))
         # print("y => ", self._reshape(data.emission))
 
-        reg.fit(
+        lg.fit(
             X=self._reshape(data.year),
             y=self._reshape(data.emission)
             )
-        prediction = reg.predict([[year]])
+        prediction = lg.predict([[year]])
         return prediction[0][0]
 
 emission = Emission()
