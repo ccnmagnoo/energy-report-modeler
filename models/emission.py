@@ -24,7 +24,11 @@ class Emission():
         """average emission per year"""
         if year is not None:
             data = self.data[["year","emission"]].groupby(['year'],as_index=False).mean()
-            return data.loc[data.year == year,"emission"].iloc[0]
+            listed =  data.loc[data.year == year,"emission"]
+            if listed.size > 0:
+                return data.loc[data.year == year,"emission"].iloc[0]
+            else:
+                raise ValueError('no records from that period found, use annual_projection()') 
 
         return self.data[["year","emission"]].groupby(['year'],as_index=False).mean()
 
