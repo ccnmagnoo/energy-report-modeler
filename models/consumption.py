@@ -4,6 +4,8 @@ import datetime
 from enum import Enum
 from collections.abc import Callable
 
+import pandas as pd
+
 from models.econometrics import Cost, Currency
 
 class Energetic(Enum):
@@ -202,14 +204,14 @@ class Consumption:
         completion defines how many month has to be completed,
         between  Zero (default: without changes) and 12, por each month projection.
         """
+        data:list = None
         if self.property.supply == Supply.DEMAND:
-            return self._interpolate(method)
+            data = self._interpolate(method)
 
         if self.property.supply == Supply.STORAGE:
-            return self._distribute()
-
-
-        return None
+            data =  self._distribute()
+            
+        return pd.DataFrame.from_dict(data)
 
 
     def _interpolate(self,method:Callable[[float,float],float])-> list[dict[str,float]]:
