@@ -4,6 +4,7 @@ from typing import Any
 from pandas import DataFrame
 from models.consumption import Consumption, Energetic, EnergyBill
 from models.econometrics import Currency
+from models.emission import Emission
 from models.geometry import GeoPosition
 from models.components import Component, Tech
 from models.photovoltaic import Photovoltaic
@@ -52,6 +53,7 @@ class Project:
     ... technology: @Tech Enum Class
     """
     components:dict[str,list[Component]] = {}
+    _energy_generation:DataFrame|None = None # local storage energy daily generation 
 
     def __init__(
         self,
@@ -59,6 +61,7 @@ class Project:
         building:Building,
         technology:list[Tech]|None = None,
         ) -> None:
+        self.emissions = Emission()
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
         self.title:str = title
@@ -77,6 +80,11 @@ class Project:
 
     def get_energy(self, generation_source:str)->DataFrame|None:
         """extract and sum all energy generation component"""
+
+        #check object local storage
+        if self._energy_generation is not None:
+            return self._energy_generation
+
         number_of_components  = len(self.components[generation_source])
 
         #check for generation component content
@@ -99,9 +107,12 @@ class Project:
                 container['IRR_incident'] = \
                     (container['IRR_incident'] + aux_component['IRR_incident'])/2
 
+        #storage in local param
+        self._energy_generation:DataFrame = container
+
         return container
 
-    def _nominal_power(self,generation_source:str)->Any:
+    def nominal_power(self,generation_source:str)->Any:
         "system capacity in kW"
         components:list[Component|Photovoltaic]  = self.components[generation_source]
 
@@ -148,7 +159,7 @@ class Project:
             #about this project
             "project_name": self.title,
             "project_type" : self.technology[0].value,
-            "project_size":self._nominal_power(generation_source),
+            "project_size":self.nominal_power(generation_source),
             "size_unit":"kW",
             "total_cost": self.bucket_list(Currency.CLP)["cost"],
             #site
