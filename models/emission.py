@@ -20,14 +20,18 @@ class Emission():
         data[["month","year"]] = data[["month","year"]].astype(int).fillna(0)
         self.data = data
 
-    def annual_avg(self)->pd.DataFrame:
+    def annual_avg(self,year:int|None=None)->pd.DataFrame:
         """average emission per year"""
+        if year is not None:
+            data = self.data[["year","emission"]].groupby(['year'],as_index=False).mean()
+            return data.loc[data.year == year,"emission"].iloc[0]
+
         return self.data[["year","emission"]].groupby(['year'],as_index=False).mean()
 
     def _reshape(self,series:pd.Series):
         return series.values.reshape(-1,1)
 
-    def annual_projection(self,year)->float:
+    def annual_projection(self,year:int)->float:
         """annual emission projection in Ton CO2/MWh"""
         data = self.annual_avg()
         lg = LinearRegression()
