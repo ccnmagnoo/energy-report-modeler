@@ -314,7 +314,7 @@ class Photovoltaic(Component):
         system_capacity:DataFrame = pd.DataFrame()
         system_capacity[PvParam.T_CELL.value] = t_cel
         system_capacity[PvParam.INCIDENT.value] = irr_incident
-        print(system_capacity.info())
+        ##print(system_capacity.info())
 
 
         #system capacity
@@ -365,7 +365,7 @@ class Photovoltaic(Component):
 
         #calc irradiation factors
         irradiation:DataFrame =self._calc_irradiation()
-        print(irradiation.info())
+        ##print(irradiation.info())
 
         #calc system_capacity in KW
         system_capacity = self._calc_system_capacity(irradiation=irradiation)
@@ -374,7 +374,7 @@ class Photovoltaic(Component):
         #rename columns
         system_capacity=system_capacity.rename(columns={'date':'date UTC'})
 
-        print(system_capacity.info())
+        ##print(system_capacity.info())
 
         return system_capacity
 
