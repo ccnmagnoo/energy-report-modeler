@@ -116,7 +116,6 @@ class Photovoltaic(Component):
         specification: str | None = None,
         reference: str | None = None,
         quantity: int = 1,#units
-        power:int = 100,#watt
         cost:Cost|None = None,
         cost_model:Callable[[float],float]|None = None,
         orientation:Orientation = Orientation(),
@@ -125,13 +124,13 @@ class Photovoltaic(Component):
         #auxiliary values
         aux_cost:Cost
         if (cost is None) and cost_model:
-            aux_cost = Cost(cost_model(power)*power,currency=Currency.CLP)
+            aux_cost = Cost(cost_model(technical_sheet.power)*technical_sheet.power,currency=Currency.CLP)
         else:
             aux_cost = Cost()
         print('inside cost pv : ',aux_cost.value,aux_cost.currency)
         super().__init__(description, model, specification,reference,aux_cost, quantity)
 
-        self.power = power
+        self.power = technical_sheet.power
         self.orientation = orientation
         self.technical_sheet = technical_sheet
         self._weather = weather
@@ -162,7 +161,7 @@ class Photovoltaic(Component):
         return cos_phi
 
     def _calc_irradiation(self)->DataFrame:
-        """calc irradiation on plane, direct,diffuse, ground and global on plane """
+        """calc irradiation on plane, direct,diffuse, ground and global on plane w/m^2 """
         irr:DataFrame = pd.DataFrame()
         #setting angle sun->surface
         irr['cos_phi'] = self._cos_phi
@@ -302,6 +301,7 @@ class Photovoltaic(Component):
         #capacity under lab conditions
         nominal_capacity:float = self.technical_sheet.area *\
             self.technical_sheet.efficiency *self.quantity
+            
         #temperature performance
         t_cel:Series = self._calc_temperature_cell(irradiation)
         t_ref:float = 25.5 #C°
@@ -312,12 +312,12 @@ class Photovoltaic(Component):
 
         #init calc system capacity
         system_capacity:DataFrame = pd.DataFrame()
-        system_capacity[PvParam.T_CELL.value] = t_cel
-        system_capacity[PvParam.INCIDENT.value] = irr_incident
+        system_capacity[PvParam.T_CELL.value] = t_cel #°C
+        system_capacity[PvParam.INCIDENT.value] = irr_incident #w/m^2
         ##print(system_capacity.info())
 
 
-        #system capacity
+        #system capacity in w/m^2
         def calc_capacity(row)->DataFrame:
             #ref https://pvwatts.nrel.gov/downloads/pvwattsv5.pdf#page=9
             #data extract
@@ -338,8 +338,10 @@ class Photovoltaic(Component):
         #operational losses
         inverter_efficiency = 0.96
         op_loss = self._operational_loss()
+        
+        #SYSTEM GLOBAL CAPACITY * UNIT AREA * QUANTITY UNITS
         system_capacity[PvParam.SYS_CAP.value] = system_capacity[PvParam.SYS_CAP.value]\
-            .apply(lambda cap: cap *inverter_efficiency* (1-op_loss))
+            .apply(lambda cap: cap *inverter_efficiency* (1-op_loss)*self.technical_sheet.area*self.quantity)
 
         return system_capacity
 
@@ -347,7 +349,7 @@ class Photovoltaic(Component):
         """
         power in kW = 1000 Watt
         """
-        return self.power * self.quantity/1000
+        return self.technical_sheet.power * self.quantity/1000
 
     def get_energy(self) -> DataFrame:
         """
@@ -364,7 +366,7 @@ class Photovoltaic(Component):
 
 
         #calc irradiation factors
-        irradiation:DataFrame =self._calc_irradiation()
+        irradiation:DataFrame =self._calc_irradiation()#w/m^2
         ##print(irradiation.info())
 
         #calc system_capacity in KW
