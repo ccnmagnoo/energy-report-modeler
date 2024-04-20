@@ -84,11 +84,12 @@ class Length(Enum):
     FT = 3.280839895
     IN = 39.37007874
 
+type Dimensions = tuple[float,float,Length]
 class PvTechnicalSheet:
     "solar plane power technical specification"
     def __init__(self,
         power:int = 100,
-        area:float|tuple[float,float,Length]= 1, #m2 or (long, wide in cm)
+        area:float|Dimensions= 1, #m2 or (long, wide in cm)
         efficiency = 0.15,  # w/m2
         power_curve:PowerCurve = PowerCurve(),
         cell:Cell = Cell(),
