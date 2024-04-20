@@ -3,7 +3,7 @@ from math import cos,sin,asin,acos,tan,radians,exp
 from enum import Enum
 from dataclasses import dataclass, field
 import datetime
-from typing import Callable
+from typing import Callable, Literal
 import pandas as pd
 from pandas import DataFrame, Series
 from models.geometry import GeoPosition, Orientation
@@ -75,15 +75,36 @@ class ThermalCoef:
     open_circuit_t:float = -0.3910#%/C°
     power_coef_t:float = -0.5141#%/C°
     power_coef_tmax:float = 0.1#%/C°
-@dataclass()
+
+class Length(Enum):
+    """Dim unit type"""
+    CM = 100.0
+    MM = 1000.0
+    M = 1.0
+    FT = 3.280839895
+    IN = 39.37007874
+
 class PvTechnicalSheet:
     "solar plane power technical specification"
-    power:int = 100
-    area:float = 1 #m2
-    efficiency = 0.15  # w/m2
-    power_curve:PowerCurve = field(default_factory=PowerCurve)
-    cell:Cell = field(default_factory=Cell)
-    thermal:ThermalCoef = field(default_factory=ThermalCoef)
+    def __init__(self,
+        power:int = 100,
+        area:float|tuple[float,float,Length]= 1, #m2 or (long, wide in cm)
+        efficiency = 0.15,  # w/m2
+        power_curve:PowerCurve = PowerCurve(),
+        cell:Cell = Cell(),
+        thermal:ThermalCoef = ThermalCoef(),
+                ) -> None:
+        self.power = power
+        self.efficiency = efficiency
+        self.power_curve = power_curve
+        self.cell = cell,
+        self.thermal = thermal
+
+        if isinstance(area,float):
+            self.area = area
+        if isinstance(area,tuple):
+            self.area = area[0]*area[1]/(area[2].value*area[2].value)
+
 
 
 class Photovoltaic(Component):
