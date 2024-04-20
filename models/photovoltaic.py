@@ -298,10 +298,10 @@ class Photovoltaic(Component):
         System capacity Global [W]
         ~~~~
         """
-        #capacity under lab conditions
+        #capacity under lab conditions AREA*QUANTITY*Ef
         nominal_capacity:float = self.technical_sheet.area *\
             self.technical_sheet.efficiency *self.quantity
-            
+
         #temperature performance
         t_cel:Series = self._calc_temperature_cell(irradiation)
         t_ref:float = 25.5 #C°
@@ -338,10 +338,10 @@ class Photovoltaic(Component):
         #operational losses
         inverter_efficiency = 0.96
         op_loss = self._operational_loss()
-        
+
         #SYSTEM GLOBAL CAPACITY * UNIT AREA * QUANTITY UNITS
         system_capacity[PvParam.SYS_CAP.value] = system_capacity[PvParam.SYS_CAP.value]\
-            .apply(lambda cap: cap *inverter_efficiency* (1-op_loss)*self.technical_sheet.area*self.quantity)
+            .apply(lambda cap: cap *inverter_efficiency* (1-op_loss))
 
         return system_capacity
 
