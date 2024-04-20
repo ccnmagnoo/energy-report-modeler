@@ -130,7 +130,6 @@ class Photovoltaic(Component):
         print('inside cost pv : ',aux_cost.value,aux_cost.currency)
         super().__init__(description, model, specification,reference,aux_cost, quantity)
 
-        self.power = technical_sheet.power
         self.orientation = orientation
         self.technical_sheet = technical_sheet
         self._weather = weather
