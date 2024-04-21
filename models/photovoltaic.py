@@ -1,9 +1,10 @@
 """photovoltaic model component"""
 from math import cos,sin,asin,acos,tan,radians,exp
 from enum import Enum
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import datetime
-from typing import Callable, Literal
+import math
+from typing import Callable
 import pandas as pd
 from pandas import DataFrame, Series
 from models.geometry import GeoPosition, Orientation
@@ -106,8 +107,17 @@ class PvTechnicalSheet:
         if isinstance(area,tuple):
             self.area = area[0]*area[1]/(area[2].value*area[2].value)
 
-
-
+class CostModel(Enum):
+    """model of cost calculation Lambda"""
+    #PV COST MODEL, includes price clp per watt,
+    # including cost of planel, inverter, instalation and infraestructure.
+    ON_GRID:Callable[[float],float] = \
+        lambda size_w: math.floor(-152.6*math.log(size_w)+2605.9) # clp/w
+    OFF_GRID:Callable[[float],float] = \
+        lambda size_w: math.floor(-414.7*math.log(size_w)+6143.9) # clp/w
+    #PV linear COST MODEL,
+    # includes price clp per watt,just panel.
+    LINEAR:Callable[[float],float] = lambda size_w: 245990/655
 class Photovoltaic(Component):
     """
     PV primary component
@@ -139,7 +149,7 @@ class Photovoltaic(Component):
         reference: str | None = None,
         quantity: int = 1,#units
         cost:Cost|None = None,
-        cost_model:Callable[[float],float]|None = None,
+        cost_model:Callable[[float],float]|None = CostModel.LINEAR,
         orientation:Orientation = Orientation(),
         technical_sheet:PvTechnicalSheet = PvTechnicalSheet(),
         ) -> None:
