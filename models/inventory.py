@@ -53,7 +53,7 @@ class Project:
     ... technology: @Tech Enum Class
     """
     components:dict[str,list[Component]] = {}
-    _energy_generation:DataFrame|None = None # local storage energy daily generation 
+    power_production:DataFrame|None = None # local storage energy daily generation
 
     def __init__(
         self,
@@ -78,39 +78,43 @@ class Project:
 
         self.components[item] = list(args)
 
-    def get_energy(self, generation_source:str)->DataFrame|None:
+    def calc_energy(self, generation_group:str)->DataFrame|None:
         """extract and sum all energy generation component"""
 
         #check object local storage
-        if self._energy_generation is not None:
-            return self._energy_generation
+        if self.power_production is not None:
+            return self.power_production
 
-        number_of_components  = len(self.components[generation_source])
+        number_of_components  = len(self.components[generation_group])
 
         #check for generation component content
         if number_of_components == 0:
             raise ValueError('no component found')
 
         #check for Photovoltaic component
-        for it in self.components[generation_source]:
+        for it in self.components[generation_group]:
             if not isinstance(it,Photovoltaic):
                 raise ValueError(f'{it}is not a energy gen component')
 
         #proceed for loop addition
-        container:DataFrame = self.components[generation_source][0].get_energy()
+        container:DataFrame = self.components[generation_group][0].get_energy()
         if number_of_components>1:
-            for it in self.components[generation_source][1:]:
+            for it in self.components[generation_group][1:]:
+
                 aux_component:DataFrame = it.get_energy()
                 container['System_capacity_KW'] += aux_component['System_capacity_KW']
+
                 container['Temperature_cell'] = \
                     (container['Temperature_cell'] + aux_component['Temperature_cell'])/2
+
                 container['IRR_incident'] = \
                     (container['IRR_incident'] + aux_component['IRR_incident'])/2
 
         #storage in local param
-        self._energy_generation:DataFrame = container
+        self.power_production:DataFrame = container
 
         return container
+
 
     def nominal_power(self,generation_source:str)->Any:
         "system capacity in kW"
