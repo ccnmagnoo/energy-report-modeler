@@ -216,7 +216,8 @@ class Photovoltaic(Component):
             irr[PvParam.DIRECT.value]*reflection\
             +irr[PvParam.GROUND.value]\
             +irr[PvParam.DIFFUSE.value]
-        irr.fillna(0.0,inplace=True)
+        #irr.fillna(0.0,inplace=True)
+        irr.infer_objects(copy=False)
 
         return irr
 
