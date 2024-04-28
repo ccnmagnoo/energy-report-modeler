@@ -136,10 +136,12 @@ class Project:
 
     def performance(self,consumptions:list[str],generation_group:str,connection:Connection = Connection.NETBILLING):
         production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
+        
         future:DataFrame = self.building.consumption_forecast(consumptions)
         
-        res = pd.merge(left = future,right=production,on=['month','month'],how='left')
-        
+        res = future.merge(right=production,how='left')
+        res = res.rename(columns={'energy':'consumption kWh','System_capacity_KW':'generation kWh'})
+
         return res
 
 
