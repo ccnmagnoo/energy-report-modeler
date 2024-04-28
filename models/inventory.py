@@ -58,6 +58,7 @@ class Building:
 
 
 class Connection(Enum):
+    """energy supply mode"""
     NETBILLING = "net-billing",
     ONGRID = "net supply mix",
     OFFGRID = "battery supply mix"
@@ -96,7 +97,7 @@ class Project:
 
         self.components[item] = list(args)
 
-    def calc_energy(self, generation_group:str)->DataFrame|None:
+    def energy_production(self, generation_group:str)->DataFrame|None:
         """extract and sum all energy generation component"""
 
         #check object local storage
@@ -133,9 +134,9 @@ class Project:
 
         return container
 
-    def performance(self,generation_group:str,connection:Connection = Connection.NETBILLING):
-        producction:DataFrame = self.calc_energy(generation_group)[["month","System_capacity_kW"]].groupby(["month"],as_index=False).sum()
-        consumption:DataFrame = self.building.consumption['main'].forecast()
+    def performance(self,consumptions:list[str],generation_group:str,connection:Connection = Connection.NETBILLING):
+        production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_kW"]].groupby(["month"],as_index=False).sum()
+        consumption:DataFrame = self.building.consumption_forecast(consumptions)
         return None
 
 
