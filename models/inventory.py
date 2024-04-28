@@ -136,12 +136,20 @@ class Project:
 
     def performance(self,consumptions:list[str],generation_group:str,connection:Connection = Connection.NETBILLING):
         production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
-        
-        future:DataFrame = self.building.consumption_forecast(consumptions)
-        
-        res = future.merge(right=production,how='left')
-        res = res.rename(columns={'energy':'consumption kWh','System_capacity_KW':'generation kWh'})
 
+        future:DataFrame = self.building.consumption_forecast(consumptions)
+
+        res = future.merge(right=production,how='left')
+        res = res.rename(columns={'energy':'consumption','System_capacity_KW':'generation'})
+
+        match connection:
+            case Connection.NETBILLING:
+                if res['generation']>=res['consumption']:
+                    res['netbilling'] = res['generation']-res['consumption']
+                    res['savings'] = res['consumption']
+                else:
+                    res['netbilling'] = 0
+                    res['savings'] = res['generation']
         return res
 
 
