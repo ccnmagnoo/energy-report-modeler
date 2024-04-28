@@ -135,9 +135,12 @@ class Project:
         return container
 
     def performance(self,consumptions:list[str],generation_group:str,connection:Connection = Connection.NETBILLING):
-        production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_kW"]].groupby(["month"],as_index=False).sum()
-        consumption:DataFrame = self.building.consumption_forecast(consumptions)
-        return None
+        production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
+        future:DataFrame = self.building.consumption_forecast(consumptions)
+        
+        res = pd.merge(left = future,right=production,on=['month','month'],how='left')
+        
+        return res
 
 
     def nominal_power(self,generation_source:str)->Any:
