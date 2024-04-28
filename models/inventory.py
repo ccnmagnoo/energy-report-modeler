@@ -1,4 +1,5 @@
 """main wrapper dependencies"""
+from enum import Enum
 import math
 from typing import Any
 from pandas import DataFrame
@@ -45,6 +46,13 @@ class Building:
         instance.set_bill(consumption)
         self.consumptions[description] = instance
 
+
+class Connection(Enum):
+    NETBILLING = "net-billing",
+    ONGRID = "net supply mix",
+    OFFGRID = "battery supply mix"
+    
+    
 class Project:
     """
     Main Wrapper, globing all installs
@@ -114,6 +122,9 @@ class Project:
         self.power_production:DataFrame = container
 
         return container
+    
+    def performance(self,connection:Connection = Connection.NETBILLING):
+        return None
 
 
     def nominal_power(self,generation_source:str)->Any:
