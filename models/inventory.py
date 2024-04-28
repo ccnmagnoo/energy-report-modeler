@@ -10,6 +10,7 @@ from models.geometry import GeoPosition
 from models.components import Component, Tech
 from models.photovoltaic import Photovoltaic
 from models.weather import Weather,WeatherParam as W
+import pandas as pd
 # from models.photovoltaic import Photovoltaic
 
 class Building:
@@ -46,13 +47,22 @@ class Building:
         instance.set_bill(consumption)
         self.consumptions[description] = instance
 
+    def consumption_forecast(self,group:list[str])->DataFrame:
+        """return sum of all consumption groups in this building"""
+        container:DataFrame = self.consumptions[group[0]].forecast()
+        if len(self.consumptions)>1:
+            for it in group[1:]:
+                calc = self.consumptions[it].forecast()
+                container['energy'] = calc['energy'] + container['energy']
+        return container
+
 
 class Connection(Enum):
     NETBILLING = "net-billing",
     ONGRID = "net supply mix",
     OFFGRID = "battery supply mix"
-    
-    
+
+
 class Project:
     """
     Main Wrapper, globing all installs
@@ -122,8 +132,10 @@ class Project:
         self.power_production:DataFrame = container
 
         return container
-    
-    def performance(self,connection:Connection = Connection.NETBILLING):
+
+    def performance(self,generation_group:str,connection:Connection = Connection.NETBILLING):
+        producction:DataFrame = self.calc_energy(generation_group)[["month","System_capacity_kW"]].groupby(["month"],as_index=False).sum()
+        consumption:DataFrame = self.building.consumption['main'].forecast()
         return None
 
 
