@@ -1,8 +1,10 @@
 """main wrapper dependencies"""
+from datetime import datetime
 from enum import Enum
 import math
 from typing import Any
-from pandas import DataFrame
+import numpy
+from pandas import DataFrame, Series
 from models.consumption import Consumption, Energetic, EnergyBill
 from models.econometrics import Currency
 from models.emission import Emission
@@ -135,21 +137,55 @@ class Project:
         return container
 
     def performance(self,consumptions:list[str],generation_group:str,connection:Connection = Connection.NETBILLING):
+        """generates monthly result for savings and netbilling performance"""
         production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
 
         future:DataFrame = self.building.consumption_forecast(consumptions)
 
         res = future.merge(right=production,how='left')
         res = res.rename(columns={'energy':'consumption','System_capacity_KW':'generation'})
-
+        
         match connection:
             case Connection.NETBILLING:
-                if res['generation']>=res['consumption']:
-                    res['netbilling'] = res['generation']-res['consumption']
-                    res['savings'] = res['consumption']
-                else:
-                    res['netbilling'] = 0
-                    res['savings'] = res['generation']
+                res['netbilling'] = numpy.where(
+                    res['generation']>=res['consumption'],
+                    res['generation']-res['consumption'],
+                    0
+                    )
+                
+                res['savings'] = numpy.where(
+                    res['generation']>=res['consumption'],
+                    res['consumption'],
+                    res['generation']
+                    )
+            case Connection.ONGRID:
+                res['netbilling'] = numpy.where(
+                    res['generation']>=res['consumption'],
+                    0,
+                    0
+                    )
+                
+                res['savings'] = numpy.where(
+                    res['generation']>=res['consumption'],
+                    res['consumption'],
+                    res['generation']
+                    )
+            case Connection.OFFGRID:
+                res['netbilling'] = numpy.where(
+                    res['generation']>=res['consumption'],
+                    0,
+                    0
+                    )
+                
+                res['savings'] = numpy.where(
+                    res['generation']>=res['consumption'],
+                    res['generation'],
+                    res['generation']
+                    )
+        #emissions       
+        eva_period = datetime.now().year +1
+        res['CO2 kg'] = res['savings']*self.emissions.annual_projection(eva_period)
+
         return res
 
 
