@@ -237,7 +237,7 @@ class Consumption:
         base = self.base()
         forecast = [*base]
         cycle =[*base,*base,*base] #[{"month":1,"energy":100}]
-        PAGINATE:int = 12
+        SPREAD:int = 12
 
         def counter(temporal:list[dict[str,float]])->int:
             tmp = [*temporal]
@@ -257,7 +257,7 @@ class Consumption:
                 #recharge period
                 reserve = it['energy']
                 # count previous uncharged period on cycle
-                dist_cycle = counter(cycle[:idx+PAGINATE])
+                dist_cycle = counter(cycle[:idx+SPREAD])
                 split_by = dist_cycle+1
                 ## in-period size
                 dist_period = counter(base[:idx])
