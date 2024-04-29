@@ -2,7 +2,7 @@
 from datetime import datetime
 from enum import Enum
 import math
-from typing import Any
+from typing import Any, Literal
 import numpy
 from pandas import DataFrame, Series
 from models.consumption import Consumption, Energetic, EnergyBill
@@ -59,11 +59,7 @@ class Building:
         return container
 
 
-class Connection(Enum):
-    """energy supply mode"""
-    NETBILLING = "net-billing",
-    ONGRID = "net supply mix",
-    OFFGRID = "battery supply mix"
+type Connection = Literal['netbilling','ongrid','offgrid']
 
 
 class Project:
@@ -136,7 +132,10 @@ class Project:
 
         return container
 
-    def performance(self,consumptions:list[str],generation_group:str,connection:Connection = Connection.NETBILLING):
+    def performance(self,
+                    consumptions:list[str],
+                    generation_group:str,
+                    connection:Connection = 'netbilling'):
         """generates monthly result for savings and netbilling performance"""
         production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
 
@@ -146,7 +145,7 @@ class Project:
         res = res.rename(columns={'energy':'consumption','System_capacity_KW':'generation'})
 
         match connection:
-            case Connection.NETBILLING:
+            case 'netbilling':
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
                     res['generation']-res['consumption'],
@@ -158,7 +157,7 @@ class Project:
                     res['consumption'],
                     res['generation']
                     )
-            case Connection.ONGRID:
+            case 'ongrid':
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
                     0,
@@ -170,7 +169,7 @@ class Project:
                     res['consumption'],
                     res['generation']
                     )
-            case Connection.OFFGRID:
+            case 'offgrid':
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
                     0,
@@ -189,9 +188,9 @@ class Project:
         return res
 
 
-    def nominal_power(self,generation_source:str)->Any:
+    def nominal_power(self,generation_group:str)->tuple[float,list[float]]:
         "system capacity in kW"
-        components:list[Component|Photovoltaic]  = self.components[generation_source]
+        components:list[Component|Photovoltaic]  = self.components[generation_group]
 
         if len(components)==0:
             raise ValueError('no component found')
@@ -200,12 +199,12 @@ class Project:
             if not isinstance(it,Photovoltaic):
                 raise ValueError('no energy component found')
 
-        power:list[float] = [fv.nominal_power() for fv in components]
+        power_list:list[float] = [fv.nominal_power() for fv in components]
         redux:float = 0.0
-        for it in power:
+        for it in power_list:
             redux+= it
 
-        return power
+        return (redux,power_list)
 
     def bucket_list(self,currency:Currency|None)->dict[str,Any]:
         "get all cost related by components"
