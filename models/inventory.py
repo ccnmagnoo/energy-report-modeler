@@ -226,7 +226,8 @@ class Project:
                     'currency':curr.value
                 }
                 container.append(obj_item)
-        return {'cost':math.floor(total_cost*100)/100 ,'bucket':container}
+        
+        return {'cost':math.floor(total_cost*100)/100 ,'bucket':pd.DataFrame.from_dict(container)}
 
 
     def get_context(self,generation_source)->dict[str,Any]:
