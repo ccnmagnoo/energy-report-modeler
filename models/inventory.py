@@ -144,7 +144,7 @@ class Project:
 
         res = future.merge(right=production,how='left')
         res = res.rename(columns={'energy':'consumption','System_capacity_KW':'generation'})
-        
+
         match connection:
             case Connection.NETBILLING:
                 res['netbilling'] = numpy.where(
@@ -152,7 +152,7 @@ class Project:
                     res['generation']-res['consumption'],
                     0
                     )
-                
+
                 res['savings'] = numpy.where(
                     res['generation']>=res['consumption'],
                     res['consumption'],
@@ -164,7 +164,7 @@ class Project:
                     0,
                     0
                     )
-                
+
                 res['savings'] = numpy.where(
                     res['generation']>=res['consumption'],
                     res['consumption'],
@@ -176,13 +176,13 @@ class Project:
                     0,
                     0
                     )
-                
+
                 res['savings'] = numpy.where(
                     res['generation']>=res['consumption'],
                     res['generation'],
                     res['generation']
                     )
-        #emissions       
+        #emissions
         eva_period = datetime.now().year +1
         res['CO2 kg'] = res['savings']*self.emissions.annual_projection(eva_period)
 
