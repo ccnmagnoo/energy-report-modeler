@@ -184,7 +184,7 @@ class Project:
                     )
         #emissions
         eva_period = datetime.now().year +1
-        res['CO2 kg'] = res['savings']*self.emissions.annual_projection(eva_period)
+        res['CO2 kg'] = res['generation']*self.emissions.annual_projection(eva_period)
 
         return res
 
