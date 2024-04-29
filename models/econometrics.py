@@ -76,7 +76,7 @@ class Cost:
     @classmethod
     def _exchange_is_loaded(cls, curr:Currency)->bool:
         exist = curr in cls._exchange
-        print(f'{curr} exchange ratios load status: {exist}')
+        #print(f'{curr} exchange ratios load status: {exist}')
         return exist
 
     @classmethod
