@@ -136,7 +136,7 @@ class Project:
     def performance(self,
                     consumptions:list[str],
                     generation_group:str,
-                    cost_increment:float,
+                    cost_increment:float=0,
                     connection:Connection = 'netbilling',):
         """generates monthly result for savings and netbilling performance"""
         production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
