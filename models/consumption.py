@@ -3,6 +3,8 @@ from dataclasses import dataclass
 import datetime
 from enum import Enum
 from collections.abc import Callable
+import numpy as np
+from sklearn.linear_model import LinearRegression
 
 import pandas as pd
 
@@ -186,17 +188,19 @@ class Consumption:
         """generate energy consumption base
             without completion or any approximation
         """
-        base  = [{"month":period,"energy":0} for period in range(1,13)]
+        base  = [{"month":period,"energy":0,"unit_cost":0} for period in range(1,13)]
 
         for bill in self.bucket:
             #load consumptions
             bill_month = bill.date_billing.month
             base[bill_month-1]["energy"]=base[bill_month-1]["energy"]+bill.energy
+            base[bill_month-1]["unit_cost"]=bill.unitary_cost()
 
         return base
 
     def forecast(self,
                             method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
+                            cost_increment:float=0.0
                             )->list[dict[str,float]]:
         """estimate monthly energy consumption from the next year
         >>>>completion: forecast has an estimated consumption
@@ -210,8 +214,26 @@ class Consumption:
 
         if self.property.supply == Supply.STORAGE:
             data =  self._distribute()
-            
-        return pd.DataFrame.from_dict(data)
+        df = pd.DataFrame.from_dict(data)
+        df = self._cost_increment(data=df,weight=(1+cost_increment))    
+
+        return df
+
+    def _cost_increment(self,data:pd.DataFrame,weight:float=1.0)->pd.DataFrame:
+        """estimate cost incremental by unitary volume clp/kWh
+        >>>includes
+        ...weight*cost multiplier
+        """
+        curve = self.base()
+        lg = LinearRegression()
+        lg.fit(
+            X=np.array([it['energy'] for it in curve if it['energy']>0]).reshape(-1,1),
+            y=np.array([it['unit_cost'] for it in curve if it['unit_cost']>0]).reshape(-1,1),
+            )
+
+        data['unit_cost'] = data['energy'].apply(lambda it: lg.predict([[it]])[0][0]*weight)
+
+        return data
 
 
     def _interpolate(self,method:Callable[[float,float],float])-> list[dict[str,float]]:

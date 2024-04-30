@@ -43,18 +43,19 @@ class Building:
         description:str,
         energetic:Energetic,
         consumption:list[EnergyBill],
+        
         ):
         '''defining energy bill, '''
         instance=Consumption(energetic)
         instance.set_bill(consumption)
         self.consumptions[description] = instance
 
-    def consumption_forecast(self,group:list[str])->DataFrame:
+    def consumption_forecast(self,group:list[str],cost_increment:float)->DataFrame:
         """return sum of all consumption groups in this building"""
-        container:DataFrame = self.consumptions[group[0]].forecast()
+        container:DataFrame = self.consumptions[group[0]].forecast(cost_increment=cost_increment)
         if len(self.consumptions)>1:
             for it in group[1:]:
-                calc = self.consumptions[it].forecast()
+                calc = self.consumptions[it].forecast(cost_increment=cost_increment)
                 container['energy'] = calc['energy'] + container['energy']
         return container
 
@@ -135,11 +136,12 @@ class Project:
     def performance(self,
                     consumptions:list[str],
                     generation_group:str,
-                    connection:Connection = 'netbilling'):
+                    cost_increment:float,
+                    connection:Connection = 'netbilling',):
         """generates monthly result for savings and netbilling performance"""
         production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
 
-        future:DataFrame = self.building.consumption_forecast(consumptions)
+        future:DataFrame = self.building.consumption_forecast(group=consumptions,cost_increment=cost_increment)
 
         res = future.merge(right=production,how='left')
         res = res.rename(columns={'energy':'consumption','System_capacity_KW':'generation'})
@@ -182,6 +184,7 @@ class Project:
                     res['generation']
                     )
         #emissions
+        res['benefits'] = res['savings']*res['unit_cost']
         eva_period = datetime.now().year +1
         res['CO2 kg'] = res['generation']*self.emissions.annual_projection(eva_period)
 

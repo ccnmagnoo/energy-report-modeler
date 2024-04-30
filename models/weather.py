@@ -16,12 +16,12 @@ class WeatherParam(Enum):
         ... DIRECT = irradiation direct horizontal W/m2
         ... DIFFUSE = irradiation diffuse W/m2
         ... ALBEDO = ground reflexive coefficient
-        ... TEMPERATURE = temperature in C° at 2mt 
+        ... TEMPERATURE = temperature in C° at 2mt
         ... ZENITH = Sun's zenith angle
         ... RAIN = precipitation mm
         ... INSOLATION_INDEX = insolation index
         ... PRESSURE = pressure at 2mt
-        ... WIND_SPEED_10M = wind speed at 10mt 
+        ... WIND_SPEED_10M = wind speed at 10mt
         ... WIND_DIR_10M = wind direction at 10mt
     """
 
@@ -105,7 +105,8 @@ class Weather:
         '''
         current:datetime = datetime.now()
         last_year:int = current.date().year-1
-        return {'start':date(last_year,1,1),'end':date(last_year,12,31)} #TODO:on production change period.
+        #TODO:on production change period.
+        return {'start':date(last_year,1,1),'end':date(last_year,31,12)}
 
     def _date_api_format(self,user_date:date)->str:
         """return str with api YYYYMMDD format"""
