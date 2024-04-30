@@ -223,7 +223,8 @@ class Project:
                 #auxiliary object
                 obj_item = {
                     'gloss':gloss,
-                    'description':component.model,
+                    'description':component.description,
+                    'details':component.specification,
                     'quantity':component.quantity,
                     'cost_after_tax':value,
                     'currency':curr.value
