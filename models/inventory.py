@@ -1,10 +1,9 @@
 """main wrapper dependencies"""
 from datetime import datetime
-from enum import Enum
 import math
 from typing import Any, Literal
 import numpy
-from pandas import DataFrame, Series
+from pandas import DataFrame
 from models.consumption import Consumption, Energetic, EnergyBill
 from models.econometrics import Currency
 from models.emission import Emission
@@ -43,7 +42,7 @@ class Building:
         description:str,
         energetic:Energetic,
         consumption:list[EnergyBill],
-        
+
         ):
         '''defining energy bill, '''
         instance=Consumption(energetic)
@@ -72,6 +71,7 @@ class Project:
     """
     components:dict[str,list[Component]] = {}
     power_production:DataFrame|None = None # local storage energy daily generation
+    generation_group:str|None = None
 
     def __init__(
         self,
@@ -87,37 +87,40 @@ class Project:
             [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M])
         self.weather.get_data()
 
-    def add_component(self,item:str,*args:Component|Photovoltaic):
+    def add_component(self,item:str,*args:Component|Photovoltaic,generator:bool=False):
         """
         Add component, in requires and identifier,
         """
+        if generator:
+            self.generation_group = item
+
         if item in self.components:
             self.components[item].append(args)
 
         self.components[item] = list(args)
 
-    def energy_production(self, generation_group:str)->DataFrame|None:
+    def energy_production(self)->DataFrame|None:
         """extract and sum all energy generation component"""
 
         #check object local storage
         if self.power_production is not None:
             return self.power_production
 
-        number_of_components  = len(self.components[generation_group])
+        number_of_components  = len(self.components[self.generation_group])
 
         #check for generation component content
         if number_of_components == 0:
             raise ValueError('no component found')
 
         #check for Photovoltaic component
-        for it in self.components[generation_group]:
+        for it in self.components[self.generation_group]:
             if not isinstance(it,Photovoltaic):
                 raise ValueError(f'{it}is not a energy gen component')
 
         #proceed for loop addition
-        container:DataFrame = self.components[generation_group][0].get_energy()
+        container:DataFrame = self.components[self.generation_group][0].get_energy()
         if number_of_components>1:
-            for it in self.components[generation_group][1:]:
+            for it in self.components[self.generation_group][1:]:
 
                 aux_component:DataFrame = it.get_energy()
                 container['System_capacity_KW'] += aux_component['System_capacity_KW']
@@ -135,11 +138,10 @@ class Project:
 
     def performance(self,
                     consumptions:list[str],
-                    generation_group:str,
                     cost_increment:float=0,
                     connection:Connection = 'netbilling',):
         """generates monthly result for savings and netbilling performance"""
-        production:DataFrame = self.energy_production(generation_group)[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
+        production:DataFrame = self.energy_production()[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
 
         future:DataFrame = self.building.consumption_forecast(group=consumptions,cost_increment=cost_increment)
 
@@ -191,9 +193,9 @@ class Project:
         return res
 
 
-    def nominal_power(self,generation_group:str)->tuple[float,list[float]]:
+    def nominal_power(self)->tuple[float,list[float]]:
         "system capacity in kW"
-        components:list[Component|Photovoltaic]  = self.components[generation_group]
+        components:list[Component|Photovoltaic]  = self.components[self.generation_group]
 
         if len(components)==0:
             raise ValueError('no component found')
@@ -208,6 +210,9 @@ class Project:
             redux+= it
 
         return (redux,power_list)
+
+    def used_area(self)->float:
+        return None
 
     def bucket_list(self,currency:Currency|None)->dict[str,Any]:
         "get all cost related by components"
@@ -230,17 +235,17 @@ class Project:
                     'currency':curr.value
                 }
                 container.append(obj_item)
-        
+
         return {'cost':math.floor(total_cost*100)/100 ,'bucket':pd.DataFrame.from_dict(container)}
 
 
-    def get_context(self,generation_source)->dict[str,Any]:
+    def get_context(self)->dict[str,Any]:
         "return object with information for generate DOCX template"
         context = {
             #about this project
             "project_name": self.title,
             "project_type" : self.technology[0].value,
-            "project_size":self.nominal_power(generation_source),
+            "project_size":self.nominal_power(),
             "size_unit":"kW",
             "total_cost": self.bucket_list(Currency.CLP)["cost"],
             #site
