@@ -192,7 +192,7 @@ class Project:
 
         return res
 
-
+    @property
     def nominal_power(self)->tuple[float,list[float]]:
         "system capacity in kW"
         components:list[Component|Photovoltaic]  = self.components[self.generation_group]
@@ -210,8 +210,15 @@ class Project:
             redux+= it
 
         return (redux,power_list)
-
-    def used_area(self)->float:
+    
+    @property
+    def area(self)->float:
+        "return total area used by this project"
+        area =0
+        for it in self.components[self.generation_group]:
+            comp:Photovoltaic = it
+            area += comp.technical_sheet.area
+        
         return None
 
     def bucket_list(self,currency:Currency|None)->dict[str,Any]:
@@ -245,7 +252,7 @@ class Project:
             #about this project
             "project_name": self.title,
             "project_type" : self.technology[0].value,
-            "project_size":self.nominal_power(),
+            "project_size":self.nominal_power,
             "size_unit":"kW",
             "total_cost": self.bucket_list(Currency.CLP)["cost"],
             #site
