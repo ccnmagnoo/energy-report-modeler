@@ -4,6 +4,10 @@ import math
 from typing import Any, Literal
 import numpy
 from pandas import DataFrame
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
 from models.consumption import Consumption, Energetic, EnergyBill
 from models.econometrics import Currency
 from models.emission import Emission
@@ -11,7 +15,6 @@ from models.geometry import GeoPosition
 from models.components import Component, Tech
 from models.photovoltaic import Photovoltaic
 from models.weather import Weather,WeatherParam as W
-import pandas as pd
 # from models.photovoltaic import Photovoltaic
 
 class Building:
@@ -58,7 +61,17 @@ class Building:
                 container['energy'] = calc['energy'] + container['energy']
         return container
 
-
+    def plot_consumption_forecast(self,group:list[str],cost_increment:float):
+        "generate graph"
+        data:DataFrame = self.consumption_forecast(
+            group=group,
+            cost_increment=cost_increment)
+        plotter = plt.subplot()
+        plotter.plot(data['month'].values,data['energy'].values,linewidth=2.0)
+        plotter.set_xlabel('mes')
+        plotter.set_ylabel('kWh')
+        plt.savefig("build/plot_consumption_forecast.png")
+        
 type Connection = Literal['netbilling','ongrid','offgrid']
 
 
@@ -210,7 +223,7 @@ class Project:
             redux+= it
 
         return (redux,power_list)
-    
+
     @property
     def area(self)->float:
         "return total area used by this project"
@@ -218,8 +231,8 @@ class Project:
         for it in self.components[self.generation_group]:
             comp:Photovoltaic = it
             area += comp.technical_sheet.area
-        
-        return None
+
+        return float(f'{area:.2f}')
 
     def bucket_list(self,currency:Currency|None)->dict[str,Any]:
         "get all cost related by components"
