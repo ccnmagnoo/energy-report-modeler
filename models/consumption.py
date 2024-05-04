@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 
 import pandas as pd
-
+from pandas import DataFrame
 from models.econometrics import Cost, Currency
 
 class Energetic(Enum):
@@ -201,7 +201,7 @@ class Consumption:
     def forecast(self,
                             method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
                             cost_increment:float=0.0
-                            )->list[dict[str,float]]:
+                            )->DataFrame:
         """estimate monthly energy consumption from the next year
         >>>>completion: forecast has an estimated consumption
         for a period of time divided by month
@@ -215,11 +215,10 @@ class Consumption:
         if self.property.supply == Supply.STORAGE:
             data =  self._distribute()
         df = pd.DataFrame.from_dict(data)
-        df = self._cost_increment(data=df,weight=(1+cost_increment))    
-
+        df = self._cost_increment(data=df,weight=(1+cost_increment))       
         return df
 
-    def _cost_increment(self,data:pd.DataFrame,weight:float=1.0)->pd.DataFrame:
+    def _cost_increment(self,data:DataFrame,weight:float=1.0)->pd.DataFrame:
         """estimate cost incremental by unitary volume clp/kWh
         >>>includes
         ...weight*cost multiplier
