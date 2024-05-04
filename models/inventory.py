@@ -148,6 +148,10 @@ class Project:
         self.power_production:DataFrame = container
 
         return container
+    
+    def production_array(self)->list[DataFrame]:
+        "get energy production DataFrame PER generation unit module"
+        return list(map(lambda unit:unit.get_energy(),self.components[self.generation_group]))
 
     def performance(self,
                     consumptions:list[str],
