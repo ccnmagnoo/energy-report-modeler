@@ -12,7 +12,7 @@ class GeoPosition:
         ... altitude: degrees = None
     >>> methods
         ... .sun_position(datetime)->{elevation:degrees°,azimuth:degrees°}
-        azimuth = 0° north, 
+        azimuth = 0° north,
         azimuth = 180° south
     """
     _calculator = SunPositionCalculator()
@@ -31,6 +31,11 @@ class GeoPosition:
         timestamp:float = date.timestamp()*1000
         pos = self._calculator.pos(timestamp,self.latitude,self.longitude)
         return {'azimuth':math.degrees(pos.azimuth),'elevation':math.degrees(pos.altitude)}
+
+    @property
+    def gmaps(self)->str:
+        """return google maps link"""
+        return f'https://www.google.com/maps/@{self.latitude},{self.longitude},200m/data=!3m1!1e3?entry=ttu'
 
 class Orientation:
     "elevation and azimuth in degrees"
