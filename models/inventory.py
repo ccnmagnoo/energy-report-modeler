@@ -1,20 +1,26 @@
 """main wrapper dependencies"""
-from datetime import datetime
 import math
+from datetime import datetime
 from typing import Any, Literal
-import numpy
-from pandas import DataFrame
-import pandas as pd
+
 import matplotlib.pyplot as plt
+import numpy
+import pandas as pd
+from pandas import DataFrame
 
+# pylint: disable=no-member
+# error
+from pyxirr import irr, npv # pylint: disable=no-member
 
+from models.components import Component, Tech
 from models.consumption import Consumption, Energetic, EnergyBill
 from models.econometrics import Currency
 from models.emission import Emission
 from models.geometry import GeoPosition
-from models.components import Component, Tech
 from models.photovoltaic import Photovoltaic
-from models.weather import Weather,WeatherParam as W
+from models.weather import Weather
+from models.weather import WeatherParam as W
+
 # from models.photovoltaic import Photovoltaic
 
 class Building:
@@ -27,8 +33,8 @@ class Building:
     ... address
     ... city
     building config like geolocation, name and basics operations"""
-    consumptions:dict[str,Consumption] ={}
 
+    consumptions:dict[str,Consumption] ={}
 
     def __init__(self,
                 geolocation:GeoPosition,
@@ -71,7 +77,7 @@ class Building:
         plotter.set_xlabel('mes')
         plotter.set_ylabel('kWh')
         plt.savefig("build/plot_consumption_forecast.png")
-        
+
 type Connection = Literal['netbilling','ongrid','offgrid']
 
 
@@ -85,6 +91,8 @@ class Project:
     components:dict[str,list[Component]] = {}
     power_production:DataFrame|None = None # local storage energy daily generation
     generation_group:str|None = None
+    cost_increment = 0
+    _performance:DataFrame = DataFrame()
 
     def __init__(
         self,
@@ -148,19 +156,27 @@ class Project:
         self.power_production:DataFrame = container
 
         return container
-    
+
     def production_array(self)->list[DataFrame]:
         "get energy production DataFrame PER generation unit module"
         return list(map(lambda unit:unit.get_energy(),self.components[self.generation_group]))
 
     def performance(self,
                     consumptions:list[str],
-                    cost_increment:float=0,
+                    cost_increment:float|None,
                     connection:Connection = 'netbilling',):
-        """generates monthly result for savings and netbilling performance"""
-        production:DataFrame = self.energy_production()[["month","System_capacity_KW"]].groupby(["month"],as_index=False).sum()
+        """generates monthly result for
+        savings and netbilling performance"""
+        if cost_increment is not None:
+            self.cost_increment = cost_increment
 
-        future:DataFrame = self.building.consumption_forecast(group=consumptions,cost_increment=cost_increment)
+        production:DataFrame = self.energy_production()[["month","System_capacity_KW"]]\
+            .groupby(["month"],as_index=False).sum()
+
+        future:DataFrame = self.building.consumption_forecast(
+            group=consumptions,
+            cost_increment=self.cost_increment
+            )
 
         res = future.merge(right=production,how='left')
         res = res.rename(columns={'energy':'consumption','System_capacity_KW':'generation'})
@@ -206,6 +222,9 @@ class Project:
         res['benefits'] = res['savings']*res['unit_cost']
         eva_period = datetime.now().year +1
         res['CO2 kg'] = res['generation']*self.emissions.annual_projection(eva_period)
+
+        #local storage
+        self._performance = res
 
         return res
 
@@ -261,6 +280,50 @@ class Project:
                 container.append(obj_item)
 
         return {'cost':math.floor(total_cost*100)/100 ,'bucket':pd.DataFrame.from_dict(container)}
+
+    def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 0.1,format=False):
+        """"VAN TIR flux financial analysis"""
+        investment = self.bucket_list(currency)['cost']
+        first_period_income:float = self._performance['benefits'].sum()
+        flux:list[float] = [-investment,first_period_income]
+
+        for period in range(2,n_years+1):
+            last_period = flux[period-1]
+            flux.append(last_period*(self.cost_increment+1))
+
+        flux_acc:list[float] = []
+        for i,period in enumerate(flux):
+            if i == 0:
+                flux_acc.append(period)
+                continue
+
+            flux_acc.append(flux_acc[i-1]+period)
+
+        res_npv = npv(rate,flux)
+        res_irr = irr(flux)
+        res_sri = investment/first_period_income
+
+        if format:
+            return {'rate':f'{rate*100:.1f}%',
+                'investment':f'${investment:,.2f} .-',
+                'years':f'{n_years} years',
+                'flux':DataFrame({'flux':flux,'accumulated':flux_acc}).round(0),
+                'currency':currency.value,
+                'npv':f'{res_npv:,.0f}',
+                'irr':f'{res_irr*100:.2f} %',
+                'return':f'{res_sri:.2f} years',
+                }
+
+        return {'rate':rate,
+                'inverts':investment,
+                'years':n_years,
+                'flux':flux,
+                'accumulated':flux_acc,
+                'currency':currency.value,
+                'npv':res_npv,
+                'irr':res_irr,
+                'return':res_sri
+                }
 
 
     def get_context(self)->dict[str,Any]:
