@@ -305,13 +305,13 @@ class Project:
 
         if format:
             return {'rate':f'{rate*100:.1f}%',
-                'investment':f'${investment:,.2f} .-',
-                'years':f'{n_years} years',
+                'investment':f'${investment:,.2f} . -',
+                'years':n_years,
                 'flux':DataFrame({'flux':flux,'accumulated':flux_acc}).round(0),
                 'currency':currency.value,
-                'npv':f'{res_npv:,.0f}',
+                'npv':f'$ {res_npv:,.0f}. -',
                 'irr':f'{res_irr*100:.2f} %',
-                'return':f'{res_sri:.2f} years',
+                'return':f'{res_sri:.2f}',
                 }
 
         return {'rate':rate,
@@ -322,7 +322,9 @@ class Project:
                 'currency':currency.value,
                 'npv':res_npv,
                 'irr':res_irr,
-                'return':res_sri
+                'return':res_sri,
+                'npv_bool':res_npv>0,
+                'irr_bool':res_irr>0.05,
                 }
 
 
