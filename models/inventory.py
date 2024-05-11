@@ -13,7 +13,7 @@ from pandas import DataFrame
 from pyxirr import irr, npv # pylint: disable=no-member
 
 from models.components import Component, Tech
-from models.consumption import Consumption, Energetic, EnergyBill
+from models.consumption import Consumption, ElectricityBill, Energetic, EnergyBill
 from models.econometrics import Currency
 from models.emission import Emission
 from models.geometry import GeoPosition
@@ -99,14 +99,28 @@ class Project:
         title:str,
         building:Building,
         technology:list[Tech]|None = None,
+        consumption:dict[str,Any]|None=None
         ) -> None:
+        #building config
         self.emissions = Emission()
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
         self.title:str = title
+        #weather env
         self.weather = Weather(building.geolocation,\
             [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M])
         self.weather.get_data()
+        #consumptions
+        model:type[ElectricityBill] = None
+        match consumption['energetic']:
+            case Energetic.ELI:
+                model = ElectricityBill
+        
+        self.building.add_consumptions(
+            description=consumption['description'],
+            energetic=consumption['energetic'],
+            consumption= [model(it[0],it[1],it[2]) for it in consumption['consumption']]
+        )
 
     def add_component(self,item:str,*args:Component|Photovoltaic,generator:bool=False):
         """
