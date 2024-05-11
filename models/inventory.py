@@ -37,11 +37,11 @@ class Building:
     consumptions:dict[str,Consumption] ={}
 
     def __init__(self,
-                geolocation:GeoPosition,
+                geolocation:tuple[float,float,float|None],
                 name:str,
                 address:str,
                 city:str):
-        self.geolocation = geolocation
+        self.geolocation = GeoPosition(*geolocation)
         self.name=name
         self.address=address
         self.city=city
