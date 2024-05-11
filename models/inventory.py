@@ -53,11 +53,13 @@ class Building:
         self,
         description:str,
         energetic:Energetic,
+        cost_increment:float,
         consumption:list[EnergyBill],
 
         ):
         '''defining energy bill, '''
         instance=Consumption(energetic)
+        instance.set_cost_increment(cost_increment)
         instance.set_bill(consumption)
         self.consumptions[description] = instance
 
@@ -140,7 +142,7 @@ class Project:
 
         #consumptions
         print('adding consumptions data...')
-        model:type[ElectricityBill] = None
+        model:type[EnergyBill] = None
         match consumption['energetic']:
             case Energetic.ELI:
                 model = ElectricityBill
@@ -148,6 +150,7 @@ class Project:
         self.building.add_consumptions(
             description=consumption['description'],
             energetic=consumption['energetic'],
+            cost_increment=consumption['cost_increment'],
             consumption= [model(it[0],it[1],it[2]) for it in consumption['consumption']]
         )
 

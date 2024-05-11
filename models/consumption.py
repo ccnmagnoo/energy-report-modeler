@@ -155,6 +155,7 @@ class ElectricityBill(EnergyBill):
 class Consumption:
     """global energy billing and estimate  projection in 12 month"""
     bucket:list[EnergyBill]=[]
+    _cost_increment=1
     def __init__(self,energetic:Energetic) -> None:
         self.energetic = energetic
         self.property = properties[energetic]
@@ -175,6 +176,13 @@ class Consumption:
                 self.bucket = [billing] # inventory (\r\n)
         #acs sorting by date
         self.bucket.sort(key=lambda bill:bill.date_billing)
+
+    def set_cost_increment(self,value:float):
+        """set cost increment factor"""
+        if value >= 0 and value<=1:
+            self._cost_increment = value+1
+        else:
+            raise ValueError('cost increment value must be between 0 an 1')
 
     def records(self)->dict:
         """return a list of consumptions value"""
@@ -200,7 +208,7 @@ class Consumption:
 
     def forecast(self,
                             method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
-                            cost_increment:float=0.0
+                            cost_increment:float|None=None
                             )->DataFrame:
         """estimate monthly energy consumption from the next year
         >>>>completion: forecast has an estimated consumption
@@ -215,10 +223,12 @@ class Consumption:
         if self.property.supply == Supply.STORAGE:
             data =  self._distribute()
         df = pd.DataFrame.from_dict(data)
-        df = self._cost_increment(data=df,weight=(1+cost_increment))       
+        df = self._calc_cost_increment(
+            data=df,
+            weight=(( cost_increment and cost_increment+1 ) or self._cost_increment))
         return df
 
-    def _cost_increment(self,data:DataFrame,weight:float=1.0)->pd.DataFrame:
+    def _calc_cost_increment(self,data:DataFrame,weight:float=1.0)->pd.DataFrame:
         """estimate cost incremental by unitary volume clp/kWh
         >>>includes
         ...weight*cost multiplier
