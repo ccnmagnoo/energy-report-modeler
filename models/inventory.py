@@ -1,8 +1,10 @@
 """main wrapper dependencies"""
+import json
 import math
 from datetime import datetime
 from typing import Any, Literal
 
+from dotenv import dotenv_values
 import matplotlib.pyplot as plt
 import numpy
 import pandas as pd
@@ -10,11 +12,12 @@ from pandas import DataFrame
 
 # pylint: disable=no-member
 # error
-from pyxirr import irr, npv # pylint: disable=no-member
+from pyxirr import irr, npv # pylint: disable=no-name-in-module
+import requests # pylint: disable=no-member
 
 from models.components import Component, Tech
 from models.consumption import Consumption, ElectricityBill, Energetic, EnergyBill
-from models.econometrics import Currency
+from models.econometrics import Cost, Currency
 from models.emission import Emission
 from models.geometry import GeoPosition
 from models.photovoltaic import Photovoltaic
@@ -101,21 +104,47 @@ class Project:
         technology:list[Tech]|None = None,
         consumption:dict[str,Any]|None=None
         ) -> None:
+        #env values
+        config = dotenv_values(".env.local")
+
         #building config
         self.emissions = Emission()
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
         self.title:str = title
+
         #weather env
+        print('getting weather data...')
         self.weather = Weather(building.geolocation,\
             [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M])
         self.weather.get_data()
+
+        #currency init
+        print('getting currencies data...')
+            # national units https://mindicador.cl/api
+        query_factor:requests.Response = requests.get('https://mindicador.cl/api',timeout=1000)
+        ratios_cl = json.loads(query_factor.text)
+        usd_clp:float = ratios_cl['dolar']['valor']
+        Cost.set_exchange(Currency.CLP,usd_clp)
+        Cost.set_exchange(Currency.UF,usd_clp/ratios_cl['uf']['valor']) # 1 dolar in UF
+        Cost.set_exchange(Currency.UTM,usd_clp/ratios_cl['utm']['valor']) # 1 dolar in Utm
+
+            # exchange rates https://app.freecurrencyapi.com/dashboard
+        query_exchange:requests.Response = requests.get(config["CURRENCY_API_KEY"],timeout=1000)
+
+        currency_ratios = json.loads(query_exchange.text)
+        Cost.set_exchange(Currency.EUR,currency_ratios['data']['EUR'])
+        Cost.set_exchange(Currency.GBP,currency_ratios['data']['GBP'])
+        Cost.set_exchange(Currency.BRL,currency_ratios['data']['BRL'])
+
+
         #consumptions
+        print('adding consumptions data...')
         model:type[ElectricityBill] = None
         match consumption['energetic']:
             case Energetic.ELI:
                 model = ElectricityBill
-        
+
         self.building.add_consumptions(
             description=consumption['description'],
             energetic=consumption['energetic'],
