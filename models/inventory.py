@@ -106,8 +106,7 @@ class Project:
         technology:list[Tech]|None = None,
         consumption:dict[str,Any]|None=None
         ) -> None:
-        #env values
-        config = dotenv_values(".env.local")
+
 
         #building config
         self.emissions = Emission()
@@ -122,23 +121,7 @@ class Project:
         self.weather.get_data()
 
         #currency init
-        print('getting currencies data...')
-            # national units https://mindicador.cl/api
-        query_factor:requests.Response = requests.get('https://mindicador.cl/api',timeout=1000)
-        ratios_cl = json.loads(query_factor.text)
-        usd_clp:float = ratios_cl['dolar']['valor']
-        Cost.set_exchange(Currency.CLP,usd_clp)
-        Cost.set_exchange(Currency.UF,usd_clp/ratios_cl['uf']['valor']) # 1 dolar in UF
-        Cost.set_exchange(Currency.UTM,usd_clp/ratios_cl['utm']['valor']) # 1 dolar in Utm
-
-            # exchange rates https://app.freecurrencyapi.com/dashboard
-        query_exchange:requests.Response = requests.get(config["CURRENCY_API_KEY"],timeout=1000)
-
-        currency_ratios = json.loads(query_exchange.text)
-        Cost.set_exchange(Currency.EUR,currency_ratios['data']['EUR'])
-        Cost.set_exchange(Currency.GBP,currency_ratios['data']['GBP'])
-        Cost.set_exchange(Currency.BRL,currency_ratios['data']['BRL'])
-
+        self._load_exchanges()
 
         #consumptions
         print('adding consumptions data...')
@@ -388,3 +371,23 @@ class Project:
             "city": self.building.city
         }
         return context
+
+    def _load_exchanges(self):
+        #env values
+        config = dotenv_values(".env.local")
+        print('getting currencies data...')
+        # national units https://mindicador.cl/api
+        query_factor:requests.Response = requests.get('https://mindicador.cl/api',timeout=1000)
+        ratios_cl = json.loads(query_factor.text)
+        usd_clp:float = ratios_cl['dolar']['valor']
+        Cost.set_exchange(Currency.CLP,usd_clp)
+        Cost.set_exchange(Currency.UF,usd_clp/ratios_cl['uf']['valor']) # 1 dolar in UF
+        Cost.set_exchange(Currency.UTM,usd_clp/ratios_cl['utm']['valor']) # 1 dolar in Utm
+
+        # exchange rates https://app.freecurrencyapi.com/dashboard
+        query_exchange:requests.Response = requests.get(config["CURRENCY_API_KEY"],timeout=1000)
+
+        currency_ratios = json.loads(query_exchange.text)
+        Cost.set_exchange(Currency.EUR,currency_ratios['data']['EUR'])
+        Cost.set_exchange(Currency.GBP,currency_ratios['data']['GBP'])
+        Cost.set_exchange(Currency.BRL,currency_ratios['data']['BRL'])
