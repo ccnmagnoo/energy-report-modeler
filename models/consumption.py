@@ -183,6 +183,11 @@ class Consumption:
             self._cost_increment = value+1
         else:
             raise ValueError('cost increment value must be between 0 an 1')
+        
+    @property
+    def get_cost_increment(self)->float:
+        """return float -1 of cost increment"""
+        return self._cost_increment-1
 
     def records(self)->dict:
         """return a list of consumptions value"""
