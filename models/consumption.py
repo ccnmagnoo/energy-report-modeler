@@ -187,7 +187,7 @@ class Consumption:
     @property
     def get_cost_increment(self)->float:
         """return float -1 of cost increment"""
-        return self._cost_increment-1
+        return self._cost_increment
 
     def records(self)->dict:
         """return a list of consumptions value"""

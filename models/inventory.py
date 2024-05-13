@@ -65,20 +65,21 @@ class Building:
         instance.set_bill(consumption)
         self.consumptions[description] = instance
 
-    def consumption_forecast(self,group:list[str],cost_increment:float)->DataFrame:
+    def consumption_forecast(self,group:list[str])->DataFrame:
         """return sum of all consumption groups in this building"""
-        container:DataFrame = self.consumptions[group[0]].forecast(cost_increment=cost_increment)
+        
+        container:DataFrame = self.consumptions[group[0]].forecast()
         if len(self.consumptions)>1:
             for it in group[1:]:
-                calc = self.consumptions[it].forecast(cost_increment=cost_increment)
+                calc = self.consumptions[it].forecast()
                 container['energy'] = calc['energy'] + container['energy']
         return container
 
-    def plot_consumption_forecast(self,group:list[str],cost_increment:float):
+
+    def plot_consumption_forecast(self,group:list[str]):
         "generate graph"
         data:DataFrame = self.consumption_forecast(
-            group=group,
-            cost_increment=cost_increment)
+            group=group)
         plotter = plt.subplot()
         plotter.plot(data['month'].values,data['energy'].values,linewidth=2.0)
         plotter.set_xlabel('mes')
@@ -193,20 +194,15 @@ class Project:
 
     def performance(self,
                     consumptions:list[str],
-                    cost_increment:float|None,
                     connection:Connection = 'netbilling',):
         """generates monthly result for
         savings and netbilling performance"""
-        if cost_increment is not None:
-            self.cost_increment = cost_increment
-            
 
         production:DataFrame = self.energy_production()[["month","System_capacity_KW"]]\
             .groupby(["month"],as_index=False).sum()
 
         future:DataFrame = self.building.consumption_forecast(
             group=consumptions,
-            cost_increment=self.cost_increment
             )
 
         res = future.merge(right=production,how='left')
@@ -374,8 +370,7 @@ class Project:
         base = pd.DataFrame.from_dict(self.building.consumptions['main'].base())
         #production
         performance  = self.performance(
-            consumptions=['main'],
-            cost_increment=None
+            consumptions=['main']
             )
         production_performance = performance[['month','consumption','generation','netbilling','savings']]
         #system capacity
@@ -459,7 +454,7 @@ class Project:
         }
         return ctx
 
-    
+
     def _load_exchanges(self):
         #env values
         config = dotenv_values(".env.local")

@@ -10,7 +10,7 @@ def toTable(project:Project,path:str)->None:
     data_to_file:dict[str,DataFrame] = {
         'clima':project.weather.get_data(),
         'capacidad':project.energy_production(),
-        'performance':project.performance(consumptions=['main'],cost_increment=None),
+        'performance':project.performance(consumptions=['main']),
     }
 
     for key,data in data_to_file.items():
@@ -98,8 +98,10 @@ def plot_temperature(weather:DataFrame,path:str):
 
 def plot_components(project:Project,path:str):
     """plot components cost pie plot"""
-    bucket = project.bucket_list(currency=None)['bucket']
+    bucket = project.bucket_list(currency=Currency.CLP)['bucket']
+    plt.figure(figsize=(6,4))
     p = plt.subplot()
+
     colors = plt.get_cmap('Blues')(np.linspace(0.2, 0.7, bucket.index.size))
     p.pie(
         bucket['cost_after_tax'],
@@ -107,7 +109,9 @@ def plot_components(project:Project,path:str):
         colors=colors,
         autopct='%1.1f%%'
         )
-
+    p.set_xlabel('')
+    p.set_ylabel('')
+    p.legend().remove()
     plt.savefig(path+'plot_components'+'.png',dpi=300)
 
 def plot_components_irr(project:Project,path:str):
@@ -155,14 +159,13 @@ def plot_components_production(project:Project,path:str):
 
         for i, value in enumerate(group['System_capacity_KW'].round(0).values):
             plt.text(group.index[i], group['System_capacity_KW'][i], value, ha='center', va='bottom')
-
     plt.legend()
     plt.savefig(path+'plot_components_production'+'.png',dpi=300)
 
 def plot_production_performance(project:Project,path:str):
     """bar plot of generation, netbilling, total savings"""
     #plot_production_performance
-    performance = project.performance(consumptions=['main'],cost_increment=None)
+    performance = project.performance(consumptions=['main'])
     production_performance = performance[['month','consumption','generation','netbilling','savings']]
 
     plt.figure(figsize=(10,5),dpi=300)
