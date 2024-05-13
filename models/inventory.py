@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import numpy
 import pandas as pd
 from pandas import DataFrame
+from docxtpl import DocxTemplate,RichText
+from uuid import uuid1
 
 # pylint: disable=no-member
 # error
@@ -198,6 +200,7 @@ class Project:
         savings and netbilling performance"""
         if cost_increment is not None:
             self.cost_increment = cost_increment
+            
 
         production:DataFrame = self.energy_production()[["month","System_capacity_KW"]]\
             .groupby(["month"],as_index=False).sum()
@@ -358,19 +361,104 @@ class Project:
 
 
     def get_context(self)->dict[str,Any]:
+        #cspell: disable
         "return object with information for generate DOCX template"
-        context = {
-            #about this project
-            "project_name": self.title,
-            "project_type" : self.technology[0].value,
-            "project_size":self.nominal_power,
-            "size_unit":"kW",
-            "total_cost": self.bucket_list(Currency.CLP)["cost"],
+        #aux
+        doc = DocxTemplate("templates/memory_template.docx")
+        gmaps = RichText()
+        gmaps.add('ver maps',
+                url_id=doc.build_url_id(self.weather.geo_position.gmaps),
+                bold=True,
+                underline=True)
+        #demand projection
+        forecast:DataFrame = self.building.consumptions['main'].forecast(cost_increment=5/100)
+        base = pd.DataFrame.from_dict(self.building.consumptions['main'].base())
+        #production
+        performance  = self.performance(
+            consumptions=['main'],
+            cost_increment=None
+            )
+        production_performance = performance[['month','consumption','generation','netbilling','savings']]
+        #system capacity
+        production_array = list(
+            map(lambda it:f'{it['System_capacity_KW'].sum():.2f} kWh',
+                self.production_array()))
+        bucket = self.bucket_list(Currency.CLP)
+        bucket_df:DataFrame = bucket['bucket']
+
+        ctx:dict[str,any] = {
+            #report
+            "report_date":datetime.now().strftime("%a, %d de %B %Y"),
+            "report_version":"ver."+str(uuid1()).split('-',maxsplit=1)[0],
             #site
-            "building_name" : self.building.name,
-            "city": self.building.city
+            "project":self,
+            "gmaps":gmaps,
+
+            #about this project
+            "project_type" : self.technology[0].value.capitalize(),
+            "project_size":f"{self.nominal_power[0]:.2f} kW",
+            "total_cost": f"CLP$ {self.bucket_list(Currency.CLP)["cost"]:,.0f}",
+            #benefits
+            "annual_benefits": f"CLP$ {performance['benefits'].sum():,.0f}",
+            "energy_production": f"{performance['generation'].sum():.0f} kWh/año",
+            "energy_netbilling": f"{performance['netbilling'].sum():.0f} kWh/año",
+            "energy_savings": f"{performance['savings'].sum():.0f} kWh/año",
+            #emissions
+            "emission_reduction":f"{performance['CO2 kg'].sum():,.2f} kg CO2",
+            "emission_forecast":f'{self.emissions.annual_projection(2024):.4f} Ton CO2/MWh',
+            "table_emission_historic":self.emissions.annual_avg().round(4).to_markdown(index=False),
+            "table_emission_reduction":performance[['month','CO2 kg']].round(2).rename(columns={'month':'mes'}).to_markdown(index=False),
+
+            #consumptions
+                ##base
+            "table_base_consumptions":
+                base.rename(columns={
+                        "energy": "proyectado kWh",
+                        "month":'mes',
+                        'unit_cost':'costo $CLP/kWh'
+                        }).to_markdown(index=False),
+                ##projected or future
+            "cost_increment":f"{self.building.consumptions['main'].get_cost_increment*100:.2f} %",
+            "forecast_consumption":f"{forecast['energy'].sum()} kWh/año",
+            "table_forecast_consumptions":
+                forecast.rename(columns={
+                        "energy": "proyectado kWh",
+                        "month":'mes',
+                        'unit_cost':'costo $CLP/kWh'
+                        }).to_markdown(index=False),
+            #components
+            "table_components":bucket_df
+                    [['description','details','quantity','cost_after_tax']]
+                    .rename(columns={
+                        'description':'descripción',
+                        'details':'técnico',
+                        'quantity':'cantidad',
+                        'cost_after_tax':'costo bruto'
+                    })
+                    .to_markdown(index=False),
+            "table_energy_components":bucket_df[bucket_df['gloss']=='generación']\
+                [['description','details','quantity']]
+            .rename(columns={
+                        'description':'descripción',
+                        'details':'detalle',
+                        'quantity':'cantidad'
+                    })
+            .to_markdown(index=False),
+            #production
+            "table_production_array":production_array,
+            "table_production_performance":production_performance
+            .rename(columns={
+                    'month':'mes',
+                    'consumption':'demanda',
+                    'generation':'generación',
+                    'savings':'ahorro',
+                    }).round(2).to_markdown(index=False),
+            #economics
+            "eco":self.economical_analysis(Currency.CLP,format=True),
+            "eco_num":self.economical_analysis(Currency.CLP,format=False),
+
         }
-        return context
+        return ctx
 
     def _load_exchanges(self):
         #env values
