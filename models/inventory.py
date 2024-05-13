@@ -4,6 +4,7 @@ import math
 from datetime import datetime
 from typing import Any, Literal
 
+
 from dotenv import dotenv_values
 import matplotlib.pyplot as plt
 import numpy
@@ -11,7 +12,6 @@ import pandas as pd
 from pandas import DataFrame
 from docxtpl import DocxTemplate,RichText
 from uuid import uuid1
-
 # pylint: disable=no-member
 # error
 from pyxirr import irr, npv # pylint: disable=no-name-in-module
