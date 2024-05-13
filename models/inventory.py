@@ -289,7 +289,7 @@ class Project:
 
         return float(f'{area:.2f}')
 
-    def bucket_list(self,currency:Currency|None)->dict[str,Any]:
+    def bucket_list(self,currency:Currency|None=None)->dict[str,Any]:
         "get all cost related by components"
         #generate bucket
         container:list[tuple[str,str,int,float,str]] = []
