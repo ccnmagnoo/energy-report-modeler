@@ -355,14 +355,13 @@ class Project:
                 }
 
 
-    def context(self)->dict[str,Any]:
+    def context(self,template:DocxTemplate|None)->dict[str,Any]:
         #cspell: disable
         "return object with information for generate DOCX template"
         #aux
-        doc = DocxTemplate("templates/memory_template.docx")
         gmaps = RichText()
         gmaps.add('ver maps',
-                url_id=doc.build_url_id(self.weather.geo_position.gmaps),
+                url_id=template.build_url_id(self.weather.geo_position.gmaps),
                 bold=True,
                 underline=True)
         #demand projection
