@@ -98,7 +98,6 @@ class Project:
     components:dict[str,list[Component]] = {}
     power_production:DataFrame|None = None # local storage energy daily generation
     generation_group:str|None = None
-    cost_increment = 0
     _performance:DataFrame = DataFrame()
 
     def __init__(
@@ -321,7 +320,7 @@ class Project:
 
         for period in range(2,n_years+1):
             last_period = flux[period-1]
-            flux.append(last_period*(self.cost_increment+1))
+            flux.append(last_period*(self.building.consumptions['main'].get_cost_increment))
 
         flux_acc:list[float] = []
         for i,period in enumerate(flux):
@@ -360,7 +359,7 @@ class Project:
                 }
 
 
-    def get_context(self)->dict[str,Any]:
+    def context(self)->dict[str,Any]:
         #cspell: disable
         "return object with information for generate DOCX template"
         #aux
@@ -460,6 +459,7 @@ class Project:
         }
         return ctx
 
+    
     def _load_exchanges(self):
         #env values
         config = dotenv_values(".env.local")
