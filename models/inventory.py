@@ -412,7 +412,7 @@ class Project:
                         'unit_cost':'costo $CLP/kWh'
                         }).to_markdown(index=False),
                 ##projected or future
-            "cost_increment":f"{self.building.consumptions['main'].get_cost_increment*100:.2f} %",
+            "cost_increment":f"{self.building.consumptions['main'].get_cost_increment*100-100:.2f} %",
             "forecast_consumption":f"{forecast['energy'].sum()} kWh/año",
             "table_forecast_consumptions":
                 forecast.rename(columns={
