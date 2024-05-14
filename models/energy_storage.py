@@ -32,7 +32,6 @@ class Battery(EnergyStorage):
         self,
         description: str,
         model: str = 'generic',
-        specification: str | None = None,
         reference: str | None = None,
         cost_per_unit: Cost = ...,
         volt:Voltage=12,#volt
@@ -44,6 +43,7 @@ class Battery(EnergyStorage):
         daily_avg_demand:float = reduce(lambda acc,next:acc+next,demand)/365 if demand is not None else 0#kwh per day
         quantity = daily_avg_demand*autonomy/storage
         quantity = int(round(quantity,0)) if quantity>=1 else 1
+        specification = f'Battery {volt}V {charge}Ah '
 
 
         super().__init__(description, model, specification, reference, cost_per_unit, storage=volt*charge, quantity=quantity)
