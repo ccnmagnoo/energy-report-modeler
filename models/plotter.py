@@ -118,27 +118,37 @@ def plot_components_irr(project:Project,path:str):
     """plot each generation component irradiance on surface"""
 
     modules = project.production_array()
-
-    fig,axs = plt.subplots(2,1,layout='constrained')
+    n_modules=len(modules )
+    fig,axs = plt.subplots(n_modules,1,layout='constrained')
     fig.dpi = 300
     fig.set_size_inches(9,7)
 
     for i,module in enumerate(modules):
 
         #pivot table
-        pivot = module.fillna(0).pivot_table(index='month',columns='hour',values='IRR_incident')
+        pivot = module.fillna(0).pivot_table(
+            index='month',
+            columns='hour',
+            values='IRR_incident'
+            )
         #meshgrid
         x,y = np.meshgrid(pivot.columns,pivot.index)
         z = pivot.values
-        levels = np.linspace(0,1000,20)
-        cs= axs[i].contourf(x,y,z,levels=levels,cmap='plasma')
+        levels = np.linspace(0,1000,21)
+
+        #matplotlib returns an array on subplots(n,m) > 2x2
+        if n_modules == 1:
+            a = axs
+        else:
+            a = axs[i]
+
+        cs= a.contourf(x,y,z,levels=levels,cmap='plasma')
+        a.set_xlabel(f'24H (módulo {1+i})')
+        a.set_ylabel('Mes')
+
         plt.colorbar(cs)
-
-        axs[i].set_xlabel(f'24H (módulo {1+i})')
-        axs[i].set_ylabel('Mes')
-
         fig.suptitle('Irradiación Incidente media horaria [kW/m2]')
-        plt.savefig(path+'plot_components_irr'+'.png',dpi=305)
+        plt.savefig(path+'plot_components_irr'+'.png',dpi=300)
 
 def plot_components_production(project:Project,path:str):
     """plot energy generation on 12 month, line plot"""
