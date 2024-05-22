@@ -4,6 +4,11 @@ from models.econometrics import Cost, Currency
 #cspell: disable
 repo = {
     'inverter':{
+        '3W_mono':Component('Inversor on-grid',
+                model='Voltronic 3kW 48V',
+                reference='https://www.tiendatecnored.cl/inversor-string-canadian-solar-3kw.html',
+                specification='Ongrid 3kW Monofásico',
+                cost_per_unit=Cost(511290,Currency.CLP)),
         '5kW_mono':Component('Inversor Híbrido',
                 model='Voltronic 5kW 48V',
                 reference='https://solarbex.com/comprar/inversor-hibrido-5kw-48v-axpert/',
