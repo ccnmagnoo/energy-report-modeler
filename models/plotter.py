@@ -119,7 +119,7 @@ def plot_components_irr(project:Project,path:str):
 
     modules = project.production_array()
 
-    fig,axs = plt.subplots(len(modules),1,layout='constrained')
+    fig,axs = plt.subplots(2,1,layout='constrained')
     fig.dpi = 300
     fig.set_size_inches(9,7)
 
