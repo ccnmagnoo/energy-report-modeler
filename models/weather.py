@@ -2,7 +2,6 @@
 import json
 from datetime import datetime,date
 from enum import Enum
-import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
 import requests
