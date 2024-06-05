@@ -53,12 +53,14 @@ class PowerCurve:
     short_tension:float = 37.5
     max_ampere:float = 4.26
     short_ampere:float = 5.68
+
 @dataclass()
 class Cell:
     '''smaller panel component'''
     cell_type:CellType = CellType.MONO
     quantity_row:int = 6
     quantity_col:int = 10
+
 @dataclass()
 class ThermalCoef:
     """
@@ -110,7 +112,7 @@ class PvTechnicalSheet:
 class CostModel(Enum):
     """model of cost calculation Lambda"""
     #PV COST MODEL, includes price clp per watt,
-    # including cost of planel, inverter, instalation and infraestructure.
+    # including cost of panel, inverter, installation and infrastructure.
     ON_GRID:Callable[[float],float] = \
         lambda size_w: math.floor(-152.6*math.log(size_w)+2605.9) # clp/w
     OFF_GRID:Callable[[float],float] = \
