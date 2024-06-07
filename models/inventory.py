@@ -67,7 +67,7 @@ class Building:
 
     def consumption_forecast(self,group:list[str])->DataFrame:
         """return sum of all consumption groups in this building"""
-        
+
         container:DataFrame = self.consumptions[group[0]].forecast()
         if len(self.consumptions)>1:
             for it in group[1:]:
@@ -354,6 +354,14 @@ class Project:
                 'irr_bool':res_irr>0.05,
                 }
 
+    def storage(self)->dict[str,any]|None:
+        """storage capaciy
+        >>>result
+        ...None: no storage system,
+        ...Obj : main highlights
+        """
+
+        return None
 
     def context(self,template:DocxTemplate|None)->dict[str,Any]:
         #cspell: disable
