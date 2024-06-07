@@ -21,6 +21,7 @@ from models.components import Component, Tech
 from models.consumption import Consumption, ElectricityBill, Energetic, EnergyBill
 from models.econometrics import Cost, Currency
 from models.emission import Emission
+from models.energy_storage import Battery
 from models.geometry import GeoPosition
 from models.photovoltaic import Photovoltaic
 from models.weather import Weather
@@ -353,13 +354,17 @@ class Project:
                 'npv_bool':res_npv>0,
                 'irr_bool':res_irr>0.05,
                 }
-
+    #TODO:retrieve a Battery Component list
     def storage(self)->dict[str,any]|None:
-        """storage capaciy
+        """storage capacity
         >>>result
         ...None: no storage system,
         ...Obj : main highlights
         """
+        
+        for _,component_group in self.components.items():
+            for component in component_group:
+                print (component,isinstance(component,Battery))
 
         return None
 
