@@ -37,14 +37,24 @@ class Battery(EnergyStorage):
         volt:Voltage=12,#volt
         charge:float=0,#A-h
         demand:list[float]|None = None,#kWh
-        autonomy:int=1,#number of
+        hours_autonomy:int=1,#number of hours
         ) -> None:
-        storage:float = volt*charge/1000 # in KiloWatt
+        storage:float = volt*charge/1000 # in KiloWatt-hour
         daily_avg_demand:float = reduce(lambda acc,next:acc+next,demand)/365 if demand is not None else 0#kwh per day
-        quantity = daily_avg_demand*autonomy/storage
+        hourly_avg_demand:float = daily_avg_demand/24
+        quantity = hourly_avg_demand*hours_autonomy/storage
         quantity = int(round(quantity,0)) if quantity>=1 else 1
         specification = f'Battery {volt}V {charge}Ah'
-        
-        self.autonomy = autonomy
 
-        super().__init__(description, model, specification, reference, cost_per_unit, storage=volt*charge, quantity=quantity)
+
+        super().__init__(
+            description,
+            model,
+            specification,
+            reference,
+            cost_per_unit,
+            storage=volt*charge,
+            quantity=quantity)
+        
+        self.hours_autonomy = hours_autonomy
+        self.charge = charge

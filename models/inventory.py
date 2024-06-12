@@ -1,4 +1,5 @@
 """main wrapper dependencies"""
+from functools import reduce
 import json
 import math
 from datetime import datetime
@@ -354,19 +355,28 @@ class Project:
                 'npv_bool':res_npv>0,
                 'irr_bool':res_irr>0.05,
                 }
-    #TODO:retrieve a Battery Component list
-    def storage(self)->dict[str,any]|None:
+    def storage(self)->dict[str,float]|None:
         """storage capacity
         >>>result
         ...None: no storage system,
         ...Obj : main highlights
         """
-        
+        container:list[Battery] = []
+
         for _,component_group in self.components.items():
             for component in component_group:
-                print (component,isinstance(component,Battery))
+                if isinstance(component,Battery):
+                    container.append(component)
 
-        return None
+        if len(container) == 0:
+            return None
+
+        return {
+            "specification":list(map(lambda it:it.specification,container)),
+            "storage":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
+            "hours_autonomy":reduce(lambda acc,it:acc+it,[it.hours_autonomy for it in container]),
+            "units":reduce(lambda acc,it:acc+it,[it.quantity for it in container])
+        }
 
     def context(self,template:DocxTemplate|None)->dict[str,Any]:
         #cspell: disable
