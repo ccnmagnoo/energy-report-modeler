@@ -373,7 +373,7 @@ class Project:
 
         return {
             "specification":list(map(lambda it:it.specification,container)),
-            "storage":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
+            "energy_storage_kwh":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
             "hours_autonomy":reduce(lambda acc,it:acc+it,[it.hours_autonomy for it in container]),
             "units":reduce(lambda acc,it:acc+it,[it.quantity for it in container])
         }
