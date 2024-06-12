@@ -472,6 +472,9 @@ class Project:
             #economics
             "eco":self.economical_analysis(Currency.CLP,format=True),
             "eco_num":self.economical_analysis(Currency.CLP,format=False),
+            #energy storage unit
+            "storage_existance":True if self.storage() else False,
+            "storage_capacity":self.storage(),
 
         }
         return ctx
