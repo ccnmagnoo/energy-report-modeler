@@ -370,12 +370,19 @@ class Project:
 
         if len(container) == 0:
             return None
-
-        return {
+        
+        aux = {
             "specification":list(map(lambda it:it.specification,container)),
-            "energy_storage_kwh":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
+            "wh_per_module":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
             "hours_autonomy":reduce(lambda acc,it:acc+it,[it.hours_autonomy for it in container]),
             "units":reduce(lambda acc,it:acc+it,[it.quantity for it in container])
+        }
+
+        return {
+            "specification":aux['specification'],
+            "energy_storage_kwh":f'{aux['wh_per_module']*aux['units']/1000:.2f}',
+            "hours_autonomy":aux['hours_autonomy'],
+            "units":aux['units']
         }
 
     def context(self,template:DocxTemplate|None)->dict[str,Any]:
