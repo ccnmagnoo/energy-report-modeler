@@ -93,7 +93,7 @@ class PvTechnicalSheet:
     def __init__(self,
         power:int = 100,
         area:float|Dimensions= 1, #m2 or (long, wide in cm)
-        efficiency = 0.15,  # w/m2
+        efficiency = 8/100,  # w/m2
         power_curve:PowerCurve = PowerCurve(),
         cell:Cell = Cell(),
         thermal:ThermalCoef = ThermalCoef(),
@@ -355,13 +355,12 @@ class Photovoltaic(Component):
         #system capacity in w/m^2
         def calc_capacity(row)->DataFrame:
             #ref https://pvwatts.nrel.gov/downloads/pvwattsv5.pdf#page=9
+            # https://solar.minenergia.cl/downloads/fotovoltaico.pdf#page=8
             #data extract
             incident,t_cell = row[PvParam.INCIDENT.value],row[PvParam.T_CELL.value]
 
             if incident>= dobo_limit:
-                return (nominal_capacity*incident/ref_irr) *\
-                    nominal_capacity *\
-                    (1+gamma*(t_cell-t_ref))
+                return (nominal_capacity*incident/ref_irr) *nominal_capacity * (1+gamma*(t_cell-t_ref))
 
 
             return 0.008 * nominal_capacity * (incident**2 / ref_irr) *\
