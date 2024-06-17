@@ -310,7 +310,7 @@ class Project:
 
         return {'cost':math.floor(total_cost*100)/100 ,'bucket':pd.DataFrame.from_dict(container)}
 
-    def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 0.1,format=False):
+    def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 6/100,format=False):
         """"VAN TIR flux financial analysis"""
         investment = self.bucket_list(currency)['cost']
         first_period_income:float = self._performance['benefits'].sum()
