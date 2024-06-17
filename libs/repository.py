@@ -52,6 +52,12 @@ repo = {
         specification='Híbrido 7kW Monofásico',
         cost_per_unit=Cost(1255,Currency.EUR)
         ),
+        'Solis 8kW':Component('Inversor Híbrido',
+        model='Solis S6-EH10 48V',
+        reference='https://www.solartex.cl/tienda/producto/inversor-hibrido-8kw-solis-s6-eh1p8k-l-pro/',
+        specification='Híbrido 8kW 48V',
+        cost_per_unit=Cost(2184000,Currency.CLP)
+        ),
         'Solis 10kW':Component('Inversor Híbrido 10kW',
         model='Solis RHI 3P10K',
         reference='https://www.solartex.cl/tienda/producto/inversor-hibrido-trifasico-10kw-solis-rhi-3p10k-hves-5g/',
