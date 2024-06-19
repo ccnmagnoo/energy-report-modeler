@@ -16,7 +16,7 @@ repo = {
                 specification='Ongrid 3kW Monofásico',
                 cost_per_unit=Cost(1002800,Currency.CLP)
                 ),
-        'Voltronic 3WK':Component('Inversor ongrid 3kW',
+        'Voltronic 3kW':Component('Inversor ongrid 3kW',
                 model='Voltronic 3kW 48V',
                 reference='https://www.tiendatecnored.cl/inversor-string-canadian-solar-3kw.html',
                 specification='Ongrid 3kW Monofásico',
