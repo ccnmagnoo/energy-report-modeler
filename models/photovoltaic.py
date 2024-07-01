@@ -142,7 +142,7 @@ class Photovoltaic(Component):
     energy:DataFrame = pd.DataFrame()
     PARAMS:list[W] = [W.TEMPERATURE,W.DIRECT,W.DIFFUSE,W.ALBEDO,W.ZENITH,W.WIND_SPEED_10M]
     _system_capacity:DataFrame|None = None
-    
+
     def __init__(
         self,
         weather:Weather,
@@ -420,8 +420,18 @@ class Photovoltaic(Component):
         self._system_capacity = system_capacity
 
         return system_capacity
-    
 
+
+class PV_adapter:
+    def __init__(self,
+                nominal_power:int,
+                weather_data:Weather,
+                cost:Cost,
+                quantity:int,
+                
+
+                ) -> None:
+        pass
 
 
 #short test
