@@ -1,7 +1,11 @@
+from typing import Literal
 from models.components import Component
 from models.econometrics import Cost, Currency
+from models.geometry import Orientation
+from models.photovoltaic import Length, PvTechnicalSheet
 
 #cspell: disable
+
 repo = {
     'inverter':{
         'Solis 2.5kW':Component('Inversor ongrid 2.5kW',
@@ -71,4 +75,27 @@ repo = {
         cost_per_unit=Cost(3190,Currency.EUR)
         ),
     },
+    'panel':{
+        '655w' : {
+                'reference':'https://www.tiendatecnored.cl/modulo-fotovoltaico-650w-canadian-solar.html',
+                'specification':'Solar Panel PV 655w',
+                'model':'Canadian Solar 655w',
+                'cost':Cost(248171/1.19,Currency.CLP),
+                'technical_sheet':PvTechnicalSheet(power=655,area=(130.3,238.4,Length.CM)),
+        },
+        '375w' : {
+                'reference':'https://www.tiendatecnored.cl/panel-solar-375w-canadian-solar.html',
+                'specification':'Solar Panel PV 374w',
+                'model':'Canadian Solar 375w',
+                'cost':Cost(146509/1.19,Currency.CLP),
+                'technical_sheet':PvTechnicalSheet(power=375,area=(104.8,176.5,Length.CM)),
+        },
+        '455w' : {
+                'reference':'https://www.tiendatecnored.cl/modulo-fotovoltaico-455w-zn-shine.html',
+                'specification':'Solar Panel PV 374w MONO',
+                'model':'SHINE ZN ZXM6-NH144 455w',
+                'cost':Cost(116502/1.19,Currency.CLP),
+                'technical_sheet':PvTechnicalSheet(power=455,area=(104.8,209.4,Length.CM)),
+        },
+    }
 }
