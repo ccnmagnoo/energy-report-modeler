@@ -1,0 +1,161 @@
+{
+  "main": {
+    "id": "bcd71ab4579db6e5",
+    "type": "split",
+    "children": [
+      {
+        "id": "9af910114054d30b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fc84743f74c549ca",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "build/performance.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3a51aa84f2845e03",
+    "type": "split",
+    "children": [
+      {
+        "id": "1987565c8239d2cb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9dcd77610cc82d95",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "e1b2318dfa3b451c",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "b7f390351703c94f",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "db9e8c95cf70ab98",
+    "type": "split",
+    "children": [
+      {
+        "id": "a9e8ed702d510187",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "62ac69bec9196dd3",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "build/performance.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "61f5d4462296ff78",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "build/performance.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "6e8b6eaec807dfa1",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "59a51fb20d1365a2",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "build/performance.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false
+    }
+  },
+  "active": "fc84743f74c549ca",
+  "lastOpenFiles": [
+    "build/resume.canvas",
+    "build/performance.md",
+    "build/reporte_PSR Alicahue/plot_temperature.png",
+    "build/reporte_PSR Alicahue/plot_performance_frequency.png",
+    "build/reporte_PSR Alicahue/plot_flux.png",
+    "build/reporte_PSR Alicahue/plot_consumption_forecast.png",
+    "build/reporte_PSR Alicahue/plot_components_production.png",
+    "build/reporte_PSR Alicahue/plot_components_irr.png",
+    "build/reporte_PSR Alicahue/plot_components.png"
+  ]
+}
