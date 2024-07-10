@@ -158,7 +158,7 @@ class Photovoltaic(Component):
         ) -> None:
         #auxiliary values
         aux_cost:Cost
-        if (cost is None) and cost_model:
+        if cost is None:
             aux_cost = Cost(cost_model(technical_sheet.power)*technical_sheet.power,currency=Currency.CLP)
         else:
             aux_cost = cost
