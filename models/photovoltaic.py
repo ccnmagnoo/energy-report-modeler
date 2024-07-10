@@ -161,7 +161,7 @@ class Photovoltaic(Component):
         if (cost is None) and cost_model:
             aux_cost = Cost(cost_model(technical_sheet.power)*technical_sheet.power,currency=Currency.CLP)
         else:
-            aux_cost = Cost()
+            aux_cost = cost
         print('inside cost pv : ',aux_cost.value,aux_cost.currency)
         super().__init__(description, model, specification,reference,aux_cost, quantity)
 
