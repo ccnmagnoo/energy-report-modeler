@@ -89,7 +89,7 @@
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
-                "showSearch": false,
+                "showSearch": true,
                 "searchQuery": "",
                 "backlinkCollapsed": false,
                 "unlinkedCollapsed": true
@@ -133,8 +133,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -146,7 +145,7 @@
       "command-palette:Abrir paleta de comandos": false
     }
   },
-  "active": "fc84743f74c549ca",
+  "active": "62ac69bec9196dd3",
   "lastOpenFiles": [
     "build/resume.canvas",
     "build/performance.md",
