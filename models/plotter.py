@@ -99,7 +99,7 @@ def plot_temperature(weather:DataFrame,path:str):
 def plot_components(project:Project,path:str):
     """plot components cost pie plot"""
     bucket = project.bucket_list(currency=Currency.CLP)['bucket']
-    plt.figure(figsize=(5,5))
+    plt.figure(figsize=(7,5))
     p = plt.subplot()
 
     colors = plt.get_cmap('Blues')(np.linspace(0.2, 0.7, bucket.index.size))
@@ -112,7 +112,7 @@ def plot_components(project:Project,path:str):
     p.set_xlabel('')
     p.set_ylabel('')
     p.legend().remove()
-    plt.savefig(path+'plot_components'+'.png',dpi=300)
+    plt.savefig(path+'plot_components'+'.png',dpi=250,)
 
 def plot_components_irr(project:Project,path:str):
     """plot each generation component irradiance on surface"""
