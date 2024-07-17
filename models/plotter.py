@@ -1,3 +1,4 @@
+import folium
 from matplotlib import pyplot as plt
 import numpy as np
 from pandas import DataFrame,ExcelWriter
@@ -32,6 +33,7 @@ def plotter(project:Project,path:str)->None:
     plot_production_performance(project,path)
     plot_performance_frecuency(project,path)
     plot_flux(project,path)
+    plot_map(project,path)
 
     print('plot_done')
 
@@ -232,3 +234,26 @@ def plot_flux(project:Project,path:str):
         plt.text(data.index[i], (data['acumulado']/1000)[i], f'{value/1000:.0f}', ha='center', va='bottom',color='#045993',)
     plt.legend()
     plt.savefig(path+'plot_flux'+'.png',dpi=300)
+    
+def plot_map(project:Project, path:str):
+    #init
+    geo = project.building.geolocation
+    map = folium.Map(location=(geo.latitude,geo.longitude),zoom_start=12)
+
+    #marker
+    folium.Marker(
+        location=[geo.latitude,geo.longitude],
+        tooltip=project.building.name,
+        popup=project.building.address,
+        icon=folium.Icon(color='blue'),
+    ).add_to(map)
+    
+    #circle marker
+    folium.CircleMarker(
+        location=[geo.latitude,geo.longitude],
+        radius = 25,
+        fill=True,
+    ).add_to(map)
+    
+    map.save(path+'map_location'+'.html')
+
