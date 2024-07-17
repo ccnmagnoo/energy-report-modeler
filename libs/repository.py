@@ -8,6 +8,12 @@ from models.photovoltaic import Length, PvTechnicalSheet
 
 repo = {
     'inverter':{
+        'Huawei 2kW':Component('Inversor ongrid 2kW',
+                model='Huawei Sun2000-2KLT',
+                reference='https://www.dartel.cl/inversor-huawei-on-grid-2kw-hibrido-monofasico-sun2000-2ktl-l1-2088128161-huawei/p',
+                specification='Ongrid 2kW Híbrido',
+                cost_per_unit=Cost(678809,Currency.CLP)
+                ),
         'Solis 2.5kW':Component('Inversor ongrid 2.5kW',
                 model='Solis Mini 2500 4G',
                 reference='https://www.solartex.cl/tienda/producto/inversor-grid-tie-mini-2-5-kw-4g-monofasico-solis/',
