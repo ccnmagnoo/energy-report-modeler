@@ -58,3 +58,4 @@ class Battery(EnergyStorage):
         
         self.hours_autonomy = hours_autonomy
         self.charge = charge
+        self.hourly_avg_demand = daily_avg_demand

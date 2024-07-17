@@ -375,14 +375,16 @@ class Project:
             "specification":list(map(lambda it:it.specification,container)),
             "wh_per_module":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
             "hours_autonomy":reduce(lambda acc,it:acc+it,[it.hours_autonomy for it in container]),
-            "units":reduce(lambda acc,it:acc+it,[it.quantity for it in container])
+            "units":reduce(lambda acc,it:acc+it,[it.quantity for it in container]),
+            "hourly_avg_demand":reduce(lambda acc,it:acc+it,[it.hourly_avg_demand for it in container]),
         }
 
         return {
             "specification":aux['specification'],
             "energy_storage_kwh":f'{aux['wh_per_module']*aux['units']/1000:.2f}',
             "hours_autonomy":aux['hours_autonomy'],
-            "units":aux['units']
+            "units":aux['units'],
+            "avg_demand_per_hour":f'{aux['hourly_avg_demand']:.2f} kWh',
         }
 
     def context(self,template:DocxTemplate|None)->dict[str,Any]:
