@@ -458,7 +458,7 @@ class Project:
                         'quantity':'cantidad',
                         'cost_after_tax':'costo bruto'
                     })
-                    .to_markdown(index=False,floatfmt='.0f'),
+                    .to_markdown(index=False,floatfmt=',.0f'),
             "table_energy_components":bucket_df[bucket_df['gloss']=='generación']\
                 [['description','details','quantity']]
             .rename(columns={
