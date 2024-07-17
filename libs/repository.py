@@ -26,6 +26,12 @@ repo = {
                 specification='Ongrid 3kW Monofásico',
                 cost_per_unit=Cost(1002800,Currency.CLP)
                 ),
+        'InfiniSolar 3kW':Component('Inversor Hibrido 3kW',
+                model='InfiniSolar V 3kW',
+                reference='https://www.solartex.cl/tienda/producto/inversor-hibrido-infinisolar-v-3kw-48v/',
+                specification='Ongrid 3kW Hibrido',
+                cost_per_unit=Cost(675625,Currency.CLP)
+                ),
         'Voltronic 3kW':Component('Inversor ongrid 3kW',
                 model='Voltronic 3kW 48V',
                 reference='https://www.tiendatecnored.cl/inversor-string-canadian-solar-3kw.html',
