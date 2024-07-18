@@ -38,13 +38,18 @@ class Battery(EnergyStorage):
         charge:float=0,#A-h
         demand:list[float]|None = None,#kWh
         hours_autonomy:int=1,#number of hours
+        use_regime:Literal['24/7','16/7','8/7','24/5','16/5','8/5',]='24/7',
         ) -> None:
+        #battery specification
         storage:float = volt*charge/1000 # in KiloWatt-hour
-        daily_avg_demand:float = reduce(lambda acc,next:acc+next,demand)/365 if demand is not None else 0#kwh per day
-        hourly_avg_demand:float = daily_avg_demand/24
+        specification = f'Battery {volt}V {charge}Ah'
+        #regime extract
+        days_per_week,hours_per_day = [int(it) for it in use_regime.split('/')]
+        daily_avg_demand:float = reduce(lambda acc,next:acc+next,demand)/(days_per_week*52) if demand is not None else 0#kwh per day
+        hourly_avg_demand:float = daily_avg_demand/hours_per_day
+        #size bank requirements
         quantity = hourly_avg_demand*hours_autonomy/storage
         quantity = int(round(quantity,0)) if quantity>=1 else 1
-        specification = f'Battery {volt}V {charge}Ah'
 
 
         super().__init__(
