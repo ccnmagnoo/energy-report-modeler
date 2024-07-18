@@ -45,7 +45,8 @@ class Battery(EnergyStorage):
         specification = f'Battery {volt}V {charge}Ah'
         #regime extract
         days_per_week,hours_per_day = [int(it) for it in use_regime.split('/')]
-        daily_avg_demand:float = reduce(lambda acc,next:acc+next,demand)/(days_per_week*52) if demand is not None else 0#kwh per day
+        daily_avg_demand:float = reduce(lambda acc,next:acc+next,demand)/(days_per_week*52) \
+            if demand is not None else 0#kwh per day
         hourly_avg_demand:float = daily_avg_demand/hours_per_day
         #size bank requirements
         quantity = hourly_avg_demand*hours_autonomy/storage
@@ -60,7 +61,8 @@ class Battery(EnergyStorage):
             cost_per_unit,
             storage=volt*charge,
             quantity=quantity)
-        
+
         self.hours_autonomy = hours_autonomy
         self.charge = charge
         self.hourly_avg_demand = hourly_avg_demand
+# End-of-file (EOF)
