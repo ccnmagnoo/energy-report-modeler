@@ -32,8 +32,8 @@ class Cost:
         Currency.BRL:5.03
         } # values in 1 dolar
 
-    def __init__(self, value:float = 0,currency:Currency = Currency.CLP) -> None:
-        self.value:float = value
+    def __init__(self, net_value:float = 0,currency:Currency = Currency.CLP) -> None:
+        self.value:float = net_value
         if self._exchange_is_loaded(currency):
             self.currency:Currency = currency
         else:
