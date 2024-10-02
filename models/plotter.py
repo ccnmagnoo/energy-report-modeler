@@ -4,6 +4,7 @@ import numpy as np
 from pandas import DataFrame,ExcelWriter
 from models.econometrics import Currency
 from models.inventory import Project
+from html2image import Html2Image
 #cspell: disable
 
 def toTable(project:Project,path:str)->None:
@@ -34,6 +35,7 @@ def plotter(project:Project,path:str)->None:
     plot_performance_frecuency(project,path)
     plot_flux(project,path)
     plot_map(project,path)
+    map_to_image(path)
 
     print('plot_done')
 
@@ -257,3 +259,10 @@ def plot_map(project:Project, path:str):
     
     map.save(path+'map_location'+'.html')
 
+def map_to_image(html_path:str)->None:
+    """screenshot html map file to png"""
+    hti = Html2Image(browser='edge',size=(640,480),output_path=html_path)
+    hti.screenshot(
+        html_file=html_path+'map_location'+'.html',
+        save_as='map_location'+'.png')
+    
