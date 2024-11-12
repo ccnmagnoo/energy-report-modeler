@@ -172,7 +172,9 @@ class Project:
                 raise ValueError(f'{it}is not a energy gen component')
 
         #proceed for loop addition
-        container:DataFrame = self.components[self.generation_group][0].get_energy()
+       
+        container:DataFrame = self.components[self.generation_group][0].get_energy().copy() #copy class fix overwriting object
+        
         if number_of_components>1:
             for it in self.components[self.generation_group][1:]:
 
