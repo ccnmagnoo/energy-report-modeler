@@ -173,6 +173,7 @@ def plot_components_production(project:Project,path:str):
 
         for i, value in enumerate(group['System_capacity_KW'].round(0).values):
             plt.text(group.index[i], group['System_capacity_KW'][i], value, ha='center', va='bottom')
+            
     plt.legend()
     plt.savefig(path+'plot_components_production'+'.png',dpi=300)
 
