@@ -81,7 +81,7 @@ repo = {
         cost_per_unit=Cost(3735817,Currency.CLP)
         ),
         'Deye 12kW':Component('Inversor Híbrido Trifásico',
-        model='Deye UN-12K-SG04L P3-EU',
+        model='Deye UN-12K-SG04L',
         reference='https://solarbex.com/comprar/inversor-hibrido-deye-12kw-trifasico/',
         specification='Híbrido 12kW Trifásico',
         cost_per_unit=Cost(3190,Currency.EUR)
@@ -93,7 +93,7 @@ repo = {
         cost_per_unit=Cost(1252450,Currency.CLP)
         ),
         'Deye 30kW':Component('Inversor Híbrido Trifásico',
-        model='Deye SUN-30K-SG01HP3-EU-BM3',
+        model='Deye SUN-30K SG01HP3',
         reference='https://solarbex.com/venta/inversores-solares/trifasicos-380v/',
         specification='Ongrid Hibrido 30kW 380v',
         cost_per_unit=Cost(5995,Currency.EUR)
