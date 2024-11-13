@@ -81,10 +81,28 @@ repo = {
         cost_per_unit=Cost(3735817,Currency.CLP)
         ),
         'Deye 12kW':Component('Inversor Híbrido Trifásico',
-        model='Deye Sun 12kW 380V',
+        model='Deye UN-12K-SG04L P3-EU',
         reference='https://solarbex.com/comprar/inversor-hibrido-deye-12kw-trifasico/',
         specification='Híbrido 12kW Trifásico',
         cost_per_unit=Cost(3190,Currency.EUR)
+        ),
+        'Canadian 15kW':Component('Inversor Híbrido Trifásico',
+        model='Canadian Solar 15kW Trifásico',
+        reference='https://www.tiendatecnored.cl/inversor-canadian-solar-15kw-trifasico.html',
+        specification='Ongrid 15kW Trifásico',
+        cost_per_unit=Cost(1252450,Currency.CLP)
+        ),
+        'Deye 30kW':Component('Inversor Híbrido Trifásico',
+        model='Deye SUN-30K-SG01HP3-EU-BM3',
+        reference='https://solarbex.com/venta/inversores-solares/trifasicos-380v/',
+        specification='Ongrid Hibrido 30kW 380v',
+        cost_per_unit=Cost(5995,Currency.EUR)
+        ),
+        'Canadian 50kW':Component('Inversor Híbrido Trifásico',
+        model='Canadian Solar 50kW',
+        reference='https://www.tiendatecnored.cl/inversor-string-canadian-solar-50kw.html',
+        specification='Ongrid 50kW Trifásico',
+        cost_per_unit=Cost(3196176,Currency.CLP)
         ),
     },
     'panel':{
