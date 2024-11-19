@@ -93,7 +93,7 @@ class PvTechnicalSheet:
     def __init__(self,
         power:int = 100,
         area:float|Dimensions= 1, #m2 or (long, wide in cm)
-        efficiency = 8/100,  # w/m2
+        efficiency = 6/100,  # w/m2
         power_curve:PowerCurve = PowerCurve(),
         cell:Cell = Cell(),
         thermal:ThermalCoef = ThermalCoef(),
