@@ -1,7 +1,8 @@
 """main wrapper dependencies"""
 from functools import reduce
 import json
-import math
+from math import floor,log
+
 from datetime import datetime
 from typing import Any, Literal
 
@@ -172,9 +173,9 @@ class Project:
                 raise ValueError(f'{it}is not a energy gen component')
 
         #proceed for loop addition
-       
+
         container:DataFrame = self.components[self.generation_group][0].get_energy().copy() #copy class fix overwriting object
-        
+
         if number_of_components>1:
             for it in self.components[self.generation_group][1:]:
 
@@ -310,7 +311,7 @@ class Project:
                 }
                 container.append(obj_item)
 
-        return {'cost':math.floor(total_cost*100)/100 ,'bucket':pd.DataFrame.from_dict(container)}
+        return {'cost':floor(total_cost*100)/100 ,'bucket':pd.DataFrame.from_dict(container)}
 
     def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 5.5/100,format=False):
         """"VAN TIR flux financial analysis"""
@@ -318,11 +319,11 @@ class Project:
         first_period_income:float = self._performance['benefits'].sum()
         flux:list[float] = [-investment,first_period_income]
 
-        for period in range(2,n_years+1):
+        for period in range(2,n_years+1):#project benefits in n years
             last_period = flux[period-1]
             flux.append(last_period*(self.building.consumptions['main'].get_cost_increment))
 
-        flux_acc:list[float] = []
+        flux_acc:list[float] = [] #project sum flux
         for i,period in enumerate(flux):
             if i == 0:
                 flux_acc.append(period)
@@ -332,7 +333,7 @@ class Project:
 
         res_npv = npv(rate,flux)
         res_irr = irr(flux)
-        res_sri = investment/first_period_income
+        res_sri = self._ir(rate_cost=rate,flux=flux,method='exact')
 
         if format:
             return {'rate':f'{rate*100:.1f}%',
@@ -372,7 +373,7 @@ class Project:
 
         if len(container) == 0:
             return None
-        
+
         aux = {
             "specification":list(map(lambda it:it.specification,container)),
             "wh_per_module":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
@@ -510,3 +511,19 @@ class Project:
         Cost.set_exchange(Currency.EUR,currency_ratios['data']['EUR'])
         Cost.set_exchange(Currency.GBP,currency_ratios['data']['GBP'])
         Cost.set_exchange(Currency.BRL,currency_ratios['data']['BRL'])
+
+    def _ir(self,rate_cost:float,flux:list[float],method:Literal['simple','exact']='simple')-> float:
+        i = -flux[0]
+        b = flux[1]
+        
+        if method == 'simple': #simple Inverstment Time Return
+            return i/b
+        
+        if rate_cost == 0: #return simple ITR
+            return i/b
+        
+        #find period when is positive flux
+        if method == 'exact':
+            return log((i*rate_cost/b)+1)/log(rate_cost+1)
+
+        return 0
