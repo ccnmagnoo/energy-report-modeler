@@ -1,12 +1,11 @@
 from typing import Literal
 from models.components import Component
 from models.econometrics import Cost, Currency
-from models.geometry import Orientation
 from models.photovoltaic import Length, PvTechnicalSheet
 
 #cspell: disable
 
-repo = {
+repo:dict[str:dict[str,Component]] = {
     'inverter':{
         'Huawei 2kW':Component('Inversor ongrid 2kW',
                 model='Huawei Sun2000-2KLT',
