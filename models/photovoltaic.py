@@ -4,7 +4,7 @@ from enum import Enum
 from dataclasses import dataclass
 import datetime
 import math
-from typing import Callable, Self
+from typing import Callable
 import pandas as pd
 from pandas import DataFrame, Series
 from models.geometry import GeoPosition, Orientation
