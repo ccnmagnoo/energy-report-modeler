@@ -285,7 +285,7 @@ class Project:
         area =0
         for it in self.components[self.generation_group]:
             comp:Photovoltaic = it
-            area += comp.technical_sheet.area
+            area += comp.area
 
         return float(f'{area:.2f}')
 

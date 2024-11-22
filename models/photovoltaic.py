@@ -179,6 +179,10 @@ class Photovoltaic(Component):
     def set_cost(self,cost:Cost):
         """change cost value"""
         super().cost = cost
+        
+    @property
+    def area(self)->float:
+        return self.technical_sheet.area*self.quantity
 
     def _normal(self)->dict[str,float]:
         """elevation and azimuth surface´s normal"""
