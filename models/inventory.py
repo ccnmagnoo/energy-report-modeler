@@ -395,10 +395,11 @@ class Project:
         "return object with information for generate DOCX template"
         #aux
         gmaps = RichText()
-        gmaps.add('ver maps',
-                url_id=template.build_url_id(self.weather.geo_position.gmaps),
-                bold=True,
-                underline=True)
+        if template is not None:
+            gmaps.add('ver maps',
+                    url_id=template.build_url_id(self.weather.geo_position.gmaps),
+                    bold=True,
+                    underline=True)
         #demand projection
         forecast:DataFrame = self.building.consumptions['main'].forecast(cost_increment=5/100)
         base = pd.DataFrame.from_dict(self.building.consumptions['main'].base())
