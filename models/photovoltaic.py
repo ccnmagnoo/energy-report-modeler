@@ -334,15 +334,15 @@ class Photovoltaic(Component):
         ~~~~
         """
         #capacity under lab conditions AREA*QUANTITY*Ef
-        nominal_capacity:float = self.technical_sheet.area *\
-            self.technical_sheet.efficiency *self.quantity
+        # nominal_capacity:float = self.technical_sheet.area * self.quantity * self.technical_sheet.efficiency
+        nominal_capacity:float = self.technical_sheet.power * self.quantity/1000
 
         #temperature performance
         t_cel:Series = self._calc_temperature_cell(irradiation)
         t_ref:float = 25.5 #C°
         gamma:float = self.technical_sheet.thermal.power_coef_t/100# %/C°
         irr_incident:Series = irradiation[PvParam.INCIDENT.value]
-        dobo_limit = 125.0#W/m^2
+        DOBO_LIMIT = 125.0#W/m^2
         ref_irr = 1000#W/m^2
 
         #init calc system capacity
@@ -358,14 +358,13 @@ class Photovoltaic(Component):
             # https://solar.minenergia.cl/downloads/fotovoltaico.pdf#page=8
             #data extract
             incident,t_cell = row[PvParam.INCIDENT.value],row[PvParam.T_CELL.value]
+            gamma_factor = (1+gamma*(t_cell-t_ref))
 
-            if incident>= dobo_limit:
-                return (nominal_capacity*incident/ref_irr) *nominal_capacity * (1+gamma*(t_cell-t_ref))
+            if incident>= DOBO_LIMIT:
+                return (nominal_capacity*incident/ref_irr) * gamma_factor
 
 
-            return 0.008 * nominal_capacity * (incident**2 / ref_irr) *\
-                nominal_capacity *\
-                (1+gamma*(t_cell-t_ref))
+            return 0.008 * nominal_capacity * (incident**2 / ref_irr) * gamma_factor
 
         system_capacity[PvParam.SYS_CAP.value] = system_capacity.apply(calc_capacity,axis=1)
 
