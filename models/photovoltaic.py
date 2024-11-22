@@ -334,8 +334,8 @@ class Photovoltaic(Component):
         ~~~~
         """
         #capacity under lab conditions AREA*QUANTITY*Ef
-        # nominal_capacity:float = self.technical_sheet.area * self.quantity * self.technical_sheet.efficiency
-        nominal_capacity:float = self.technical_sheet.power * self.quantity/1000
+        # nominal_capacity:float = self.technical_sheet.area * self.quantity * self.technical_sheet.efficiency #0.18 w/m2
+        nominal_capacity:float = self.technical_sheet.power * self.quantity/1000 #0.21 w/m2
 
         #temperature performance
         t_cel:Series = self._calc_temperature_cell(irradiation)
@@ -358,13 +358,13 @@ class Photovoltaic(Component):
             # https://solar.minenergia.cl/downloads/fotovoltaico.pdf#page=8
             #data extract
             incident,t_cell = row[PvParam.INCIDENT.value],row[PvParam.T_CELL.value]
-            gamma_factor = (1+gamma*(t_cell-t_ref))
+            gamma_factor:float = (1+gamma*(t_cell-t_ref))
 
             if incident>= DOBO_LIMIT:
-                return (nominal_capacity*incident/ref_irr) * gamma_factor
+                return (incident/ref_irr) * nominal_capacity * gamma_factor
 
 
-            return 0.008 * nominal_capacity * (incident**2 / ref_irr) * gamma_factor
+            return 0.008 * (incident**2 / ref_irr) * nominal_capacity * gamma_factor
 
         system_capacity[PvParam.SYS_CAP.value] = system_capacity.apply(calc_capacity,axis=1)
 
