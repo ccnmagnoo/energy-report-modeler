@@ -31,6 +31,11 @@ class Component:
 
         self.cost:Cost= cost_per_unit
         self.quantity:int = quantity
+        
+    
+    def set_quantity(self, q:int):
+        if q>0:
+            self.quantity = q
 
     def total_cost_before_tax(self,currency:Currency|None)->tuple[float,Currency]:
         """cost before taxes"""

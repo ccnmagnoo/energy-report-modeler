@@ -5,8 +5,12 @@ from models.photovoltaic import Length, PvTechnicalSheet
 
 #cspell: disable
 
-repo:dict[str:dict[str,Component]] = {
-    'inverter':{
+type EquipType = Literal['inverter','panel']
+type EquipDef = str
+type Repo = dict[EquipType:dict[EquipDef,Component]]
+
+repo:Repo = {
+        'inverter':{
         'Huawei 2kW':Component('Inversor ongrid 2kW',
                 model='Huawei Sun2000-2KLT',
                 reference='https://www.dartel.cl/inversor-huawei-on-grid-2kw-hibrido-monofasico-sun2000-2ktl-l1-2088128161-huawei/p',
@@ -128,3 +132,14 @@ repo:dict[str:dict[str,Component]] = {
         },
     }
 }
+
+
+def component_builder(
+        equipment:EquipType,
+        definition:EquipDef,
+        quantity:int=1)->Component:
+        """Component constructor"""
+        
+        component:Component = repo[equipment][definition]
+        component.set_quantity(quantity)
+        return component
