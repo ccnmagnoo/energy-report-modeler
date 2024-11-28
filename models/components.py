@@ -72,13 +72,18 @@ type EquipmentCategory = Literal[
     'Labor',None]|str 
 class Specs:
     """contains all technical specification data"""
-    def __init__(self,category:EquipmentCategory,brand:str,model:str,seller_url:str|None=None,tech_specs_url:str|None=None,**kwargs:dict[str,str]) -> None:
+    def __init__(self,category:EquipmentCategory,brand:str='generic',model:str='n/i',seller_url:str=None,tech_specs_url:str=None,**kwargs:dict[str,str]) -> None:
         self.category:str = str(category)
         self.brand = brand
         self.model = model
-        self.seller_url = seller_url
-        self.tech_specs_url = tech_specs_url
+        self.seller_url = seller_url or 'no data'
+        self.tech_specs_url = tech_specs_url  or 'no data'
         self.data:dict[str,str]= kwargs
+    
+    @property  
+    def _inline_data(self)->str:
+        return " ".join([f"{it[0]}: {it[1]}," for it in self.data.items()])
+        
         
     def __str__(self) -> str:
         return f'{self.category} {self.brand} {self.model}'
@@ -86,13 +91,15 @@ class Specs:
     def __format__(self, format_spec: str) -> str:
         match format_spec:
             case 'partial':
-                return f'{self.category} {self.brand} {self.model} {" ".join([f"{it[0]}: {it[1]}," for it in self.data.items()])}'    
+                return f'{self.category} {self.brand} {self.model} {self._inline_data}'
+            case 'agnostic':
+                return f'{self.category} Generic N/A model {self._inline_data}'   
             case 'full':
                 return f"""
             {self.category} {self.brand} {self.model}
-            data    : {" ".join([f"{it[0]}: {it[1]}," for it in self.data.items()])}
-            link    : {self.seller_url}
-            tech    : {self.tech_specs_url}
+            details     : {self._inline_data}
+            market link : {self.seller_url}
+            tech link   : {self.tech_specs_url}
             """
             case _:
                 return self.__str__()
