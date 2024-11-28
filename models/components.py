@@ -19,12 +19,12 @@ type EquipmentCategory = Literal[
 
 class Specs:
     """contains all technical specification data"""
-    def __init__(self,category:EquipmentCategory,brand:str='generic',model:str='n/i',seller_url:str=None,tech_specs_url:str=None,**kwargs:dict[str,str]) -> None:
+    def __init__(self,category:EquipmentCategory,brand:str='generic',model:str='n/i',ref_url:str=None,specs_url:str=None,**kwargs:dict[str,str]) -> None:
         self.category:str = str(category)
         self.brand = brand
         self.model = model
-        self.seller_url = seller_url or 'no data'
-        self.tech_specs_url = tech_specs_url  or 'no data'
+        self.seller_url = ref_url or 'no data'
+        self.tech_specs_url = specs_url  or 'no data'
         self.data:dict[str,str]= kwargs
 
     @property
@@ -76,14 +76,11 @@ class Component:
         self,
         description:str,
         specification:Specs|None = None,
-        reference:str|None = None,
         cost_per_unit:Cost = Cost(),
         quantity:int = 1 ) -> None:
 
         self.description:str = description
         self.specification:str|None = specification
-        self.reference:str|None = reference
-
         self.cost:Cost= cost_per_unit
         self.quantity:int = quantity
 

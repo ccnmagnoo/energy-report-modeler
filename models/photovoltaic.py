@@ -9,7 +9,7 @@ import pandas as pd
 from pandas import DataFrame, Series
 from models.geometry import GeoPosition, Orientation
 from models.weather import Weather, WeatherParam as W
-from models.components import Component
+from models.components import Component, Specs
 from models.econometrics import Cost, Currency
 class CellType(Enum):
     """crystal cell configuration"""
@@ -146,10 +146,8 @@ class Photovoltaic(Component):
     def __init__(
         self,
         weather:Weather,
-        description: str = 'Panel Fotovoltaico',
-        model: str = 'generic',
-        specification: str | None = None,
-        reference: str | None = None,
+        description: str = 'Panel FV',
+        specification: Specs = Specs(category='Photovoltaic'),
         quantity: int = 1,#units
         cost:Cost|None = None,
         cost_model:Callable[[float],float]|None = CostModel.LINEAR,
@@ -163,7 +161,12 @@ class Photovoltaic(Component):
         else:
             aux_cost = cost
         print('inside cost pv : ',aux_cost.value,aux_cost.currency)
-        super().__init__(description, model, specification,reference,aux_cost, quantity)
+        
+        super().__init__(
+            description=description,
+            specification=specification,
+            cost_per_unit=aux_cost,
+            quantity=quantity)
 
         self.orientation = orientation
         self.technical_sheet = technical_sheet
