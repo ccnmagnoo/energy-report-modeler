@@ -1,5 +1,5 @@
 from typing import Literal
-from models.components import Component
+from models.components import Component, Specs
 from models.econometrics import Cost, Currency
 from models.photovoltaic import Length, PvTechnicalSheet
 
@@ -11,101 +11,273 @@ type Repo = dict[EquipType:dict[EquipDef,Component]]
 
 repo:Repo = {
         'inverter':{
-        'Huawei 2kW':Component('Inversor ongrid 2kW',
-                model='Huawei Sun2000-2KLT',
-                reference='https://www.dartel.cl/inversor-huawei-on-grid-2kw-hibrido-monofasico-sun2000-2ktl-l1-2088128161-huawei/p',
-                specification='Ongrid 2kW Híbrido',
-                cost_per_unit=Cost(678809,Currency.CLP)
+        'HW 2kW':Component(
+                description='Inversor ongrid 2kW',
+                specification=Specs(
+                        'Inverter',
+                        'Huawei',
+                        'Sun2000-2KLT-L1',
+                        'https://www.dartel.cl/inversor-huawei-on-grid-2kw-hibrido-monofasico-sun2000-2ktl-l1-2088128161-huawei/p',
+                        'https://imagenes.dartel.cl/2088128161/FICHA/FICHA_2088128161.pdf',
+                        mode='on-grid',
+                        power='2kW',
+                        input='220V',
+                        fase='Monofase',
+                        MPPT_r='90-560V',
+                        MPPT='1/1'
+
+                        ),
+                cost_per_unit=Cost(678_809,Currency.CLP)
                 ),
-        'Solis 2.5kW':Component('Inversor ongrid 2.5kW',
-                model='Solis Mini 2500 4G',
-                reference='https://www.solartex.cl/tienda/producto/inversor-grid-tie-mini-2-5-kw-4g-monofasico-solis/',
-                specification='Ongrid 2.5kW Monofásico',
-                cost_per_unit=Cost(557000,Currency.CLP)
+        'SL 2.5kW':Component(
+                description='Inversor ongrid 2.5kW',
+                specification=Specs(
+                        'Inverter',
+                        'Solis',
+                        'Mini 2500 4G',
+                        'https://www.solartex.cl/tienda/producto/inversor-grid-tie-mini-2-5-kw-4g-monofasico-solis/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2023/06/Solis-mini-700-3600-4G.pdf',
+                        mode='on-grid',
+                        power='2.5kW',
+                        input='330V',
+                        fase='Monofase',
+                        MPPT_r='80-500V',
+                        ),
+                cost_per_unit=Cost(557_000,Currency.CLP)
                 ),
-        'Huawei 3WK':Component('Inversor ongrid 3kW',
-                model='Huawei SUN2000 3KTL',
-                reference='https://www.solartex.cl/tienda/producto/inversor-grid-tie-3kw-sun2000-3ktl-huawei/',
-                specification='Ongrid 3kW Monofásico',
-                cost_per_unit=Cost(1002800,Currency.CLP)
+        'HW 3WK':Component(
+                description='Inversor ongrid 3kW',
+                specification=Specs(
+                        'Inverter',
+                        'Huawei',
+                        'SUN2000-3KTL',
+                        'https://www.solartex.cl/tienda/producto/inversor-grid-tie-3kw-sun2000-3ktl-huawei/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2019/07/FICHA-TECNICA-PDF.jpg',
+                        mode='on-grid',
+                        power='3KWp',
+                        input='600V',
+                        fase='Mono',
+                        MPPT_r='90-600V',
+                        ),
+                cost_per_unit=Cost(1_002_800,Currency.CLP)
                 ),
-        'InfiniSolar 3kW':Component('Inversor Hibrido 3kW',
-                model='InfiniSolar V 3kW',
-                reference='https://www.solartex.cl/tienda/producto/inversor-hibrido-infinisolar-v-3kw-48v/',
-                specification='Ongrid 3kW Hibrido',
-                cost_per_unit=Cost(675625,Currency.CLP)
+        'IS 3kW':Component(
+                description='Inversor Hibrido 3kW',
+                specification=Specs(
+                        'Inverter',
+                        'InfiniSolar',
+                        'V 3KW 48V',
+                        'https://www.solartex.cl/tienda/producto/inversor-hibrido-infinisolar-v-3kw-48v/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2019/07/V.INF_.P.3K-48.pdf',
+                        mode='Hybrid',
+                        power='3KWp',
+                        volt='145VDC',
+                        fase='Mono',
+                        MPPT_r='90-600V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(675_625,Currency.CLP)
                 ),
-        'Voltronic 3kW':Component('Inversor ongrid 3kW',
-                model='Voltronic 3kW 48V',
-                reference='https://www.tiendatecnored.cl/inversor-string-canadian-solar-3kw.html',
-                specification='Ongrid 3kW Monofásico',
-                cost_per_unit=Cost(511290,Currency.CLP)
+        'CS 3kW':Component(
+                description='Inversor Ongrid 3kW',
+                specification=Specs(
+                        'Inverter',
+                        'Canadian Solar',
+                        'CSI-700TL1P-GI-FL',
+                        'https://www.tiendatecnored.cl/inversor-string-canadian-solar-3kw.html',
+                        'https://www.tiendatecnored.cl/media/wysiwyg/ficha-tecnica/7404406_110520.pdf',
+                        mode='on-grid',
+                        power='3KWp',
+                        volt='600V',
+                        fase='Mono',
+                        MPPT_r='234-500V',
+                        ),
+                cost_per_unit=Cost(511_290,Currency.CLP)
                 ),
-        'Solis 3.6kW':Component('Inversor ongrid 3.6kW',
-                model= 'Solis-S6GR1PM 3.6kW',
-                reference='https://www.solartex.cl/tienda/producto/inversor-grid-tie-sun2000-4ktl-4kw-huawei/',
-                specification='Solis Tie 3.6kW Solist',
-                cost_per_unit=Cost(612000,currency=Currency.CLP),
-                ),
-        'Huawei 4kW':Component('Inversor - ongrid 4kW',
-                model= 'Huawei SUN2000L-4KTL L1',
-                reference='https://www.solartex.cl/tienda/producto/inversor-grid-tie-sun2000-4ktl-4kw-huawei/',
+        'HW 4kW':Component(
+                description='Inversor Ongrid 4kW',
+                specification=Specs(
+                        'Inverter',
+                        'Huawei',
+                        'SUN2000L-4KTL L1',
+                        'https://www.solartex.cl/tienda/producto/inversor-grid-tie-sun2000-4ktl-4kw-huawei/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2019/07/FICHA-TECNICA-PDF.jpg',
+                        mode='on-grid',
+                        power='4KWp',
+                        volt='600V',
+                        fase='Mono',
+                        MPPT_r='210-480V',
+                        ),
                 specification='On-grid 4kW Monofásico',
-                cost_per_unit=Cost(1227050,currency=Currency.CLP),
+                cost_per_unit=Cost(1_227_050,currency=Currency.CLP),
                 ),
-        'Voltronic 5kW':Component('Inversor Híbrido',
-                model='Voltronic 5kW 48V',
-                reference='https://solarbex.com/comprar/inversor-hibrido-5kw-48v-axpert/',
-                specification='Híbrido 5kW Monofásico',
-                cost_per_unit=Cost(869,Currency.EUR)
+        'VT 5kW':Component(
+                description='Inversor Híbrido 5KW',
+                specification=Specs(
+                        'Inverter',
+                        'Voltronic',
+                        'Axpert VMIII 5kW',
+                        'https://www.naturaenergy.cl/product/inversor-cargador-voltronic-axpert-vm-iii-48v-5000va-5000w',
+                        'https://s3.amazonaws.com/bsalemarket/10729/1/AD5273(1).pdf',
+                        mode='Hybrid',
+                        power='5KWp',
+                        volt='500V',
+                        fase='Mono',
+                        MPPT_r='90-280V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(487_387,Currency.CLP)
                 ),
-        'Solis 6kW':Component('Inversor Híbrido',
-                model='Solis RHI-6K-48ES-5G',
-                reference='https://www.solartex.cl/tienda/producto/inversor-hibrido-6kw-48v-solis-rhi-5g/',
-                specification='Híbrido 6kW 48V',
-                cost_per_unit=Cost(2109600,Currency.CLP)
+        'SL 6kW':Component(
+                description='Inversor Híbrido 6kW',
+                specification=Specs(
+                        'Inverter',
+                        'Solis',
+                        '6KW RHI-48ES-5G',
+                        'https://www.solartex.cl/tienda/producto/inversor-hibrido-6kw-48v-solis-rhi-5g/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2023/06/Ficha-de-datos-RHI-3-6K-48ES-5G.pdf',
+                        mode='Hybrid',
+                        power='6KWp',
+                        volt='500V',
+                        fase='Mono',
+                        MPPT_r='90-280V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(2_109_600,Currency.CLP)
                 ),
-        'Voltronic 7kW':Component('Inversor Híbrido',
-        model='Voltronic 7kW 48V',
-        reference='https://solarbex.com/comprar/inversor-hibrido-7kw-48v-voltronic/',
-        specification='Híbrido 7kW Monofásico',
-        cost_per_unit=Cost(1255,Currency.EUR)
+        'VT 7kW':Component(
+                description='Inversor Hibrido 7.2kW',
+                specification=Specs(
+                        'Inverter',
+                        'Voltronic',
+                        'Axpert Max7200W',
+                        'https://www.naturaenergy.cl/product/inversor-cargador-voltronic-axpert-max-48v-7200w-con-mppt-dual-8000w-pv',
+                        'https://s3.amazonaws.com/bsalemarket/10729/3/AD2211-FICHA-TECNICA-INVERSOR-AEXPERTMAX',
+                        mode='Hybrid',
+                        power='7.2KWp',
+                        volt='500V',
+                        fase='Mono',
+                        MPPT_r='80a/500V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(878_143,Currency.CLP),
         ),
-        'Solis 8kW':Component('Inversor Híbrido',
-        model='Solis S6-EH10 48V',
-        reference='https://www.solartex.cl/tienda/producto/inversor-hibrido-8kw-solis-s6-eh1p8k-l-pro/',
-        specification='Híbrido 8kW 48V',
-        cost_per_unit=Cost(2184000,Currency.CLP)
+        'SL 8kW':Component(
+                description='Inversor Híbrido 8kW',
+                specification=Specs(
+                        'Inverter',
+                        'Solis',
+                        'S6-EH1P8K-L Pro',
+                        'https://www.solartex.cl/tienda/producto/inversor-hibrido-8kw-solis-s6-eh1p8k-l-pro/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2024/03/S6-EH1P8K-LP.pdf',
+                        mode='Hybrid',
+                        power='8KWp',
+                        volt='230VAC',
+                        fase='Mono',
+                        MPPT_r='90-450VDC',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(2_184_000,Currency.CLP)
         ),
-        'Solis 10kW':Component('Inversor Híbrido 10kW',
-        model='Solis RHI 3P10K',
-        reference='https://www.solartex.cl/tienda/producto/inversor-hibrido-trifasico-10kw-solis-rhi-3p10k-hves-5g/',
-        specification='Híbrido 10kW 3FASE 48V',
-        cost_per_unit=Cost(3735817,Currency.CLP)
+        'SL 10kW':Component(
+                description='Inversor Híbrido 10kW',
+                specification=Specs(
+                        'Inverter',
+                        'Solis',
+                        'RHI-3P10K',
+                        'https://www.solartex.cl/tienda/producto/inversor-hibrido-trifasico-10kw-solis-rhi-3p10k-hves-5g/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2023/06/Solis_datasheet_RHI-3P5-10K-HVES-5G_AUS.pdf',
+                        mode='Hybrid',
+                        power='10KW',
+                        volt='1000V',
+                        fase='3|f',
+                        MPPT_r='200-850V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(3_735_817,Currency.CLP)
         ),
-        'Deye 12kW':Component('Inversor Híbrido Trifásico',
-        model='Deye UN-12K-SG04L',
-        reference='https://solarbex.com/comprar/inversor-hibrido-deye-12kw-trifasico/',
-        specification='Híbrido 12kW Trifásico',
-        cost_per_unit=Cost(3190,Currency.EUR)
+        'DY 12kW':Component(
+                description='Inversor Híbrido 3/F 12kW',
+                specification=Specs(
+                        'Inverter',
+                        'Deye',
+                        'SUN-12K-SG04L P3-EU',
+                        'https://solarbex.com/comprar/inversor-hibrido-deye-12kw-trifasico/',
+                        'https://solarbex.com/wp-content/uploads/2023/09/DEYE-HYBRID-TRIFASICO-10K-12K.pdf',
+                        mode='Hybrid',
+                        power='12KWp',
+                        volt='500V',
+                        fase='Mono',
+                        MPPT_r='80a/650V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(3_190,Currency.EUR)
         ),
-        'Canadian 15kW':Component('Inversor Híbrido Trifásico',
-        model='Canadian Solar 15kW Trifásico',
-        reference='https://www.tiendatecnored.cl/inversor-canadian-solar-15kw-trifasico.html',
-        specification='Ongrid 15kW Trifásico',
-        cost_per_unit=Cost(1252450,Currency.CLP)
+        'CS 15kW':Component(
+                description='Inversor Híbrido 3/F 15kW',
+                specification=Specs(
+                        'Inverter',
+                        'Solar Canadian',
+                        'CSI-15K-T400GL01-E',
+                        'https://www.tiendatecnored.cl/inversor-canadian-solar-15kw-trifasico.html',
+                        'https://solarbex.com/wp-content/uploads/2023/09/DEYE-HYBRID-TRIFASICO-10K-12K.pdf',
+                        mode='Hybrid',
+                        power='15KWp',
+                        volt='500V',
+                        fase='3|f',
+                        MPPT_r='80a/650V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(1_252_450,Currency.CLP)
         ),
-        'Deye 30kW':Component('Inversor Híbrido Trifásico',
-        model='Deye SUN-30K SG01HP3',
-        reference='https://solarbex.com/venta/inversores-solares/trifasicos-380v/',
-        specification='Ongrid Hibrido 30kW 380v',
-        cost_per_unit=Cost(5995,Currency.EUR)
+        'DY 30kW':Component(
+                description='Inversor Híbrido 3/F 30kW',
+                specification=Specs(
+                        'Inverter',
+                        'Deye',
+                        'SUN-30K SG01HP3',
+                        'https://solarbex.com/comprar/inversor-hibrido-deye-30kw-trifasico-alto-voltaje/',
+                        'https://solarbex.com/wp-content/uploads/2023/08/SUN-25-50K-SG01HP3-EU.pdf',
+                        mode='Hybrid',
+                        power='30KWp',
+                        volt='500V',
+                        fase='3|f',
+                        MPPT_r='80a/650V',
+                        battery='48V'
+                        ),
+        cost_per_unit=Cost(5_995,Currency.EUR)
         ),
-        'Canadian 50kW':Component('Inversor Híbrido Trifásico',
-        model='Canadian Solar 50kW',
-        reference='https://www.tiendatecnored.cl/inversor-string-canadian-solar-50kw.html',
-        specification='Ongrid 50kW Trifásico',
-        cost_per_unit=Cost(3196176,Currency.CLP)
+        'CS 50kW':Component('Inversor Híbrido 3/F 50kW',
+                specification=Specs(
+                        'Inverter',
+                        'Canadian Solar',
+                        'CSI-50K-T400GL03-E',
+                        'https://www.solartex.cl/tienda/producto/inversor-grid-tie-50kw-trifasico-canadian-solar/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2023/05/INVERSOR-CANADIAN-CSI-50K-T400.pdf',
+                        mode='Hybrid',
+                        power='50KWp',
+                        volt='500V',
+                        fase='3|f',
+                        MPPT_r='80a/650V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(4_690_000,Currency.CLP)
+        ),
+        'CS 100kW':Component('Inversor Híbrido 3/F 100kW',
+                specification=Specs(
+                        'Inverter',
+                        'Canadian Solar',
+                        'CSI-100K-T400GL02-E',
+                        'https://www.solartex.cl/tienda/producto/inversor-grid-tie-100kw-trifasico-canadian-solar/',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2023/05/CANADIAN-SOLAR-CSI-100K-T400GL02-E.pdf',
+                        mode='Hybrid',
+                        power='100KWp',
+                        volt='1100V',
+                        fase='3|f',
+                        MPPT_r='180-1000V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(8_680_000,Currency.CLP)
         ),
     },
     'panel':{
@@ -139,7 +311,7 @@ def component_builder(
         definition:EquipDef,
         quantity:int=1)->Component:
         """Component constructor"""
-        
+
         component:Component = repo[equipment][definition]
         component.set_quantity(quantity)
         return component
