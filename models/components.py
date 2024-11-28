@@ -60,10 +60,19 @@ class Assembly:
         if group not in self.package:
             raise ValueError('no group on list ->',list(self.package.keys()))
         return self.package[group]
-    
+
+
+type EquipmentCategory = Literal[
+    'Photovoltaic',
+    'Solar Panel',
+    'Inverter',
+    'Charge Regulator',
+    'Fixation',
+    'Wiring',
+    'Labor',None]|str 
 class Specs:
     """contains all technical specification data"""
-    def __init__(self,category:str,brand:str,model:str,seller_url:str|None=None,tech_specs_url:str|None=None,**kwargs:dict[str,str]) -> None:
+    def __init__(self,category:EquipmentCategory,brand:str,model:str,seller_url:str|None=None,tech_specs_url:str|None=None,**kwargs:dict[str,str]) -> None:
         self.category:str = str(category)
         self.brand = brand
         self.model = model
