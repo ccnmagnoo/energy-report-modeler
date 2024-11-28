@@ -1,5 +1,6 @@
 """data"""
 from enum import Enum
+from typing import Literal
 
 
 if __name__ == "__main__":
@@ -59,7 +60,33 @@ class Assembly:
         if group not in self.package:
             raise ValueError('no group on list ->',list(self.package.keys()))
         return self.package[group]
+    
+class Specs:
+    """contains all technical specification data"""
+    def __init__(self,category:str,brand:str,model:str,seller_url:str|None=None,tech_specs_url:str|None=None,**kwargs:dict[str,str]) -> None:
+        self.category:str = str(category)
+        self.brand = brand
+        self.model = model
+        self.seller_url = seller_url
+        self.tech_specs_url = tech_specs_url
+        self.data:dict[str,str]= kwargs
+        
+    def __str__(self) -> str:
+        return f'{self.category} {self.brand} {self.model}'
 
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case 'partial':
+                return f'{self.category} {self.brand} {self.model} {" ".join([f"{it[0]}: {it[1]}," for it in self.data.items()])}'    
+            case 'full':
+                return f"""
+            {self.category} {self.brand} {self.model}
+            data    : {" ".join([f"{it[0]}: {it[1]}," for it in self.data.items()])}
+            link    : {self.seller_url}
+            tech    : {self.tech_specs_url}
+            """
+            case _:
+                return self.__str__()
 
 #manual test
 if __name__ == "__main__":
