@@ -8,33 +8,88 @@ if __name__ == "__main__":
 else:
     from models.econometrics import Cost, Currency
 
+type EquipmentCategory = Literal[
+    'Photovoltaic',
+    'Solar Panel',
+    'Inverter',
+    'Charge Regulator',
+    'Fixation',
+    'Wiring',
+    'Labor',None]|str
+
+class Specs:
+    """contains all technical specification data"""
+    def __init__(self,category:EquipmentCategory,brand:str='generic',model:str='n/i',seller_url:str=None,tech_specs_url:str=None,**kwargs:dict[str,str]) -> None:
+        self.category:str = str(category)
+        self.brand = brand
+        self.model = model
+        self.seller_url = seller_url or 'no data'
+        self.tech_specs_url = tech_specs_url  or 'no data'
+        self.data:dict[str,str]= kwargs
+
+    @property
+    def _inline_data(self)->str:
+        """
+        format content data 
+        kwarg1:val1/kwarg2:val2/kwarg3:val3
+        """
+        return r"/".join([f"{it[0]}:{it[1]}" for it in self.data.items()])
+    
+    def _self_agnostic(self)->str:
+        return 'Generic N/A model'
+
+
+    def __str__(self) -> str:
+        return f'{self.category} {self.brand} {self.model}'
+
+    def __format__(self, format_spec: str) -> str:
+        match format_spec:
+            case 'partial':
+                return f'{self.category} {self.brand} {self.model} {self._inline_data}'
+            case 'agnostic':
+                return f'{self.category} {self._self_agnostic} {self._inline_data}'
+            case 'full':
+                return f"""
+            {self.category} {self.brand} {self.model}
+            details     : {self._inline_data}
+            market link : {self.seller_url}
+            tech link   : {self.tech_specs_url}
+            """
+            case 'full-agnostic':
+                return f"""
+            {self.category} {self._self_agnostic}
+            details : {self._inline_data}
+            ref comm: {self.seller_url}
+            ref tech: {self.tech_specs_url}
+            """
+            case _:
+                return self.__str__()
+
 class Tech(Enum):
     """in this project will only use PV, but in the future will be expanded to other techs"""
     PHOTOVOLTAIC = 'fotovoltaico'
     SOLAR_THERMAL = 'solar térmico'
-
 
 class Component:
     """each item in a project will be a component, as panels, invertor, etc"""
     def __init__(
         self,
         description:str,
-        model:str = 'generic',
-        specification:str|None = None,
+        specification:Specs|None = None,
         reference:str|None = None,
         cost_per_unit:Cost = Cost(),
         quantity:int = 1 ) -> None:
 
         self.description:str = description
-        self.model:str = model
         self.specification:str|None = specification
         self.reference:str|None = reference
 
         self.cost:Cost= cost_per_unit
         self.quantity:int = quantity
-        
-    
+
+
     def set_quantity(self, q:int):
+        """config amount of components"""
         if q>0:
             self.quantity = q
 
@@ -62,54 +117,12 @@ class Assembly:
         return self.package[group]
 
 
-type EquipmentCategory = Literal[
-    'Photovoltaic',
-    'Solar Panel',
-    'Inverter',
-    'Charge Regulator',
-    'Fixation',
-    'Wiring',
-    'Labor',None]|str 
-class Specs:
-    """contains all technical specification data"""
-    def __init__(self,category:EquipmentCategory,brand:str='generic',model:str='n/i',seller_url:str=None,tech_specs_url:str=None,**kwargs:dict[str,str]) -> None:
-        self.category:str = str(category)
-        self.brand = brand
-        self.model = model
-        self.seller_url = seller_url or 'no data'
-        self.tech_specs_url = tech_specs_url  or 'no data'
-        self.data:dict[str,str]= kwargs
-    
-    @property  
-    def _inline_data(self)->str:
-        return " ".join([f"{it[0]}: {it[1]}," for it in self.data.items()])
-        
-        
-    def __str__(self) -> str:
-        return f'{self.category} {self.brand} {self.model}'
-
-    def __format__(self, format_spec: str) -> str:
-        match format_spec:
-            case 'partial':
-                return f'{self.category} {self.brand} {self.model} {self._inline_data}'
-            case 'agnostic':
-                return f'{self.category} Generic N/A model {self._inline_data}'   
-            case 'full':
-                return f"""
-            {self.category} {self.brand} {self.model}
-            details     : {self._inline_data}
-            market link : {self.seller_url}
-            tech link   : {self.tech_specs_url}
-            """
-            case _:
-                return self.__str__()
-
 #manual test
 if __name__ == "__main__":
     com1 = Component('test')
     com2 = Component('test')
     com3 = Component('test')
     ass = Assembly("energético",com1,com2,com3)
-    
+
 
     print(ass["energétic"])
