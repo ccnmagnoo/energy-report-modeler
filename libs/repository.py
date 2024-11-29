@@ -1,7 +1,7 @@
 from typing import Literal
 from models.components import Component, Specs
 from models.econometrics import Cost, Currency
-from models.photovoltaic import Length, PvFactory, PvTechnicalSheet
+from models.photovoltaic import Cell, Length, PowerCurve, PvFactory, PvTechnicalSheet, ThermalCoef
 
 #cspell: disable
 
@@ -308,68 +308,60 @@ repo:Repo = {
 
 panelRepo:Panel = {
         'CS 655W':PvFactory(
-                specs=Specs(
-                        category='Photovoltaic',
+                cost=Cost(248_171/1.19,Currency.CLP),
+                technical_sheet=PvTechnicalSheet(
                         brand='Canadian solar',
+                        model='CS7N-655',
+                        power=655,
+                        area=(103.8,238.4,Length.CM),
+                        efficiency=21.2,
                         model='CS7N-655',
                         ref_url='https://www.tiendatecnored.cl/modulo-fotovoltaico-650w-canadian-solar.html',
                         specs_url='https://static.csisolar.com/wp-content/uploads/sites/3/2021/07/28105634/CS-BiHiKu7_CS7N-MB-AG_v1.7_F43M_J1_NA.pdf',
-                        power='655W',
-                        cristal='Mono',
-                        Vmpp='38.12V',
-                        Impp='17.32A',
-                        ef='21.2%'
-
-                ),
-                cost=Cost(248_171/1.19,Currency.CLP),
-                technical_sheet=PvTechnicalSheet(power=655,area=(130.3,238.4,Length.CM))
+                        power_curve=PowerCurve(max_tension=38.1,short_tension=45.2,max_ampere=17.20,short_ampere=18.43),
+                        cell=Cell(row=6,col=11,group=2)
+                        )
         ),
-        'RS 650W':PvFactory(
-                specs=Specs(
-                        category='Photovoltaic',
+        'RS 660W':PvFactory(
+                cost=Cost(288_000,Currency.CLP),
+                technical_sheet=PvTechnicalSheet(
                         brand='Risen',
-                        model='CS7N-655',
+                        model='RSM132-8-660M',
+                        power=660,
+                        area=(103.8,238.4,Length.CM),
+                        efficiency=21.2,
                         ref_url='https://www.solartex.cl/tienda/producto/panel-solar-660-watts-risen-mono-perc-half-cells/',
                         specs_url='https://www.solartex.cl/tienda/wp-content/uploads/2023/03/RSM132-8-660M.pdf',
-                        power='650 W',
-                        cristal='Mono',
-                        Vmpp='38.12 V',
-                        Impp='17.32 A',
-                        ef='21.2%',
-                ),
-                cost=Cost(288_000,Currency.CLP),
-                technical_sheet=PvTechnicalSheet(power=650,area=(130.3,238.4,Length.CM))
+                        power_curve=PowerCurve(max_tension=38.12,short_tension=45.75,max_ampere=17.32,short_ampere=18.33),
+                        cell=Cell(row=11,col=6,group=2)
+                        )
         ),
         'ZN 455W':PvFactory(
-                specs=Specs(
-                        category='Photovoltaic',
+                cost=Cost(116_502,Currency.CLP),
+                technical_sheet=PvTechnicalSheet(
                         brand='ZN Shine',
                         model='ZXM6-NH144',
+                        power=455,
+                        area=(103.8,209.4,Length.CM),
+                        efficiency=20.93,
                         ref_url='https://www.solartex.cl/tienda/producto/panel-solar-660-watts-risen-mono-perc-half-cells/',
                         specs_url='https://znshinesolar.gr/wp-content/uploads/ZXM6-NH144-min.pdf',
-                        power='455W',
-                        cristal='Mono',
-                        Vmpp='41.60 V',
-                        Impp='10.94 A',
-                        ef='20.93%',
-                ),
-                cost=Cost(116_502,Currency.CLP),
-                technical_sheet=PvTechnicalSheet(power=455,area=(103.8,209.4,Length.CM))
+                        power_curve=PowerCurve(max_tension=41.2,short_tension=50.10,max_ampere=10.81,short_ampere=11.40),
+                        cell=Cell(row=6,col=24)
+                        )
         ),
         'CS 375W':PvFactory(
-                specs=Specs(
-                        category='Photovoltaic',
+                cost=Cost(190_448/1.19,Currency.CLP),
+                technical_sheet=PvTechnicalSheet(
                         brand='Canadian Solar',
-                        model='CS3L375MS ',
+                        model='CS3L375MS',
+                        power=375,
+                        area=(104.8,176.5,Length.CM),
+                        efficiency=20.3,
                         ref_url='https://www.tiendatecnored.cl/panel-solar-375w-canadian-solar.html',
                         specs_url='https://www.tiendatecnored.cl/media/wysiwyg/ficha-tecnica/4703157.pdf',
-                        power='375W',
-                        cristal='MonoSI',
-                        Vmpp='41.0 V',
-                        Impp='11.61 A',
-                        ef='20.3%',
-                ),
-                cost=Cost(190_448/1.19,Currency.CLP),
-                technical_sheet=PvTechnicalSheet(power=375,area=(104.8,176.5,Length.CM))
+                        power_curve=PowerCurve(max_tension=34.1,short_tension=41,max_ampere=10.94,short_ampere=11.68),
+                        cell=Cell(group=2)
+                        )
         ),
 }

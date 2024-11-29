@@ -25,7 +25,7 @@ from models.econometrics import Cost, Currency
 from models.emission import Emission
 from models.energy_storage import Battery
 from models.geometry import GeoPosition
-from models.photovoltaic import Photovoltaic
+from models.photovoltaic import Photovoltaic, PvFactory
 from models.weather import Weather
 from models.weather import WeatherParam as W
 
@@ -153,6 +153,11 @@ class Project:
             self.components[item].append(args)
 
         self.components[item] = list(args)
+
+    def add_generator(self,factory:PvFactory,*gens:tuple[int]):
+        
+        """add energy generator component dedicate """
+        pass
 
     def energy_production(self)->DataFrame|None:
         """extract and sum all energy generation component"""

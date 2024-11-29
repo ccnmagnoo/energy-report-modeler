@@ -58,8 +58,13 @@ class PowerCurve:
 class Cell:
     '''smaller panel component'''
     cell_type:CellType = CellType.MONO
-    quantity_row:int = 6
-    quantity_col:int = 10
+    row:int = 6
+    col:int = 10
+    group:int = 1
+    
+    
+    def __str__(self)->str:
+        return f'{self.group*self.row*self.col} [{self.group} x ({self.row} x {self.col})]'
 
 @dataclass()
 class ThermalCoef:
@@ -88,21 +93,41 @@ class Length(Enum):
     IN = 39.37007874
 
 type Dimensions = tuple[float,float,Length]
+
 class PvTechnicalSheet:
     "solar plane power technical specification"
     def __init__(self,
+        brand:str='Generic',
+        model:str='N/D',
         power:int = 100,
         area:float|Dimensions= 1, #m2 or (long, wide in cm)
-        efficiency = 6/100,  # w/m2
+        efficiency = 21.4/100,  # w/m2
         power_curve:PowerCurve = PowerCurve(),
         cell:Cell = Cell(),
         thermal:ThermalCoef = ThermalCoef(),
+        ref_url:str=None,
+        specs_url:str=None,
                 ) -> None:
         self.power = power
         self.efficiency = efficiency
         self.power_curve = power_curve
         self.cell = cell,
         self.thermal = thermal
+        self.specs:Specs = Specs(
+            'Photovoltaic',
+            brand,
+            model,
+            ref_url,
+            specs_url,
+            power=f'{power} W',
+            cell=cell.cell_type.value,
+            Vmp=f'{power_curve.max_tension:.1f}V',
+            Imp=f'{power_curve.max_ampere:.1f}A',
+            Vsc=f'{power_curve.short_tension:.1f}V',
+            Isc=f'{power_curve.short_ampere:.1f}A',
+            ef=f'{efficiency*100:.1f}%',
+            )
+
 
         if isinstance(area,float):
             self.area = area
@@ -145,7 +170,7 @@ class Photovoltaic(Component):
 
     def __init__(
         self,
-        weather:Weather,
+        weather:Weather,#panel
         description: str = 'Panel FV',
         specification: Specs = Specs(category='Photovoltaic'),
         quantity: int = 1,#units
@@ -162,6 +187,7 @@ class Photovoltaic(Component):
             aux_cost = cost
         print('inside cost pv : ',aux_cost.value,aux_cost.currency)
         
+        #Component
         super().__init__(
             description=description,
             specification=specification,
@@ -385,7 +411,7 @@ class Photovoltaic(Component):
 
         return system_capacity
 
-    def nominal_power(self):
+    def nominal_power(self)->float:
         """
         power in kW = 1000 Watt
         """
@@ -430,7 +456,6 @@ class Photovoltaic(Component):
 @dataclass
 class PvFactory:
     """modular adapter for Repository reusability"""
-    specs:Specs
     cost:Cost
     technical_sheet:PvTechnicalSheet
     
@@ -439,19 +464,12 @@ class PvFactory:
                 description:str,
                 quantity:int,
                 orientation:Orientation)->Photovoltaic:
+        """function PV builder"""
         return Photovoltaic(
             weather=weather,
             description=description,
-            specification=self.specs,
+            specification=self.technical_sheet.specs,
             quantity=quantity,
             cost=self.cost,
             orientation=orientation,
             technical_sheet=self.technical_sheet)
-
-#short test
-# test_weather = Weather()
-# panel = Photovoltaic(weather=test_weather)
-# panel.quantity = 20
-# panel.power = 250
-# print(panel.get_energy(),panel.nominal_power())
-# End-of-file (EOF)
