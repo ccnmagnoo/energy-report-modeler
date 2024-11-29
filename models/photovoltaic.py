@@ -427,18 +427,26 @@ class Photovoltaic(Component):
 
         return system_capacity
 
-
-class PV_adapter:
-    def __init__(self,
-                nominal_power:int,
-                weather_data:Weather,
-                cost:Cost,
+@dataclass
+class PvFactory:
+    """modular adapter for Repository reusability"""
+    specs:Specs
+    cost:Cost
+    technical_sheet:PvTechnicalSheet
+    
+    def factory(self,
+                weather:Weather,
+                description:str,
                 quantity:int,
-                
-
-                ) -> None:
-        pass
-
+                orientation:Orientation)->Photovoltaic:
+        return Photovoltaic(
+            weather=weather,
+            description=description,
+            specification=self.specs,
+            quantity=quantity,
+            cost=self.cost,
+            orientation=orientation,
+            technical_sheet=self.technical_sheet)
 
 #short test
 # test_weather = Weather()
