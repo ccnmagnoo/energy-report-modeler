@@ -473,3 +473,11 @@ class PvFactory:
             cost=self.cost,
             orientation=orientation,
             technical_sheet=self.technical_sheet)
+        
+@dataclass 
+class PvInput:
+    """in Main input format"""
+    description:str
+    quantity:int
+    orientation:Orientation
+    
