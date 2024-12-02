@@ -10,12 +10,15 @@ else:
 
 type EquipmentCategory = Literal[
     'Photovoltaic',
-    'Solar Panel',
     'Inverter',
     'Charge Regulator',
-    'Fixation',
-    'Wiring',
-    'Labor',None]|str
+    'Montaje',
+    'Instalación eléctrica',
+    'Conexiones y tableros',
+    'BESS Batt',
+    'Control y operación',
+    'Faenas'
+    'Obra',None]|str
 
 class Specs:
     """contains all technical specification data"""
