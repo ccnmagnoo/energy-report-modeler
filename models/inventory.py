@@ -25,7 +25,7 @@ from models.econometrics import Cost, Currency
 from models.emission import Emission
 from models.energy_storage import Battery
 from models.geometry import GeoPosition
-from models.photovoltaic import Photovoltaic, PvFactory
+from models.photovoltaic import Photovoltaic, PvFactory, PvInput
 from models.weather import Weather
 from models.weather import WeatherParam as W
 
@@ -154,10 +154,18 @@ class Project:
 
         self.components[item] = list(args)
 
-    def add_generator(self,factory:PvFactory,*gens:tuple[int]):
-        
+    def add_generator(self,equipment:PvFactory,*generators:PvInput) -> None:
         """add energy generator component dedicate """
-        pass
+        eq = list(map(lambda it:equipment.factory(
+            weather=self.weather,
+            description=it.description,
+            quantity=it.quantity,
+            orientation=it.orientation),
+            generators)
+            )
+
+        self.add_component('generación',*eq)
+
 
     def energy_production(self)->DataFrame|None:
         """extract and sum all energy generation component"""
@@ -521,13 +529,13 @@ class Project:
     def _ir(self,rate_cost:float,flux:list[float],method:Literal['simple','exact']='simple')-> float:
         i = -flux[0]
         b = flux[1]
-        
+
         if method == 'simple': #simple Inverstment Time Return
             return i/b
-        
+
         if rate_cost == 0: #return simple ITR
             return i/b
-        
+
         #find period when is positive flux
         if method == 'exact':
             return log((i*rate_cost/b)+1)/log(rate_cost+1)

@@ -61,8 +61,8 @@ class Cell:
     row:int = 6
     col:int = 10
     group:int = 1
-    
-    
+
+
     def __str__(self)->str:
         return f'{self.group*self.row*self.col} [{self.group} x ({self.row} x {self.col})]'
 
@@ -186,7 +186,7 @@ class Photovoltaic(Component):
         else:
             aux_cost = cost
         print('inside cost pv : ',aux_cost.value,aux_cost.currency)
-        
+
         #Component
         super().__init__(
             description=description,
@@ -208,7 +208,7 @@ class Photovoltaic(Component):
     def set_cost(self,cost:Cost):
         """change cost value"""
         super().cost = cost
-        
+
     @property
     def area(self)->float:
         return self.technical_sheet.area*self.quantity
@@ -458,7 +458,7 @@ class PvFactory:
     """modular adapter for Repository reusability"""
     cost:Cost
     technical_sheet:PvTechnicalSheet
-    
+
     def factory(self,
                 weather:Weather,
                 description:str,
@@ -473,11 +473,10 @@ class PvFactory:
             cost=self.cost,
             orientation=orientation,
             technical_sheet=self.technical_sheet)
-        
-@dataclass 
+
+@dataclass
 class PvInput:
     """in Main input format"""
     description:str
     quantity:int
     orientation:Orientation
-    
