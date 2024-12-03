@@ -16,8 +16,10 @@ type EquipmentCategory = Literal[
     'Instalación eléctrica',
     'Conexiones y tableros',
     'BESS Batt',
-    'Control y operación',
-    'Faenas'
+    'Control',
+    'Operación'
+    'Faenas',
+    'Medidor',
     'Obra',None]|str
 
 class Specs:

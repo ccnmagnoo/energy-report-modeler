@@ -296,9 +296,74 @@ repoEquipment:Repo = {
                 cost_per_unit=Cost(8_680_000,Currency.CLP)
         ),
     },
-        'Charge Regulator':{
-        
-        }
+        'Medidor':{
+                'EL 1F':Component(# medidor
+                description='Medidor Monofase 60A 240V ',
+                specification=Specs(
+                        category='Medidor',
+                        brand='Elster',
+                        model='A150',
+                        ref_url='https://www.solartex.cl/tienda/producto/medidor-bidireccional-monofasico-elster-a150/',
+                        specs_url='https://www.solartex.cl/tienda/producto/medidor-bidireccional-monofasico-elster-a150/#tab-description',
+                        Red='1 fase',
+                        Voltaje='120-240 V',
+                        Frec='50/60 Hz',
+                        Imax='60A',
+                        Pmax='14.4 kW',
+                        ),
+                cost_per_unit=Cost(93_450,Currency.CLP)),
+                'FR 3F':Component(# medidor
+                description='Medidor Trifásico 3x50kA 400V',
+                specification=Specs(
+                        category='Medidor',
+                        brand='Fronius',
+                        model='SMMT-TRIF-50kA',
+                        ref_url='https://www.solartex.cl/tienda/producto/smart-meter-fronius-50ka-trifasico-indirecto/',
+                        specs_url='https://www.solartex.cl/tienda/producto/smart-meter-fronius-50ka-trifasico-indirecto/#tab-description',
+                        Red='trifásico',
+                        Voltaje='400-415 V',
+                        Imax='3 x 50kA',
+                        Section='0.05-4 mm2',
+                ),
+                cost_per_unit=Cost(353_050,Currency.CLP)
+                ),  
+        },
+        'Regulator':{
+                'Monitor':Component(
+                        description='Monitor de carga',
+                        specification=Specs(
+                                category='Control',
+                                model='Monitor'
+                ),
+                cost_per_unit=Cost(150_000,Currency.CLP)
+                ),
+                'VT 45A':Component(
+                description='Regulador',
+                specification=Specs(
+                        category='Charge Regulator',
+                        brand='Victron',
+                        model='Bluesolar 150/45-Tr',
+                        ref_url='https://www.solarstore.cl/producto/controlador-de-carga-victron-bluesolar-45a-12-24-36-48v-mppt/',
+                        specs_url='https://www.solarstore.cl/producto/controlador-de-carga-victron-bluesolar-45a-12-24-36-48v-mppt/Datasheet-BlueSolar-charge-controller-MPPT-150-35-&-150-45-ES',
+                        Volt='12/24/36/48V',
+                        Inom='45 A',
+                ),
+                cost_per_unit=Cost(370_000/1.19,Currency.CLP)
+                ),
+                'VT 60A':Component(
+                description='Regulador',
+                specification=Specs(
+                        category='Charge Regulator',
+                        brand='Victron',
+                        model='Bluesolar 150/45-Tr',
+                        ref_url='https://www.solarstore.cl/producto/controlador-de-carga-victron-bluesolar-60a-12-24-36-48v-mppt-copia/',
+                        specs_url='https://www.solarstore.cl/wp-content/uploads/2023/10/Datasheet-BlueSolar-charge-controller-MPPT-150-60-and-150-70-ES.pdf',
+                        Volt='12/24/36/48V',
+                        Inom='60 A',
+                ),
+                cost_per_unit=Cost(490_000/1.19,Currency.CLP)
+                ),
+        },
 }
 
 panelRepo:Panel = {
