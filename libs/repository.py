@@ -180,7 +180,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(2_184_000,Currency.CLP)
         ),
-        'SL 10kW':Component(
+        'SL 10kW H':Component(
                 description='Inversor Híbrido 10kW',
                 specification=Specs(
                         'Inverter',
@@ -197,7 +197,24 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(3_735_817,Currency.CLP)
         ),
-        'DY 12kW':Component(
+        'KT 10kW H':Component(
+                description='Inversor Híbrido 10kW',
+                specification=Specs(
+                        'Inverter',
+                        'Kehua Tech',
+                        'ISTORAGE3 10K',
+                        'https://rhona.cl/producto/11232/inversor-hibrido-trifasico-10kw.html',
+                        'https://www.solartex.cl/tienda/wp-content/uploads/2023/06/Solis_datasheet_RHI-3P5-10K-HVES-5G_AUS.pdf',
+                        mode='Hybrid',
+                        power='10KW',
+                        volt='1000Vdc',
+                        fase='3|f',
+                        MPPT_r='150-900V',
+                        battery='48V'
+                        ),
+                cost_per_unit=Cost(3_459_656,Currency.CLP)
+        ),
+        'DY 12kW H':Component(
                 description='Inversor Híbrido 3/F 12kW',
                 specification=Specs(
                         'Inverter',
@@ -214,7 +231,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(3_190,Currency.EUR)
         ),
-        'CS 15kW':Component(
+        'CS 15kW H':Component(
                 description='Inversor Híbrido 3/F 15kW',
                 specification=Specs(
                         'Inverter',
@@ -231,7 +248,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(1_252_450,Currency.CLP)
         ),
-        'DY 30kW':Component(
+        'DY 30kW H':Component(
                 description='Inversor Híbrido 3/F 30kW',
                 specification=Specs(
                         'Inverter',
@@ -248,7 +265,7 @@ repo:Repo = {
                         ),
         cost_per_unit=Cost(5_995,Currency.EUR)
         ),
-        'CS 50kW':Component('Inversor Híbrido 3/F 50kW',
+        'CS 50kW H':Component('Inversor Híbrido 3/F 50kW',
                 specification=Specs(
                         'Inverter',
                         'Canadian Solar',
@@ -264,7 +281,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(4_690_000,Currency.CLP)
         ),
-        'CS 100kW':Component('Inversor Híbrido 3/F 100kW',
+        'CS 100kW H':Component('Inversor Híbrido 3/F 100kW',
                 specification=Specs(
                         'Inverter',
                         'Canadian Solar',
