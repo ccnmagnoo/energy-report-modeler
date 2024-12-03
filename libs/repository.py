@@ -107,7 +107,6 @@ repoEquipment:Repo = {
                         fase='Mono',
                         MPPT_r='210-480V',
                         ),
-                specification='On-grid 4kW Monofásico',
                 cost_per_unit=Cost(1_227_050,currency=Currency.CLP),
                 ),
         'VT 5kW HY':Component(
@@ -375,7 +374,6 @@ panelRepo:Panel = {
                         power=655,
                         area=(103.8,238.4,Length.CM),
                         efficiency=21.2,
-                        model='CS7N-655',
                         ref_url='https://www.tiendatecnored.cl/modulo-fotovoltaico-650w-canadian-solar.html',
                         specs_url='https://static.csisolar.com/wp-content/uploads/sites/3/2021/07/28105634/CS-BiHiKu7_CS7N-MB-AG_v1.7_F43M_J1_NA.pdf',
                         power_curve=PowerCurve(
