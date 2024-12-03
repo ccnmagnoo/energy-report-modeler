@@ -33,7 +33,7 @@ class Cost:
         } # values in 1 dolar
 
     def __init__(self, net_value:float = 0,currency:Currency = Currency.CLP) -> None:
-        self.value:float = net_value
+        self.value:float = round(net_value,2)
         if self._exchange_is_loaded(currency):
             self.currency:Currency = currency
         else:
