@@ -13,7 +13,7 @@ type Panel = dict[EquipDef,PvFactory]
 
 repo:Repo = {
         'inverter':{
-        'HW 2kW':Component(
+        'HW 2kW OG':Component(
                 description='Inversor ongrid 2kW',
                 specification=Specs(
                         'Inverter',
@@ -30,7 +30,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(678_809,Currency.CLP)
                 ),
-        'SL 2.5kW':Component(
+        'SL 2.5kW OG':Component(
                 description='Inversor ongrid 2.5kW',
                 specification=Specs(
                         'Inverter',
@@ -46,8 +46,8 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(557_000,Currency.CLP)
                 ),
-        'HW 3WK':Component(
-                description='Inversor ongrid 3kW',
+        'HW 3WK OG':Component(
+                description='Inversor on-grid 3kW',
                 specification=Specs(
                         'Inverter',
                         'Huawei',
@@ -62,7 +62,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(1_002_800,Currency.CLP)
                 ),
-        'IS 3kW':Component(
+        'IS 3kW H':Component(
                 description='Inversor Hibrido 3kW',
                 specification=Specs(
                         'Inverter',
@@ -79,7 +79,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(675_625,Currency.CLP)
                 ),
-        'CS 3kW':Component(
+        'CS 3kW OG':Component(
                 description='Inversor Ongrid 3kW',
                 specification=Specs(
                         'Inverter',
@@ -95,7 +95,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(511_290,Currency.CLP)
                 ),
-        'HW 4kW':Component(
+        'HW 4kW OG':Component(
                 description='Inversor Ongrid 4kW',
                 specification=Specs(
                         'Inverter',
@@ -112,7 +112,7 @@ repo:Repo = {
                 specification='On-grid 4kW Monofásico',
                 cost_per_unit=Cost(1_227_050,currency=Currency.CLP),
                 ),
-        'VT 5kW':Component(
+        'VT 5kW HY':Component(
                 description='Inversor Híbrido 5KW',
                 specification=Specs(
                         'Inverter',
@@ -129,7 +129,7 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(487_387,Currency.CLP)
                 ),
-        'SL 6kW':Component(
+        'SL 6kW HY':Component(
                 description='Inversor Híbrido 6kW',
                 specification=Specs(
                         'Inverter',
@@ -280,29 +280,6 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(8_680_000,Currency.CLP)
         ),
-    },
-    'panel':{
-        '655w' : {
-                'reference':'https://www.tiendatecnored.cl/modulo-fotovoltaico-650w-canadian-solar.html',
-                'specification':'Solar Panel PV 655w',
-                'model':'Canadian Solar 655w',
-                'cost':Cost(248171/1.19,Currency.CLP),
-                'technical_sheet':PvTechnicalSheet(power=655,area=(130.3,238.4,Length.CM)),
-        },
-        '375w' : {
-                'reference':'https://www.tiendatecnored.cl/panel-solar-375w-canadian-solar.html',
-                'specification':'Solar Panel PV 374w',
-                'model':'Canadian Solar 375w',
-                'cost':Cost(146509/1.19,Currency.CLP),
-                'technical_sheet':PvTechnicalSheet(power=375,area=(104.8,176.5,Length.CM)),
-        },
-        '455w' : {
-                'reference':'https://www.tiendatecnored.cl/modulo-fotovoltaico-455w-zn-shine.html',
-                'specification':'Solar Panel PV 374w MONO',
-                'model':'SHINE ZN ZXM6-NH144 455w',
-                'cost':Cost(116502/1.19,Currency.CLP),
-                'technical_sheet':PvTechnicalSheet(power=455,area=(104.8,209.4,Length.CM)),
-        },
     }
 }
 
@@ -318,7 +295,12 @@ panelRepo:Panel = {
                         model='CS7N-655',
                         ref_url='https://www.tiendatecnored.cl/modulo-fotovoltaico-650w-canadian-solar.html',
                         specs_url='https://static.csisolar.com/wp-content/uploads/sites/3/2021/07/28105634/CS-BiHiKu7_CS7N-MB-AG_v1.7_F43M_J1_NA.pdf',
-                        power_curve=PowerCurve(max_tension=38.1,short_tension=45.2,max_ampere=17.20,short_ampere=18.43),
+                        power_curve=PowerCurve(
+                                max_tension=38.1,
+                                short_tension=45.2,
+                                max_ampere=17.20,
+                                short_ampere=18.43
+                                ),
                         cell=Cell(row=6,col=11,group=2)
                         )
         ),
@@ -332,7 +314,12 @@ panelRepo:Panel = {
                         efficiency=21.2,
                         ref_url='https://www.solartex.cl/tienda/producto/panel-solar-660-watts-risen-mono-perc-half-cells/',
                         specs_url='https://www.solartex.cl/tienda/wp-content/uploads/2023/03/RSM132-8-660M.pdf',
-                        power_curve=PowerCurve(max_tension=38.12,short_tension=45.75,max_ampere=17.32,short_ampere=18.33),
+                        power_curve=PowerCurve(
+                                max_tension=38.12,
+                                short_tension=45.75,
+                                max_ampere=17.32,
+                                short_ampere=18.33
+                                ),
                         cell=Cell(row=11,col=6,group=2)
                         )
         ),
@@ -346,7 +333,12 @@ panelRepo:Panel = {
                         efficiency=20.93,
                         ref_url='https://www.solartex.cl/tienda/producto/panel-solar-660-watts-risen-mono-perc-half-cells/',
                         specs_url='https://znshinesolar.gr/wp-content/uploads/ZXM6-NH144-min.pdf',
-                        power_curve=PowerCurve(max_tension=41.2,short_tension=50.10,max_ampere=10.81,short_ampere=11.40),
+                        power_curve=PowerCurve(
+                                max_tension=41.2,
+                                short_tension=50.10,
+                                max_ampere=10.81,
+                                short_ampere=11.40
+                                ),
                         cell=Cell(row=6,col=24)
                         )
         ),
@@ -360,7 +352,12 @@ panelRepo:Panel = {
                         efficiency=20.3,
                         ref_url='https://www.tiendatecnored.cl/panel-solar-375w-canadian-solar.html',
                         specs_url='https://www.tiendatecnored.cl/media/wysiwyg/ficha-tecnica/4703157.pdf',
-                        power_curve=PowerCurve(max_tension=34.1,short_tension=41,max_ampere=10.94,short_ampere=11.68),
+                        power_curve=PowerCurve(
+                                max_tension=34.1,
+                                short_tension=41,
+                                max_ampere=10.94,
+                                short_ampere=11.68
+                                ),
                         cell=Cell(group=2)
                         )
         ),
