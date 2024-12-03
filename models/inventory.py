@@ -329,7 +329,7 @@ class Project:
         #sub-total normalice in clp
         for gloss,item in self.components.items():
             for component in item:
-                bucket_cost+=component.total_cost_before_tax(currency=Currency.CLP)
+                bucket_cost+=component.total_cost_before_tax(currency=Currency.CLP)[0]
 
         bucket_cost=round(bucket_cost,0)
 
@@ -461,8 +461,8 @@ class Project:
         production_array = list(
             map(lambda it:f'{it['System_capacity_KW'].sum():.2f} kWh',
                 self.production_array()))
-        bucket = self.bucket['total']
-        bucket_df:DataFrame = bucket['bucket']
+
+        bucket_df:DataFrame = self.bucket['bucket']
 
         ctx:dict[str,any] = {
             #report
