@@ -11,7 +11,7 @@ else:
 type EquipmentCategory = Literal[
     'Photovoltaic',
     'Inverter',
-    'Charge Regulator',
+    'Regulator',
     'Montaje',
     'Instalación eléctrica',
     'Conexiones y tableros',

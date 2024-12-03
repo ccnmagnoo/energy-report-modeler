@@ -1,18 +1,16 @@
-from typing import Literal
-from models.components import Component, Specs
+from models.components import Component, Specs,EquipmentCategory
 from models.econometrics import Cost, Currency
-from models.photovoltaic import Cell, Length, PowerCurve, PvFactory, PvTechnicalSheet, ThermalCoef
+from models.photovoltaic import Cell, Length, PowerCurve, PvFactory, PvTechnicalSheet
 
 #cspell: disable
 
-type EquipType = Literal['inverter','panel','charger','labor','montage']
 type EquipDef = str
-type Repo = dict[EquipType:dict[EquipDef,Component]]
+type Repo = dict[EquipmentCategory:dict[EquipDef,Component]]
 type Panel = dict[EquipDef,PvFactory]
 
 
 repo:Repo = {
-        'inverter':{
+        'Inverter':{
         'HW 2kW OG':Component(
                 description='Inversor ongrid 2kW',
                 specification=Specs(
@@ -297,7 +295,10 @@ repo:Repo = {
                         ),
                 cost_per_unit=Cost(8_680_000,Currency.CLP)
         ),
-    }
+    },
+        'Charge Regulator':{
+        
+        }
 }
 
 panelRepo:Panel = {
