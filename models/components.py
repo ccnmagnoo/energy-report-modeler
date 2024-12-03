@@ -23,7 +23,13 @@ type EquipmentCategory = Literal[
     'Obra',None]|str
 
 class Specs:
-    """contains all technical specification data"""
+    """contains all technical specification data
+       ### f-string
+        - p: partial tech sheet, compact
+        - a: partial data sheet, compact generic equipment
+        - f: full tech data
+        - fa: full tech data with generic equipment
+    """
     def __init__(self,category:EquipmentCategory,brand:str='generic',model:str='n/i',ref_url:str=None,specs_url:str=None,**kwargs:dict[str,str]) -> None:
         self.category:str = str(category)
         self.brand = brand
@@ -41,6 +47,7 @@ class Specs:
         """
         format content data 
         kwarg1:val1/kwarg2:val2/kwarg3:val3
+
         """
         return r"/".join([f"{it[0]}:{it[1]}" for it in self.data.items()])
     
@@ -53,24 +60,14 @@ class Specs:
 
     def __format__(self, format_spec: str) -> str:
         match format_spec:
-            case 'partial':
+            case 'p':# partial
                 return f'{self.category} {self.brand} {self.model} {self._inline_data}'
-            case 'agnostic':
+            case 'a':# agnostic
                 return f'{self.category} {self._self_agnostic} {self._inline_data}'
-            case 'full':
-                return f"""
-            {self.category} {self.brand} {self.model}
-            details     : {self._inline_data}
-            market link : {self.seller_url}
-            tech link   : {self.tech_specs_url}
-            """
-            case 'full-agnostic':
-                return f"""
-            {self.category} {self._self_agnostic}
-            details : {self._inline_data}
-            ref comm: {self.seller_url}
-            ref tech: {self.tech_specs_url}
-            """
+            case 'f':# full
+                return f'{self.category} {self.brand} {self.model}\ndetails     : {self._inline_data}\nmarket link : {self.seller_url}\ntech link   : {self.tech_specs_url}'
+            case 'fa':# full agnostic
+                return f'{self.category} {self._self_agnostic}\ndetails : {self._inline_data}\nref comm: {self.seller_url}\nref tech: {self.tech_specs_url}'
             case _:
                 return self.__str__()
 
@@ -89,7 +86,7 @@ class Component:
         quantity:int = 1 ) -> None:
 
         self.description:str = description
-        self.specification:str|None = specification
+        self.specification:Specs|None = specification
         self.cost:Cost= cost_per_unit
         self.quantity:int = quantity
 
