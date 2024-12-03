@@ -4,7 +4,7 @@ import json
 from math import floor,log
 
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Callable, Literal
 
 
 from dotenv import dotenv_values
@@ -118,6 +118,7 @@ class Project:
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
         self.title:str = title
+        self.bucket:dict[str,float|DataFrame]={}
 
         #weather env
         print('getting weather data...')
@@ -302,17 +303,18 @@ class Project:
 
         return float(f'{area:.2f}')
 
-    def bucket_list(self,currency:Currency|None=None)->dict[str,Any]:
+    def bucket_list(self,currency:Currency|None,**overloads:float)->dict[str,DataFrame|float]:
         "get all cost related by components"
+
         #generate bucket
         container:list[tuple[str,str,int,float,str]] = []
-        total_cost:float = 0
+        bucket_cost:float = 0
+        #write gloss
         for gloss,item in self.components.items():
             for component in item:
 
-                value,curr = component.total_cost_after_tax(currency)
-                total_cost += value
-
+                value,curr = component.total_cost_before_tax(currency)
+                
                 #auxiliary object
                 obj_item = {
                     'gloss':gloss,
@@ -323,12 +325,46 @@ class Project:
                     'currency':curr.value
                 }
                 container.append(obj_item)
+        
+        #sub-total normalice in clp
+        for gloss,item in self.components.items():
+            for component in item:
+                bucket_cost+=component.total_cost_before_tax(currency=Currency.CLP)
 
-        return {'cost':floor(total_cost*100)/100 ,'bucket':pd.DataFrame.from_dict(container)}
+        bucket_cost=round(bucket_cost,0)
+
+        #define subtotal
+        res = {
+            'bucket':pd.DataFrame.from_dict(container),
+            'sub-total':bucket_cost,
+            }
+        #charge overloads
+        for it in overloads.items():
+            if it[1]>1 and it[1]<100:
+                res[f'{it[0]} ({it[1]}%)'] = round(bucket_cost*it[1]/100,0)
+            else:
+                raise ValueError('overloads has to be between 1-100')
+
+        #sum float items
+        acc:float=0 #add final total
+        for _,cost in res.items():
+            if isinstance(cost,float):
+                acc+=cost
+        #compose
+        res = {
+            **res,
+            'total net':acc,
+            'Imp(19%)':round(acc*.19,0),
+            'total':round(acc*1.19,0),
+            }
+        
+        self.bucket:dict[str,float|DataFrame] = res
+
+        return res
 
     def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 6/100,format=False):
         """"VAN TIR flux financial analysis"""
-        investment = self.bucket_list(currency)['cost']
+        investment = self.bucket['total']
         first_period_income:float = self._performance['benefits'].sum()
         flux:list[float] = [-investment,first_period_income]
 
@@ -425,7 +461,7 @@ class Project:
         production_array = list(
             map(lambda it:f'{it['System_capacity_KW'].sum():.2f} kWh',
                 self.production_array()))
-        bucket = self.bucket_list(Currency.CLP)
+        bucket = self.bucket['total']
         bucket_df:DataFrame = bucket['bucket']
 
         ctx:dict[str,any] = {
@@ -439,7 +475,7 @@ class Project:
             #about this project
             "project_type" : self.technology[0].value.capitalize(),
             "project_size":f"{self.nominal_power[0]:.2f} kW",
-            "total_cost": f"CLP$ {self.bucket_list(Currency.CLP)["cost"]:,.0f}",
+            "total_cost": f"CLP$ {self.bucket["total"]:,.0f}",
             #benefits
             "annual_benefits": f"CLP$ {performance['benefits'].sum():,.0f}",
             "energy_production": f"{performance['generation'].sum():.0f} kWh/año",

@@ -102,7 +102,7 @@ def plot_temperature(weather:DataFrame,path:str):
 
 def plot_components(project:Project,path:str):
     """plot components cost pie plot"""
-    bucket = project.bucket_list(currency=Currency.CLP)['bucket']
+    bucket = project.bucket['bucket']
     plt.figure(figsize=(7,5))
     p = plt.subplot()
 
