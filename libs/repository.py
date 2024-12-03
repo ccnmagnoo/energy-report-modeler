@@ -385,6 +385,25 @@ panelRepo:Panel = {
                         cell=Cell(row=6,col=11,group=2)
                         )
         ),
+        'CS 650W':PvFactory(
+                cost=Cost(299_250/1.19,Currency.CLP),
+                technical_sheet=PvTechnicalSheet(
+                        brand='Canadian solar',
+                        model='CS7N-650',
+                        power=650,
+                        area=(103.8,238.4,Length.CM),
+                        efficiency=20.9,
+                        ref_url='https://www.citysun.cl/producto/panel-solarcanadian-solar-650wp/',
+                        specs_url='https://www.citysun.cl/wp-content/uploads/2021/10/Ficha-Tecnica-canadian-650wp.pdf',
+                        power_curve=PowerCurve(
+                                max_tension=37.9,
+                                short_tension=45.0,
+                                max_ampere=17.16,
+                                short_ampere=18.38
+                                ),
+                        cell=Cell(row=6,col=11,group=2)
+                        )
+        ),
         'RS 660W':PvFactory(
                 cost=Cost(288_000,Currency.CLP),
                 technical_sheet=PvTechnicalSheet(
