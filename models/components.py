@@ -29,6 +29,10 @@ class Specs:
         self.seller_url = ref_url or 'no data'
         self.tech_specs_url = specs_url  or 'no data'
         self.data:dict[str,str]= kwargs
+    
+    def add_spec(self,**new_spec:dict[str,str]):
+        """addition parameters"""
+        self.data = {**self.data,**new_spec}
 
     @property
     def _inline_data(self)->str:
