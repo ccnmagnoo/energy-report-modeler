@@ -9,7 +9,7 @@ type Repo = dict[EquipmentCategory:dict[EquipDef,Component]]
 type Panel = dict[EquipDef,PvFactory]
 
 
-repo:Repo = {
+repoEquipment:Repo = {
         'Inverter':{
         'HW 2kW OG':Component(
                 description='Inversor ongrid 2kW',
