@@ -164,7 +164,7 @@ class Project:
             generators)
             )
 
-        self.add_component('generación',*eq)
+        self.add_component('generación',*eq,generator=True)
 
 
     def energy_production(self)->DataFrame|None:
