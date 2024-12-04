@@ -325,17 +325,38 @@ repoEquipment:Repo = {
                         Section='0.05-4 mm2',
                 ),
                 cost_per_unit=Cost(353_050,Currency.CLP)
-                ),  
+                ),
         },
-        'Regulator':{
-                'Monitor':Component(
+        'Monitor':{
+                'VC 700':Component(
                         description='Monitor de carga',
                         specification=Specs(
-                                category='Control',
-                                model='Monitor'
+                                category='Storage',
+                                brand='Victron',
+                                model='BMV-700',
+                                ref_url='https://www.solarstore.cl/producto/monitor-de-baterias-victron-bmv-700/',
+                                specs_url='https://www.solarstore.cl/wp-content/uploads/2019/10/Victron-BMV-700-series-ES.pdf',
+                                Rango="6.5-95Vdc",
+                                Cap='1-9999 Ah'
                 ),
-                cost_per_unit=Cost(150_000,Currency.CLP)
+                cost_per_unit=Cost(150_000/19,Currency.CLP)
                 ),
+                'VC 712':Component(
+                        description='Monitor de carga',
+                        specification=Specs(
+                                category='Storage',
+                                brand='Victron',
+                                model='BMV-712 smart',
+                                ref_url='https://www.solarstore.cl/producto/monitor-de-baterias-victron-bmv-712-bluetooth/',
+                                specs_url='https://www.solarstore.cl/wp-content/uploads/2023/06/Victron-BMV-712-Smart.pdf',
+                                Rango="6.5-70Vcc",
+                                Cap='1-9999 Ah'
+                ),
+                cost_per_unit=Cost(200_000/1.19,Currency.CLP)
+                ),
+
+        },
+        'Regulator':{
                 'VT 45A':Component(
                 description='Regulador',
                 specification=Specs(

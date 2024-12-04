@@ -15,7 +15,7 @@ type EquipmentCategory = Literal[
     'Montaje',
     'Instalación eléctrica',
     'Conexiones y tableros',
-    'BESS Batt',
+    'Storage',
     'Control',
     'Operación'
     'Faenas',
