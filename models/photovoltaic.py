@@ -125,7 +125,7 @@ class PvTechnicalSheet:
             Imp=f'{power_curve.max_ampere:.1f}A',
             Vsc=f'{power_curve.short_tension:.1f}V',
             Isc=f'{power_curve.short_ampere:.1f}A',
-            ef=f'{efficiency*100:.1f}%',
+            ef=f'{efficiency:.2f}%',
             )
 
 
@@ -179,6 +179,7 @@ class Photovoltaic(Component):
         orientation:Orientation = Orientation(),
         technical_sheet:PvTechnicalSheet = PvTechnicalSheet(),
         ) -> None:
+        
         #auxiliary values
         aux_cost:Cost
         if cost is None:
