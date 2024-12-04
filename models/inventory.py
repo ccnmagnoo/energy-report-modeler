@@ -328,10 +328,12 @@ class Project:
                     'description':component.description,
                     'details':component.specification,
                     'quantity':component.quantity,
-                    'cost_after_tax':value,
+                    'cost':value,
                     'currency':curr.value
                 }
                 container.append(obj_item)
+                
+        #build dataframe
         
         #sub-total normalice in clp
         for gloss,item in self.components.items():
@@ -345,6 +347,7 @@ class Project:
             'bucket':pd.DataFrame.from_dict(container),
             'sub-total':bucket_cost,
             }
+        
         #charge overloads
         for it in overloads.items():
             if it[1]>1 and it[1]<100:
@@ -369,7 +372,7 @@ class Project:
 
         return res
 
-    def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 6/100,format=False):
+    def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 6/100,fmt=False):
         """"VAN TIR flux financial analysis"""
         investment = self.bucket['total']
         first_period_income:float = self._performance['benefits'].sum()
@@ -391,7 +394,7 @@ class Project:
         res_irr = irr(flux)
         res_sri = self._ir(rate_cost=rate,flux=flux,method='exact')
 
-        if format:
+        if fmt:
             return {'rate':f'{rate*100:.1f}%',
                 'investment':f'${investment:,.2f} . -',
                 'years':n_years,
@@ -513,34 +516,34 @@ class Project:
                         }).to_markdown(index=False),
             #components
             "table_components":bucket_df
-                    [['description','details','quantity','cost_after_tax']]
+                    [['description','quantity','cost']]
                     .rename(columns={
                         'description':'descripción',
-                        'details':'técnico',
                         'quantity':'cantidad',
-                        'cost_after_tax':'costo bruto'
+                        'cost':'valor'
                     })
                     .to_markdown(index=False,floatfmt=',.0f'),
+        
             "table_energy_components":bucket_df[bucket_df['gloss']=='generación']\
                 [['description','details','quantity']]
-            .rename(columns={
-                        'description':'descripción',
-                        'details':'detalle',
-                        'quantity':'cantidad'
+                    .rename(columns={
+                                'description':'descripción',
+                                'details':'detalle',
+                                'quantity':'cantidad'
                     })
-            .to_markdown(index=False),
+                    .to_markdown(index=False),
             #production
             "table_production_array":production_array,
             "table_production_performance":production_performance
-            .rename(columns={
-                    'month':'mes',
-                    'consumption':'demanda',
-                    'generation':'generación',
-                    'savings':'ahorro',
-                    }).round(2).to_markdown(index=False),
+                    .rename(columns={
+                            'month':'mes',
+                            'consumption':'demanda',
+                            'generation':'generación',
+                            'savings':'ahorro',
+                            }).round(2).to_markdown(index=False),
             #economics
-            "eco":self.economical_analysis(Currency.CLP,format=True),
-            "eco_num":self.economical_analysis(Currency.CLP,format=False),
+            "eco":self.economical_analysis(Currency.CLP,fmt=True),
+            "eco_num":self.economical_analysis(Currency.CLP,fmt=False),
             #energy storage unit
             "storage_existance":True if self.storage() else False,
             "storage_capacity":self.storage(),
