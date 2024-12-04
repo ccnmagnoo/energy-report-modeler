@@ -49,10 +49,11 @@ class Specs:
         kwarg1:val1/kwarg2:val2/kwarg3:val3
 
         """
-        return r"/".join([f"{it[0]}:{it[1]}" for it in self.data.items()])
+        return r"|".join([f"{it[0]}:{it[1]}" for it in self.data.items()])
     
+    @property
     def _self_agnostic(self)->str:
-        return 'Generic N/A model'
+        return 'Generic n/a'
 
 
     def __str__(self) -> str:
@@ -62,7 +63,7 @@ class Specs:
         match format_spec:
             case 'p':# partial
                 return f'{self.category} {self.brand} {self.model} {self._inline_data}'
-            case 'a':# agnostic
+            case 'pa':# partial agnostic
                 return f'{self.category} {self._self_agnostic} {self._inline_data}'
             case 'f':# full
                 return f'{self.category} {self.brand} {self.model}\ndetails     : {self._inline_data}\nmarket link : {self.seller_url}\ntech link   : {self.tech_specs_url}'
