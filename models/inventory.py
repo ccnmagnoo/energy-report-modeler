@@ -292,6 +292,13 @@ class Project:
             redux+= it
 
         return (redux,power_list)
+    
+    @property
+    def n_generator(self)->int:
+        """number of generation units"""
+        gen:list[Photovoltaic] = self.components['generación']
+        return sum(list(map(lambda it: it.quantity,gen)))
+
 
     @property
     def area(self)->float:

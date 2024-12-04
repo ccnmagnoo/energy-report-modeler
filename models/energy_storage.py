@@ -53,7 +53,7 @@ class Battery(EnergyStorage):
 
         super().__init__(
             description=description,
-            specifications=specifications.add_spec(voltage=f'{volt} V', charge=f'{charge} Ah',storage=f'{volt*charge:.1f} Wh'),
+            specifications=specifications,
             cost_per_unit=cost_per_unit,
             storage=volt*charge,
             quantity=quantity
