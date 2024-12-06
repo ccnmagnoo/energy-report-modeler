@@ -1,10 +1,10 @@
 """main wrapper dependencies"""
 from functools import reduce
 import json
-from math import floor,log
+from math import log
 
 from datetime import datetime
-from typing import Any, Callable, Literal
+from typing import Any,  Literal
 
 
 from dotenv import dotenv_values
@@ -522,7 +522,7 @@ class Project:
                         'quantity':'cantidad',
                         'cost':'valor'
                     })
-                    .to_markdown(index=False,floatfmt=',.0f'),
+                    .to_markdown(index=True,floatfmt=',.0f'),
         
             "table_energy_components":bucket_df[bucket_df['gloss']=='generación']\
                 [['description','details','quantity']]
@@ -531,7 +531,7 @@ class Project:
                                 'details':'detalle',
                                 'quantity':'cantidad'
                     })
-                    .to_markdown(index=False),
+                    .to_markdown(index=True),
             #production
             "table_production_array":production_array,
             "table_production_performance":production_performance
