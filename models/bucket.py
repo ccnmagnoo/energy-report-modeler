@@ -29,6 +29,7 @@ class Bucket:
 
     def net(self,round=2,currency=Currency.CLP)->float:
         """total net value"""
+        #TODO: evaluate dunder __add__ method in cost
         return round(sum(list(map(lambda it:it.cost.cost_before_tax(currency),self.items))),round)
 
     def gross(self,round=2,currency=Currency.CLP)->float:
@@ -42,7 +43,8 @@ class Bucket:
             ol[f'{load} [{value:.0f}%]'] = Cost((value/100)*self.net(),currency).cost_before_tax(currency)
         return ol
     def get_total(self)->Cost:
+        """calculate total returning COST handler"""
         wallet:float = self.net()
         for _,value in self.get_overloads().items():
             wallet+=value
-        total = Cost(wallet)
+        return Cost(wallet)

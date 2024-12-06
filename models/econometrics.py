@@ -1,6 +1,7 @@
 """currency types dep"""
 from enum import Enum
 from math import floor
+from typing import Self
 
 def curr_round(value:float,padding:int)->float:
     """round currency value"""
@@ -96,3 +97,6 @@ class Cost:
             case 'net': return f'{self.currency.name}$ {self.cost_before_tax(None):,.0f}'
             case 'brute': return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
             case _: return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
+    
+    def __add__(self,other:Self)->Self:
+        raise NotImplementedError
