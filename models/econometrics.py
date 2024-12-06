@@ -93,6 +93,6 @@ class Cost:
 
     def __format__(self,fmt:str)->str:
         match fmt:
-            case 'n': return f'{self.currency.name}$ {self.cost_before_tax(None):,.0f}'
-            case 'b': return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
+            case 'net': return f'{self.currency.name}$ {self.cost_before_tax(None):,.0f}'
+            case 'brute': return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
             case _: return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
