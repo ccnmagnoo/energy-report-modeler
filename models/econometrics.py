@@ -10,7 +10,7 @@ def curr_round(value:float,padding:int)->float:
 class Currency(Enum):
     """currency type"""
     #cspell:disable
-    CLP ='Peso Chileno'
+    CLP ='Pesos chileno'
     USD ='Dolar'
     EUR ='Euro'
     UF = 'UF'
@@ -86,3 +86,9 @@ class Cost:
             return print('USD can´t be modify')
         print(f'set $1 {currency.value:.<15} on USD${1/exchange:.2f} ')
         cls._exchange[currency] = exchange
+    
+    def __format__(self,fmt:str)->str:
+        match fmt:
+            case 'n': return f'{self.currency.name}$ {self.cost_before_tax(None):,.0f}'
+            case 'b': return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
+    
