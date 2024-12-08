@@ -329,7 +329,7 @@ class Project:
                     'details':component.specification,
                     'quantity':component.quantity,
                     'cost':value,
-                    'currency':curr.value
+                    'currency':curr.name
                 }
                 container.append(obj_item)
                 
