@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 import datetime
 from enum import Enum
-from collections.abc import Callable
+from typing import Callable
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
@@ -95,7 +95,7 @@ class EnergyBill(ABC):
 
     def unitary_cost(self)->float:
         """unitary cost in $curr/kWh equivalent, default currency"""
-        return self.cost.cost_after_tax(None)[0]/self.energy
+        return self.cost.gross(None)[0]/self.energy
 
 
 class FareTension(Enum):

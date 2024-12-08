@@ -48,7 +48,7 @@ class Cost:
 
         return self.value*self.IVA*self._exchange_ratio(self.currency,output_currency)
 
-    def cost_before_tax(self,output_currency:Currency|None)->tuple[float,Currency]:
+    def net(self,output_currency:Currency|None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if not output_currency:
             return self.value,self.currency
@@ -57,12 +57,12 @@ class Cost:
 
         return rounded,output_currency # LF (\n)
 
-    def cost_after_tax(self,output_currency:Currency|None)->tuple[float,Currency]:
+    def gross(self,output_currency:Currency|None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if output_currency is None:
-            return [self.tax(None) + self.cost_before_tax(None)[0],self.currency]
+            return [self.tax(None) + self.net(None)[0],self.currency]
 
-        rounded = curr_round(self.tax(output_currency) + self.cost_before_tax(output_currency)[0],2)
+        rounded = curr_round(self.tax(output_currency) + self.net(output_currency)[0],2)
         return rounded,output_currency # LF (\n)
 
     @classmethod
@@ -90,14 +90,14 @@ class Cost:
 
 
     def __str__(self)->str:
-        return f'{self.currency.name}$ {self.cost_before_tax(None):,.0f}'
+        return f'{self.currency.name}$ {self.net(None):,.0f}'
 
     def __format__(self,fmt:str)->str:
         match fmt:
-            case 'net': return f'{self.currency.name}$ {self.cost_before_tax(None):,.0f}'
-            case 'brute': return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
-            case _: return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
+            case 'net': return f'{self.currency.name}$ {self.net(None):,.0f}'
+            case 'brute': return f'{self.currency.name}$ {self.gross(None):,.0f}'
+            case _: return f'{self.currency.name}$ {self.gross(None):,.0f}'
     
     def __add__(self,other:Self)->Self:
-        oc,_ = other.cost_before_tax(self.currency)
+        oc,_ = other.net(self.currency)
         return Cost(self.value+oc,self.currency)

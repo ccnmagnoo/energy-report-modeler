@@ -36,7 +36,7 @@ class Bucket:
         """calcule al overload percentile"""
         ol:dict[str,Cost] = {}
         for load,value in self.overloads.items():
-            ol[f'{load} [{value:.0f}%]'] = Cost((value/100)*self.subtotal().cost_before_tax(currency),currency)
+            ol[f'{load} [{value:.0f}%]'] = Cost((value/100)*self.subtotal().net(currency),currency)
 
         return ol
 
