@@ -99,4 +99,5 @@ class Cost:
             case _: return f'{self.currency.name}$ {self.cost_after_tax(None):,.0f}'
     
     def __add__(self,other:Self)->Self:
-        raise NotImplementedError
+        oc,_ = other.cost_before_tax(self.currency)
+        return Cost(self.value+oc,self.currency)

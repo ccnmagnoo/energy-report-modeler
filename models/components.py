@@ -99,10 +99,10 @@ class Component:
 
     def total_cost_before_tax(self,currency:Currency|None)->tuple[float,Currency]:
         """cost before taxes"""
-        return self.quantity*self.cost.cost_before_tax(currency)[0],currency or self.cost.currency
+        return self.quantity*self.cost.net(currency)[0],currency or self.cost.currency
     def total_cost_after_tax(self,currency:Currency|None):
         """cost after taxes"""
-        return self.quantity*self.cost.cost_after_tax(currency)[0],currency or self.cost.currency
+        return self.quantity*self.cost.gross(currency)[0],currency or self.cost.currency
 
 type Package = dict[str,list[Component]]
 class Assembly:

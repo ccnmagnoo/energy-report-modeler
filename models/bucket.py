@@ -27,24 +27,22 @@ class Bucket:
         for it in items:
             self.items.append(it)
 
-    def net(self,round=2,currency=Currency.CLP)->float:
+    def subtotal(self)->Cost:
         """total net value"""
-        #TODO: evaluate dunder __add__ method in cost
-        return round(sum(list(map(lambda it:it.cost.cost_before_tax(currency),self.items))),round)
+        res:Cost = sum(list(map(lambda it:it.cost,self.items)))
+        return res
 
-    def gross(self,round=2,currency=Currency.CLP)->float:
-        """total gross value BEFORE overloads"""
-        return round(sum(list(map(lambda it:it.cost.cost_before_tax(currency),self.items))),round)
-    
-    def get_overloads(self,currency=Currency.CLP)->dict[str,float]:
+    def get_overloads(self,currency=Currency.CLP)->dict[str,Cost]:
         """calcule al overload percentile"""
-        ol:dict[str,float] = {}
+        ol:dict[str,Cost] = {}
         for load,value in self.overloads.items():
-            ol[f'{load} [{value:.0f}%]'] = Cost((value/100)*self.net(),currency).cost_before_tax(currency)
+            ol[f'{load} [{value:.0f}%]'] = Cost((value/100)*self.subtotal().cost_before_tax(currency),currency)
+
         return ol
+
     def get_total(self)->Cost:
         """calculate total returning COST handler"""
-        wallet:float = self.net()
+        wallet:Cost = self.subtotal()
         for _,value in self.get_overloads().items():
             wallet+=value
-        return Cost(wallet)
+        return wallet
