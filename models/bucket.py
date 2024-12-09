@@ -21,13 +21,8 @@ class Bucket:
 
     items:list[BucketItem]
 
-    def __init__(self,tax:float, **overloads:float):
+    def __init__(self,**overloads:float):
         self.overloads=overloads
-
-        if tax >= 1 and tax <= 100:
-            self.tax=tax,
-        else:
-            raise ValueError(f'tax is {tax}, must be between 1 and 100')
 
     def add_item(self,gloss:str,*items:Component):
         """increment and ordered bucket list"""
