@@ -19,6 +19,7 @@ from uuid import uuid1
 from pyxirr import irr, npv # pylint: disable=no-name-in-module
 import requests # pylint: disable=no-member
 
+from models.bucket import Bucket
 from models.components import Component, Tech
 from models.consumption import Consumption, ElectricityBill, Energetic, EnergyBill
 from models.econometrics import Cost, Currency
@@ -315,11 +316,12 @@ class Project:
 
         #generate bucket
         container:list[tuple[str,str,int,float,str]] = []
+        
         bucket_cost:float = 0
         #write gloss
         for gloss,item in self.components.items():
             for component in item:
-
+                
                 value,curr = component.total_cost_before_tax(currency)
                 
                 #auxiliary object
