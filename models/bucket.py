@@ -19,7 +19,7 @@ class BucketItem:
 class Bucket:
     """contains list of materials and operations required fo project"""
 
-    items:list[BucketItem]
+    items:list[BucketItem]=[]
 
     def __init__(self,**overloads:float):
         self.overloads=overloads
