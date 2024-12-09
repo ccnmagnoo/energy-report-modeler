@@ -41,14 +41,14 @@ class Cost:
             raise ValueError(f'{currency}\'s exchange ratio don´t exist')
 
 
-    def tax(self,output_currency:Currency|None)->float:
+    def tax(self,output_currency:Currency=None)->float:
         """calc iva"""
         if output_currency:
             return self.value*self.IVA
 
         return self.value*self.IVA*self._exchange_ratio(self.currency,output_currency)
 
-    def net(self,output_currency:Currency|None)->tuple[float,Currency]:
+    def net(self,output_currency:Currency=None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if not output_currency:
             return self.value,self.currency
@@ -57,7 +57,7 @@ class Cost:
 
         return rounded,output_currency # LF (\n)
 
-    def gross(self,output_currency:Currency|None)->tuple[float,Currency]:
+    def gross(self,output_currency:Currency=None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if output_currency is None:
             return [self.tax(None) + self.net(None)[0],self.currency]
@@ -66,7 +66,7 @@ class Cost:
         return rounded,output_currency # LF (\n)
 
     @classmethod
-    def _exchange_ratio (cls,input_curr:Currency,output_curr:Currency|None)->float:
+    def _exchange_ratio (cls,input_curr:Currency,output_curr:Currency)->float:
         """calc exchange ratio convertion"""
         if not output_curr:
             return 1
@@ -88,16 +88,28 @@ class Cost:
         print(f'set $1 {currency.value:.<15} on USD${1/exchange:.2f} ')
         cls._exchange[currency] = exchange
 
+    @classmethod
+    def set_iva(cls,tax:int)->None:
+        """set IVA in a class level"""
+        if tax >= 1 and tax<=100:
+            cls.IVA:float = tax/100
+        else:
+            raise ValueError(f'IVA:{tax}, must be between-> 1 & 100')
+
 
     def __str__(self)->str:
-        return f'{self.currency.name}$ {self.net(None):,.0f}'
+        return f'{self.currency.name}$ {self.net()[0]:,.0f}'
 
     def __format__(self,fmt:str)->str:
         match fmt:
-            case 'net': return f'{self.currency.name}$ {self.net(None):,.0f}'
-            case 'brute': return f'{self.currency.name}$ {self.gross(None):,.0f}'
-            case _: return f'{self.currency.name}$ {self.gross(None):,.0f}'
-    
+            case 'net': return f'{self.currency.name}$ {self.net()[0]:,.0f}'
+            case 'brute': return f'{self.currency.name}$ {self.gross(None)[0]:,.0f}'
+            case _: return f'{self.currency.name}$ {self.gross(None)[0]:,.0f}'
+
     def __add__(self,other:Self)->Self:
         oc,_ = other.net(self.currency)
         return Cost(self.value+oc,self.currency)
+
+    def __float__(self)->float:
+        """return net worth value, without tax"""
+        return self.net()[0]
