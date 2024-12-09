@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields
+from models.components import Component
 from models.econometrics import Cost, Currency
 
 @dataclass
@@ -24,10 +25,15 @@ class Bucket:
         self.tax=tax,
         self.overloads=overloads
 
-    def add_item(self,*items:BucketItem):
+    def add_item(self,gloss:str,*items:Component):
         """increment and ordered bucket list"""
         for it in items:
-            self.items.append(it)
+            self.items.append(BucketItem(
+                gloss=gloss,
+                description=it.description,
+                quantity=it.quantity,
+                cost=it.cost
+                ))
 
     def subtotal(self)->Cost:
         """total net value"""
