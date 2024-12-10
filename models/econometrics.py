@@ -53,6 +53,7 @@ class Cost:
         if not output_currency:
             return self.value,self.currency
         #print(f'_exchange_ratio result: {self._exchange_ratio(self.currency,output_currency)}')
+        
         rounded = curr_round(self.value*self._exchange_ratio(self.currency,output_currency),2)
 
         return rounded,output_currency # LF (\n)
@@ -98,13 +99,14 @@ class Cost:
 
 
     def __str__(self)->str:
-        return f'{self.currency.name}$ {self.net()[0]:,.0f}'
+        return f'{self.currency.name} $ {self.net()[0]:,.0f}'
 
     def __format__(self,fmt:str)->str:
-        match fmt:
-            case 'net': return f'{self.currency.name}$ {self.net()[0]:,.0f}'
-            case 'brute': return f'{self.currency.name}$ {self.gross(None)[0]:,.0f}'
-            case _: return f'{self.currency.name}$ {self.gross(None)[0]:,.0f}'
+        _fmt,_curr = fmt.split('.')
+        match _fmt:
+            case 'net': return f'{Currency[_curr].name} $ {self.net(Currency[_curr])[0]:,.0f}'
+            case 'gross': return f'{Currency[_curr].name} $ {self.gross(Currency[_curr])[0]:,.0f}'
+            case _: return f'{Currency[_curr].name} $ {self.gross(Currency[_curr])[0]:,.0f}'
 
     def __add__(self,other:Self)->Self:
         oc,_ = other.net(self.currency)
