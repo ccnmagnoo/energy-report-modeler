@@ -41,12 +41,12 @@ class Cost:
             raise ValueError(f'{currency}\'s exchange ratio don´t exist')
 
 
-    def tax(self,output_currency:Currency=None)->float:
+    def tax(self,output_currency:Currency=None)->tuple[float,Currency]:
         """calc iva"""
         if output_currency:
-            return self.value*self.IVA
+            return self.value*self.IVA,output_currency
 
-        return self.value*self.IVA*self._exchange_ratio(self.currency,output_currency)
+        return self.value*self.IVA*self._exchange_ratio(self.currency,output_currency),self.currency
 
     def net(self,output_currency:Currency=None)->tuple[float,Currency]:
         """calcl cost+tax"""
@@ -60,9 +60,9 @@ class Cost:
     def gross(self,output_currency:Currency=None)->tuple[float,Currency]:
         """calcl cost+tax"""
         if output_currency is None:
-            return [self.tax(None) + self.net(None)[0],self.currency]
+            return [self.tax(None)[0] + self.net(None)[0],self.currency]
 
-        rounded = curr_round(self.tax(output_currency) + self.net(output_currency)[0],2)
+        rounded = curr_round(self.tax(output_currency)[0] + self.net(output_currency)[0],2)
         return rounded,output_currency # LF (\n)
 
     @classmethod
