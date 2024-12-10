@@ -9,6 +9,7 @@ class BucketItem:
     description:str
     details:Specs
     quantity:int
+    unit:Cost
     cost:Cost
 
     def __dict__(self)->dict[str:str]:
@@ -19,12 +20,12 @@ class BucketItem:
 
 class Bucket:
     """contains list of materials and operations required fo project
-    ### methods
-    - subtotal(currency): total amount before overloads
-    - overloads(curr): calc overloads cost
-    - total(curr): net worth after overloads
-        -total().tax() : tax amount
-        -total().gross(): total gross
+    >>> methods
+        ... subtotal(currency): total amount before overloads
+        ... overloads(curr): calc overloads cost
+        ... total(curr): net worth after overloads
+            ... total().tax() : tax amount
+            ... total().gross(): total gross
     """
 
     items:list[BucketItem]=[]
@@ -40,6 +41,7 @@ class Bucket:
                 description=it.description,
                 details=it.specification,
                 quantity=it.quantity,
+                unit=it.cost,
                 cost=Cost(net_value=it.cost.value*it.quantity,currency=it.cost.currency)
                 ))
 
