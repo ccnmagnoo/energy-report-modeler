@@ -1,22 +1,40 @@
 from dataclasses import dataclass, fields
+from pandas import DataFrame
 from models.components import Component, Specs
 from models.econometrics import Cost, Currency
 
 @dataclass
 class BucketItem:
-    "unit operation charge"
+    """unit operation charge"""
     gloss:str
-    description:str
-    details:Specs
-    quantity:int
-    unit:Cost
-    cost:Cost
+    description:str|None=None
+    details:Specs|None=None
+    quantity:int|None=None
+    unit:Cost|None=None
+    cost:Cost|None=None
 
     def __dict__(self)->dict[str:str]:
         tmp={}
         for att in fields(self):
-            tmp[att.name]=str(getattr(self,att.name))
+            tmp[att.name]=str(getattr(self,att.name)) if getattr(self,att.name) is not None else None
         return tmp
+
+    def local_dict(self)->dict[str:str]:
+        """return ES-cl object"""
+        
+        def str_none(it:str|None):
+            return str(it) if it is not None else None
+
+        return {
+            'glosa':self.gloss,
+            'descripción':str_none(self.description),
+            'detalles': f'{self.details:fa}' if self.details is not None else '',
+            'cantidad':str_none(self.quantity),
+            'unitario':f'{self.unit:n.CLP}' if self.unit is not None else None ,
+            'global':f'{self.cost:n.CLP}'  if self.cost is not None else None
+            }
+
+
 
 class Bucket:
     """contains list of materials and operations required fo project
@@ -68,3 +86,31 @@ class Bucket:
         for _,value in self.overloads().items():
             wallet+=value
         return wallet
+
+    def bucket_df(self)->DataFrame:
+        """return a text type table for docxtpl insert"""
+        #build items
+        dict_list = list(map(lambda it:it.local_dict(),self.items))
+
+        #add subtotal
+        subtotal:BucketItem = BucketItem(
+            gloss='sub-total',
+            description=None,
+            details=None,
+            quantity=None,
+            unit=None,
+            cost=self.subtotal()
+            ).local_dict()
+
+        #overloads
+        overloads = [BucketItem(gloss=k,cost=v).local_dict() for k,v in self.overloads().items()]
+
+        #tax & global total
+        tax = BucketItem('Imp',cost=Cost(self.total().tax()[0])).local_dict()
+        total = BucketItem('Total',cost=self.total()).local_dict()
+
+        joint:list[dict] = [*dict_list,subtotal,*overloads,tax,total]
+        
+        return DataFrame.from_dict(joint).dropna()
+        
+
