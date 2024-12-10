@@ -14,7 +14,7 @@ class BucketItem:
     def __dict__(self)->dict[str:str]:
         tmp={}
         for att in fields(self):
-            tmp[att]=str(getattr(self,att))
+            tmp[att.name]=str(getattr(self,att.name))
         return tmp
 
 class Bucket:
