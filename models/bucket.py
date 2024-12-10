@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields
-from models.components import Component
+from models.components import Component, Specs
 from models.econometrics import Cost, Currency
 
 @dataclass
@@ -7,6 +7,7 @@ class BucketItem:
     "unit operation charge"
     gloss:str
     description:str
+    details:Specs
     quantity:int
     cost:Cost
 
@@ -17,12 +18,19 @@ class BucketItem:
         return tmp
 
 class Bucket:
-    """contains list of materials and operations required fo project"""
+    """contains list of materials and operations required fo project
+    ### methods
+    - subtotal(currency): total amount before overloads
+    - overloads(curr): calc overloads cost
+    - total(curr): net worth after overloads
+        -total().tax() : tax amount
+        -total().gross(): total gross
+    """
 
     items:list[BucketItem]=[]
 
     def __init__(self,**overloads:float):
-        self.overloads=overloads
+        self._overloads=overloads
 
     def add_item(self,gloss:str,*items:Component):
         """increment and ordered bucket list"""
@@ -30,26 +38,31 @@ class Bucket:
             self.items.append(BucketItem(
                 gloss=gloss,
                 description=it.description,
+                details=it.specification,
                 quantity=it.quantity,
-                cost=it.cost
+                cost=Cost(net_value=it.cost.value*it.quantity,currency=it.cost.currency)
                 ))
 
-    def subtotal(self)->Cost:
+    def subtotal(self,currency:Currency=Currency.CLP)->Cost:
         """total net value"""
-        res:Cost = sum(list(map(lambda it:it.cost,self.items)))
-        return res
+        # res:Cost = sum(list(map(lambda it:it.cost,self.items)))
+        cost = Cost(currency=currency)
+        for item in self.items:
+            cost+=item.cost
 
-    def get_overloads(self,currency=Currency.CLP)->dict[str,Cost]:
+        return cost
+
+    def overloads(self,currency=Currency.CLP)->dict[str,Cost]:
         """calcule al overload percentile"""
         ol:dict[str,Cost] = {}
-        for load,value in self.overloads.items():
-            ol[f'{load} [{value:.0f}%]'] = Cost((value/100)*self.subtotal().net(currency),currency)
+        for load,value in self._overloads.items():
+            ol[f'{load} ({value:.0f}%)'] = Cost((value/100)*self.subtotal(currency).net(currency)[0],currency)
 
         return ol
 
-    def get_total(self)->Cost:
+    def total(self)->Cost:
         """calculate total returning COST handler"""
         wallet:Cost = self.subtotal()
-        for _,value in self.get_overloads().items():
+        for _,value in self.overloads().items():
             wallet+=value
         return wallet
