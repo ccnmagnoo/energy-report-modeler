@@ -66,9 +66,9 @@ class Specs:
             case 'pa':# partial agnostic
                 return f'{self.category} {self._self_agnostic} {self._inline_data}'
             case 'f':# full
-                return f'{self.category} {self.brand} {self.model}\ndetails     : {self._inline_data}\nmarket link : {self.seller_url}\ntech link   : {self.tech_specs_url}'
+                return f'{self.category} {self.brand} {self.model} details     : {self._inline_data} market link : {self.seller_url} tech link   : {self.tech_specs_url}'
             case 'fa':# full agnostic
-                return f'{self.category} {self._self_agnostic}\ndetails : {self._inline_data}\nref comm: {self.seller_url}\nref tech: {self.tech_specs_url}'
+                return f'{self.category} {self._self_agnostic} details : {self._inline_data} ref comm: {self.seller_url} ref tech: {self.tech_specs_url}'
             case _:
                 return self.__str__()
 
