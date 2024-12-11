@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields
-from typing import Self
+from typing import Callable, Self
 from pandas import DataFrame
 from models.components import Component, Specs
 from models.econometrics import Cost, Currency
@@ -89,8 +89,8 @@ class Bucket:
             wallet+=value
         return wallet
 
-    def bucket_df(self)->DataFrame:
-        """return a text type table for docxtpl insert"""
+    def bucket_df(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->DataFrame:
+        """return a text type table for docxtpl insert"""   
         #build items
       
 
@@ -114,6 +114,6 @@ class Bucket:
         joint:list[BucketItem] = [*self.items,subtotal,*overloads,tax,total]
         
         #local
-        joint_dict:list[dict] = list(map(lambda it:it.local_dict(),joint))
+        joint_dict:list[dict] = list(map(fn,joint))
 
         return DataFrame.from_dict(joint_dict).fillna('')
