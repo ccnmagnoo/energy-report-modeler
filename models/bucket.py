@@ -81,11 +81,11 @@ class Bucket:
             ol[f'{load} ({value:.0f}%)'] = Cost((value/100)*self.subtotal(currency).net(currency)[0],currency)
 
         return ol
-    
+
     def set_overloads(self,**overloads:float):
         """add or patch overloads values"""
         self._overloads.update(overloads)
-        
+
     def reset_overloads(self):
         """reset overloads to ZERO"""
         self._overloads = {}
@@ -97,7 +97,7 @@ class Bucket:
             wallet+=value
         return wallet
 
-    def bucket(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->list[dict]:
+    def bucket(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->dict[str,list[dict]]:
         """return a text type table for docxtpl insert"""
         #build items
 
@@ -105,7 +105,7 @@ class Bucket:
         #add subtotal
         subtotal:BucketItem = BucketItem(
             gloss='sub-total',
-            description=None,
+            description='equipamiento neto',
             details=None,
             quantity=None,
             unit=None,
@@ -113,19 +113,34 @@ class Bucket:
             )
 
         #overloads
-        overloads = [BucketItem(gloss=k,cost=v) for k,v in self.overloads().items()]
+        overloads = [BucketItem(gloss=k,description=k,cost=v) for k,v in self.overloads().items()]
 
         #tax & global total
-        tax = BucketItem('Imp',cost=Cost(self.total().tax()[0]))
-        total = BucketItem('Total',cost=self.total())
+        total = BucketItem('Total',description='total neto s/iva',cost=self.total())
+        tax = BucketItem('Imp (19%)',description='valor IVA',cost=Cost(self.total().tax()[0]))
 
-        joint:list[BucketItem] = [*self.items,subtotal,*overloads,tax,total]
+        joint:dict[str,list[BucketItem]] = {
+            "items":self.items,
+            "subtotal":[subtotal],
+            "overloads":overloads,
+            "total":[total],
+            "tax":[tax],
+            }
 
         #local
-        joint_mod:list[dict] = list(map(fn,joint))
-
+        joint_mod = {group_name:list(map(fn,pack)) for group_name,pack in joint.items()}
         return joint_mod
-    
+
+    def _flat_bucket(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->list[dict]:
+        lst =  [v for _,v in self.bucket(fn).items()]
+        ctx:list[dict] = []
+        for it in lst:
+            for i in it:
+                ctx.append(i)
+
+        return ctx
+
+
     def bucket_df(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->DataFrame:
         """return dict as a DataFrame with covered None"""
-        return DataFrame.from_dict(self.bucket(fn)).fillna('')
+        return DataFrame.from_dict(self._flat_bucket(fn)).fillna('')

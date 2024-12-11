@@ -102,14 +102,17 @@ def plot_temperature(weather:DataFrame,path:str):
 
 def plot_components(project:Project,path:str):
     """plot components cost pie plot"""
-    bucket = project.bucket['bucket']
+    bkt = project.bucket.bucket()
+    bkt_list = [*bkt['items'],*bkt['overloads']]
+    bkt_df:DataFrame = DataFrame.from_dict(data=bkt_list) #only items and overloads
+    
     plt.figure(figsize=(7,5))
     p = plt.subplot()
 
-    colors = plt.get_cmap('Blues')(np.linspace(0.2, 0.7, bucket.index.size))
+    colors = plt.get_cmap('Blues')(np.linspace(0.2, 0.7, bkt_df.index.size))
     p.pie(
-        bucket['cost_after_tax'],
-        labels = bucket['description'],
+        bkt_df['global'],
+        labels = bkt_df['descripción'],
         colors=colors,
         autopct='%1.1f%%'
         )
