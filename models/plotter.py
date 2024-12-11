@@ -2,12 +2,12 @@ import folium
 from matplotlib import pyplot as plt
 import numpy as np
 from pandas import DataFrame,ExcelWriter
+from html2image import Html2Image
 from models.econometrics import Currency
 from models.inventory import Project
-from html2image import Html2Image
 #cspell: disable
 
-def toTable(project:Project,path:str)->None:
+def to_table(project:Project,path:str)->None:
     """generate excel results"""
     data_to_file:dict[str,DataFrame] = {
         'clima':project.weather.get_data(),
