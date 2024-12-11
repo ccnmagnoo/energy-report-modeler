@@ -458,7 +458,7 @@ class Project:
             "table_components":self.bucket.bucket_df()[['glosa','descripción','cantidad','global']]
                     .to_markdown(index=True,floatfmt=',.0f'),
         
-            "table_energy_components":self.bucket.bucket_df()[self.bucket.bucket_df()['gloss']=='generación']\
+            "table_energy_components":self.bucket.bucket_df()[self.bucket.bucket_df()['glosa']=='generación']\
                 [['glosa','descripción','cantidad','global']]
                     .to_markdown(index=True),
             #production
