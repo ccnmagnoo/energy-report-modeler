@@ -89,7 +89,7 @@ class Bucket:
             wallet+=value
         return wallet
 
-    def bucket_df(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->DataFrame:
+    def bucket(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->list[dict]:
         """return a text type table for docxtpl insert"""
         #build items
 
@@ -116,4 +116,7 @@ class Bucket:
         #local
         joint_dict:list[dict] = list(map(fn,joint))
 
-        return DataFrame.from_dict(joint_dict).fillna('')
+        return joint
+    
+    def bucket_df(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->DataFrame:
+        return DataFrame.from_dict(self.bucket(fn)).fillna('')
