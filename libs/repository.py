@@ -339,7 +339,7 @@ repoEquipment:Repo = {
                                 Rango="6.5-95Vdc",
                                 Cap='1-9999 Ah'
                 ),
-                cost_per_unit=Cost(150_000/19,Currency.CLP)
+                cost_per_unit=Cost(150_000/1.19,Currency.CLP)
                 ),
                 'VC 712':Component(
                         description='Monitor de carga',
