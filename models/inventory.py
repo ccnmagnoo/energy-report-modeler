@@ -101,6 +101,7 @@ class Project:
     ... technology: @Tech Enum Class
     """
     components:dict[str,list[Component]] = {}
+    bucket:Bucket = Bucket()
     power_production:DataFrame|None = None # local storage energy daily generation
     generation_group:str|None = None
     _performance:DataFrame = DataFrame()
@@ -119,7 +120,6 @@ class Project:
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
         self.title:str = title
-        self.bucket:dict[str,float|DataFrame]={}
 
         #weather env
         print('getting weather data...')
@@ -144,17 +144,19 @@ class Project:
             consumption= [model(it[0],it[1],it[2]) for it in consumption['consumption']]
         )
 
-    def add_component(self,item:str,*args:Component|Photovoltaic,generator:bool=False):
+    def add_component(self,gloss:str,*components:Component|Photovoltaic,generator:bool=False):
         """
         Add component, in requires and identifier,
         """
         if generator:
-            self.generation_group = item
+            self.generation_group = gloss #defines generation "tag" need to be fix TODO:unappropriated implement
 
-        if item in self.components:
-            self.components[item].append(args)
+        if gloss in self.components:
+            self.components[gloss].append(components)
 
-        self.components[item] = list(args)
+        self.components[gloss] = list(components)
+
+        self.bucket.add_item(gloss,*components)
 
     def add_generator(self,equipment:PvFactory,*generators:PvInput) -> None:
         """add energy generator component dedicate """
@@ -311,72 +313,9 @@ class Project:
 
         return float(f'{area:.2f}')
 
-    def bucket_list(self,currency:Currency|None,**overloads:float)->dict[str,DataFrame|float]:
-        "get all cost related by components"
-
-        #generate bucket
-        container:list[tuple[str,str,int,float,str]] = []
-        
-        bucket_cost:float = 0
-        #write gloss
-        for gloss,item in self.components.items():
-            for component in item:
-                
-                value,curr = component.total_cost_before_tax(currency)
-                
-                #auxiliary object
-                obj_item = {
-                    'gloss':gloss,
-                    'description':component.description,
-                    'details':component.specification,
-                    'quantity':component.quantity,
-                    'cost':value,
-                    'currency':curr.name
-                }
-                container.append(obj_item)
-                
-        #build dataframe
-        
-        #sub-total normalice in clp
-        for gloss,item in self.components.items():
-            for component in item:
-                bucket_cost+=component.total_cost_before_tax(currency=Currency.CLP)[0]
-
-        bucket_cost=round(bucket_cost,0)
-
-        #define subtotal
-        res = {
-            'bucket':pd.DataFrame.from_dict(container),
-            'sub-total':bucket_cost,
-            }
-        
-        #charge overloads
-        for it in overloads.items():
-            if it[1]>1 and it[1]<100:
-                res[f'{it[0]} ({it[1]}%)'] = round(bucket_cost*it[1]/100,0)
-            else:
-                raise ValueError('overloads has to be between 1-100')
-
-        #sum float items
-        acc:float=0 #add final total
-        for _,cost in res.items():
-            if isinstance(cost,float):
-                acc+=cost
-        #compose
-        res = {
-            **res,
-            'total net':acc,
-            'Imp(19%)':round(acc*.19,0),
-            'total':round(acc*1.19,0),
-            }
-        
-        self.bucket:dict[str,float|DataFrame] = res
-
-        return res
-
     def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 6/100,fmt=False):
         """"VAN TIR flux financial analysis"""
-        investment = self.bucket['total']
+        investment = self.bucket.total().value
         first_period_income:float = self._performance['benefits'].sum()
         flux:list[float] = [-investment,first_period_income]
 
@@ -474,7 +413,6 @@ class Project:
             map(lambda it:f'{it['System_capacity_KW'].sum():.2f} kWh',
                 self.production_array()))
 
-        bucket_df:DataFrame = self.bucket['bucket']
 
         ctx:dict[str,any] = {
             #report
@@ -487,7 +425,7 @@ class Project:
             #about this project
             "project_type" : self.technology[0].value.capitalize(),
             "project_size":f"{self.nominal_power[0]:.2f} kW",
-            "total_cost": f"CLP$ {self.bucket["total"]:,.0f}",
+            "total_cost": f"{self.bucket.total():n.CLP}",
             #benefits
             "annual_benefits": f"CLP$ {performance['benefits'].sum():,.0f}",
             "energy_production": f"{performance['generation'].sum():.0f} kWh/año",
@@ -517,22 +455,11 @@ class Project:
                         'unit_cost':'costo $CLP/kWh'
                         }).to_markdown(index=False),
             #components
-            "table_components":bucket_df
-                    [['description','quantity','cost']]
-                    .rename(columns={
-                        'description':'descripción',
-                        'quantity':'cantidad',
-                        'cost':'valor'
-                    })
+            "table_components":self.bucket.bucket_df()[['glosa','descripción','cantidad','global']]
                     .to_markdown(index=True,floatfmt=',.0f'),
         
-            "table_energy_components":bucket_df[bucket_df['gloss']=='generación']\
-                [['description','details','quantity']]
-                    .rename(columns={
-                                'description':'descripción',
-                                'details':'detalle',
-                                'quantity':'cantidad'
-                    })
+            "table_energy_components":self.bucket.bucket_df()[self.bucket.bucket_df()['gloss']=='generación']\
+                [['glosa','descripción','cantidad','global']]
                     .to_markdown(index=True),
             #production
             "table_production_array":production_array,
