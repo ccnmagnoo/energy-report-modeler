@@ -81,6 +81,14 @@ class Bucket:
             ol[f'{load} ({value:.0f}%)'] = Cost((value/100)*self.subtotal(currency).net(currency)[0],currency)
 
         return ol
+    
+    def set_overloads(self,**overloads:float):
+        """add or patch overloads values"""
+        self._overloads.update(overloads)
+        
+    def reset_overloads(self):
+        """reset overloads to ZERO"""
+        self._overloads = {}
 
     def total(self)->Cost:
         """calculate total returning COST handler"""
