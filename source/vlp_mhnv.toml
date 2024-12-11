@@ -31,6 +31,7 @@ consumption=[
 
 
 [components.generator]
+
 panel="CS 655W"
 [[components.generator.input]]
 description='Panel 655W MODULO 01'
