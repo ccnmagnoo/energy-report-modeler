@@ -114,9 +114,10 @@ class Bucket:
         joint:list[BucketItem] = [*self.items,subtotal,*overloads,tax,total]
 
         #local
-        joint_dict:list[dict] = list(map(fn,joint))
+        joint_mod:list[dict] = list(map(fn,joint))
 
-        return joint
+        return joint_mod
     
     def bucket_df(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->DataFrame:
+        """return dict as a DataFrame with covered None"""
         return DataFrame.from_dict(self.bucket(fn)).fillna('')
