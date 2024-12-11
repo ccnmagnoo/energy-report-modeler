@@ -90,9 +90,9 @@ class Bucket:
         return wallet
 
     def bucket_df(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->DataFrame:
-        """return a text type table for docxtpl insert"""   
+        """return a text type table for docxtpl insert"""
         #build items
-      
+
 
         #add subtotal
         subtotal:BucketItem = BucketItem(
@@ -112,7 +112,7 @@ class Bucket:
         total = BucketItem('Total',cost=self.total())
 
         joint:list[BucketItem] = [*self.items,subtotal,*overloads,tax,total]
-        
+
         #local
         joint_dict:list[dict] = list(map(fn,joint))
 
