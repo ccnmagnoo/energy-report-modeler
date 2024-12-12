@@ -11,7 +11,7 @@ class BucketItem:
     description:str|None=None
     details:Specs|None=None
     quantity:int|None=None
-    unit:Cost|None=None
+    unitary:Cost|None=None
     cost:Cost|None=None
 
     def __dict__(self)->dict[str:str]:
@@ -32,7 +32,7 @@ class BucketItem:
             'descripción':str_none(ctx.description),
             'detalles': f'{ctx.details:fa}' if ctx.details is not None else '',
             'cantidad':str_none(self.quantity),
-            'unitario':f'{ctx.unit:n.CLP}' if ctx.unit is not None else None ,
+            'unitario':f'{ctx.unitary:n.CLP}' if ctx.unitary is not None else None ,
             'global':f'{ctx.cost:n.CLP}'  if ctx.cost is not None else None
             }
 
@@ -61,7 +61,7 @@ class Bucket:
                 description=it.description,
                 details=it.specification,
                 quantity=it.quantity,
-                unit=it.cost,
+                unitary=it.cost,
                 cost=Cost(net_value=it.cost.value*it.quantity,currency=it.cost.currency)
                 ))
 
@@ -108,7 +108,7 @@ class Bucket:
             description='equipamiento neto',
             details=None,
             quantity=None,
-            unit=None,
+            unitary=None,
             cost=self.subtotal()
             )
 
