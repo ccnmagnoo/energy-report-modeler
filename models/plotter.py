@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from pandas import DataFrame,ExcelWriter
 from html2image import Html2Image
+from models.bucket import BucketItem
 from models.econometrics import Currency
 from models.inventory import Project
 #cspell: disable
@@ -13,6 +14,7 @@ def to_table(project:Project,path:str)->None:
         'clima':project.weather.get_data(),
         'capacidad':project.energy_production(),
         'performance':project.performance(consumptions=['main']),
+        'presupuesto':project.bucket.bucket_df()
     }
 
     for key,data in data_to_file.items():
@@ -102,7 +104,15 @@ def plot_temperature(weather:DataFrame,path:str):
 
 def plot_components(project:Project,path:str):
     """plot components cost pie plot"""
-    bkt = project.bucket.bucket()
+    
+    def plot_comp_t(bi:BucketItem)->dict[str,float]:
+        return {
+            "gloss":bi.gloss,
+            "description":bi.description,
+            "row_total":bi.cost.net(Currency.CLP)[0]
+        }
+    
+    bkt = project.bucket.bucket(plot_comp_t)
     bkt_list = [*bkt['items'],*bkt['overloads']]
     bkt_df:DataFrame = DataFrame.from_dict(data=bkt_list) #only items and overloads
     
@@ -111,8 +121,8 @@ def plot_components(project:Project,path:str):
 
     colors = plt.get_cmap('Blues')(np.linspace(0.2, 0.7, bkt_df.index.size))
     p.pie(
-        bkt_df['global'],
-        labels = bkt_df['descripción'],
+        bkt_df['row_total'],
+        labels = bkt_df['description'],
         colors=colors,
         autopct='%1.1f%%'
         )
