@@ -34,7 +34,7 @@ class Battery(EnergyStorage):
         cost_per_unit: Cost = ...,
         volt:Voltage=12,#volt
         charge:float=0,#A-h
-        demand:list[float] = [],#kWh
+        demand:list[float] = None,#kWh
         hours_autonomy:int=1,#number of hours
         use_regime:Regime='24/7',
         ) -> None:
