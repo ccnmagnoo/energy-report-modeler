@@ -20,11 +20,11 @@ from pyxirr import irr, npv # pylint: disable=no-name-in-module
 import requests # pylint: disable=no-member
 
 from models.bucket import Bucket
-from models.components import Component, Tech
+from models.components import Component, Specs, Tech
 from models.consumption import Consumption, ElectricityBill, Energetic, EnergyBill
 from models.econometrics import Cost, Currency
 from models.emission import Emission
-from models.energy_storage import Battery
+from models.energy_storage import Battery, EnergyStorage,Regime
 from models.geometry import GeoPosition
 from models.photovoltaic import Photovoltaic, PvFactory, PvInput
 from models.weather import Weather
@@ -169,6 +169,47 @@ class Project:
             )
 
         self.add_component('generación',*eq,generator=True)
+        
+    def add_storage(
+        self,
+        tag:str,
+        hours_autonomy,
+        regime:Regime,
+        *extra_component:Component)->None:
+        """auto config energy storage with default 250Ah GEL equipment"""
+        
+        self.add_component(
+            tag,
+            Battery(
+                description='Baterías',
+                specifications=Specs(
+                    category='Storage',
+                    brand='MaxPower',
+                    model='MP GEL12-250',
+                    ref_url='https://www.tiendatecnored.cl/bateria-gel-ciclo-profundo-12v-250ah.html',
+                    specs_url='https://www.tiendatecnored.cl/media/wysiwyg/ficha-tecnica/4703148.pdf',
+                    clase='Ciclo Profundo',
+                    tipo='GEL'
+                    ),
+                cost_per_unit=Cost(305_990,Currency.CLP),
+                volt=12,
+                charge=250,
+                demand=self.building.consumption_forecast(['main'])['energy'].to_list(),
+                hours_autonomy=hours_autonomy,
+                use_regime=regime,
+            ),
+            *extra_component
+        )
+    
+    def has_storage(self)->bool:
+        """check storage capability"""
+        for _,group in self.components.items():
+            for comp in group:
+                if isinstance(comp,EnergyStorage):
+                    return True
+        return False
+                
+        
 
 
     def energy_production(self)->DataFrame|None:
