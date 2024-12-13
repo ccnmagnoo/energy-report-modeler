@@ -455,10 +455,13 @@ class Project:
                         'unit_cost':'costo $CLP/kWh'
                         }).to_markdown(index=False),
             #components
-            "table_components":self.bucket.bucket_df()[['glosa','descripción','cantidad','global']]
-                    .to_markdown(index=True,floatfmt=',.0f'),
+            "table_components":self.bucket.bucket_df(lambda it:{
+                'descripción':it.description,
+                'cantidad':it.quantity,
+                'costo':it.cost.net(Currency.CLP)[0]})
+            .to_markdown(index=True,floatfmt=',.0f'),
         
-            "table_energy_components":self.bucket.bucket_df()[self.bucket.bucket_df()['glosa']=='generación']\
+            "table_energy_components":self.bucket.bucket_df()[self.bucket.bucket_df()['glosa']=='Gx']\
                 [['glosa','descripción','cantidad','global']]
                     .to_markdown(index=True),
             #production
