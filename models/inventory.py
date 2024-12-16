@@ -25,6 +25,7 @@ from models.consumption import Consumption, ElectricityBill, Energetic, EnergyBi
 from models.econometrics import Cost, Currency
 from models.emission import Emission
 from models.energy_storage import Battery, EnergyStorage,Regime
+from models.generator import EnergyGenerator
 from models.geometry import GeoPosition
 from models.photovoltaic import Photovoltaic, PvFactory, PvInput
 from models.weather import Weather
@@ -57,11 +58,10 @@ class Building:
 
     def add_consumptions(
         self,
-        description:str,
         energetic:Energetic,
         cost_increment:float,
         consumption:list[EnergyBill],
-
+        description:str='main',
         ):
         '''defining energy bill, '''
         instance=Consumption(energetic)
@@ -101,9 +101,9 @@ class Project:
     ... technology: @Tech Enum Class
     """
     components:dict[str,list[Component]] = {}
+    generation_group_id:str = "generation"
     bucket:Bucket = Bucket()
     power_production:DataFrame|None = None # local storage energy daily generation
-    generation_group:str|None = None
     _performance:DataFrame = DataFrame()
 
     def __init__(
@@ -144,12 +144,12 @@ class Project:
             consumption= [model(it[0],it[1],it[2]) for it in consumption['consumption']]
         )
 
-    def add_component(self,gloss:str,*components:Component|Photovoltaic,generator:bool=False):
+    def add_component(self,gloss:str,*components:Component,generator:bool=False):
         """
         Add component, in requires and identifier,
         """
         if generator:
-            self.generation_group = gloss #defines generation "tag" need to be fix TODO:unappropriated implement
+            self.generation_group_id = gloss #defines generation "tag" need to be fix TODO:unappropriated implement
 
         if gloss in self.components:
             self.components[gloss].append(components)
@@ -219,23 +219,24 @@ class Project:
         if self.power_production is not None:
             return self.power_production
 
-        number_of_components  = len(self.components[self.generation_group])
+        number_of_components:int  = len(self.components[self.generation_group_id])
 
         #check for generation component content
         if number_of_components == 0:
             raise ValueError('no component found')
 
         #check for Photovoltaic component
-        for it in self.components[self.generation_group]:
+        for it in self.components[self.generation_group_id]:
             if not isinstance(it,Photovoltaic):
                 raise ValueError(f'{it}is not a energy gen component')
 
         #proceed for loop addition
-
-        container:DataFrame = self.components[self.generation_group][0].get_energy().copy() #copy class fix overwriting object
+        gx_equipment:list[EnergyGenerator] = self.components[self.generation_group_id]
+        
+        container:DataFrame = self.components[self.generation_group_id][0].get_energy().copy() #copy class fix overwriting object
 
         if number_of_components>1:
-            for it in self.components[self.generation_group][1:]:
+            for it in self.components[self.generation_group_id][1:]:
 
                 aux_component:DataFrame = it.get_energy()
                 container['System_capacity_KW'] += aux_component['System_capacity_KW']
@@ -253,10 +254,10 @@ class Project:
 
     def production_array(self)->list[DataFrame]:
         "get energy production DataFrame PER generation unit module"
-        return list(map(lambda unit:unit.get_energy(),self.components[self.generation_group]))
+        return list(map(lambda unit:unit.get_energy(),self.components[self.generation_group_id]))
 
     def performance(self,
-                    consumptions:list[str],
+                    consumptions:list[str]=['main'],
                     connection:Connection = 'netbilling',):
         """generates monthly result for
         savings and netbilling performance"""
@@ -321,7 +322,7 @@ class Project:
     @property
     def nominal_power(self)->tuple[float,list[float]]:
         "system capacity in kW"
-        components:list[Component|Photovoltaic]  = self.components[self.generation_group]
+        components:list[Component|Photovoltaic]  = self.components[self.generation_group_id]
 
         if len(components)==0:
             raise ValueError('no component found')
@@ -348,7 +349,7 @@ class Project:
     def area(self)->float:
         "return total area used by this project"
         area =0
-        for it in self.components[self.generation_group]:
+        for it in self.components[self.generation_group_id]:
             comp:Photovoltaic = it
             area += comp.area
 
