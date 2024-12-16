@@ -297,7 +297,7 @@ repoEquipment:Repo = {
     },
         'Medidor':{
                 'EL 1F':Component(# medidor
-                description='Medidor Monofase 60A 240V ',
+                description='Medidor 1/Fase 240V ',
                 specification=Specs(
                         category='Medidor',
                         brand='Elster',
@@ -312,7 +312,7 @@ repoEquipment:Repo = {
                         ),
                 cost_per_unit=Cost(93_450,Currency.CLP)),
                 'FR 3F':Component(# medidor
-                description='Medidor Trifásico 3x50kA 400V',
+                description='Medidor 3/Fases 400V',
                 specification=Specs(
                         category='Medidor',
                         brand='Fronius',
