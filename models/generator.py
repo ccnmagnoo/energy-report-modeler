@@ -5,7 +5,7 @@ from pandas import DataFrame
 from models.components import Component, Specs
 from models.econometrics import Cost
 
-class EnergyGenerator(ABC,Component):
+class EnergyGenerator(Component):
     """abstract generate unit"""
 
     def __init__(self,
