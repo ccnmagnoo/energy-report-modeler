@@ -1,13 +1,13 @@
-from abc import abstractmethod
+from abc import abstractmethod,ABC
+from dataclasses import dataclass
 from typing import Self
 from pandas import DataFrame
-
 from models.components import Component, Specs
 from models.econometrics import Cost
 
-class Generator(Component):
+class EnergyGenerator(ABC,Component):
     """abstract generate unit"""
-    _energy:DataFrame
+
     def __init__(self,
                 description: str,
                 specification: Specs | None = None,
@@ -17,9 +17,10 @@ class Generator(Component):
         super().__init__(description, specification, cost_per_unit, quantity)
 
     @property
+    @abstractmethod
     def energy(self)->DataFrame:
         """return energy produced by generator component"""
-        return self._energy
+
     @abstractmethod
     def get_energy(self)->DataFrame:
         """DataFrame with hourly generation"""
@@ -29,3 +30,22 @@ class Generator(Component):
     @abstractmethod
     def __add__(self,other:Self)->Self:
         """add production"""
+
+@dataclass
+class GeneratorFactory(ABC):
+    """class Factory Certain data"""
+    @abstractmethod
+    def factory(self)->EnergyGenerator:
+        """return a Generator"""
+    
+
+class GeneratorInput(ABC):
+    """data simplification input"""
+    @property
+    @abstractmethod
+    def description(self)->str:
+        """return description"""
+    @property
+    @abstractmethod
+    def quantity(self)->int:
+        """return description"""
