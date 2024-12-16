@@ -173,7 +173,7 @@ class Project:
     def add_storage(
         self,
         tag:str,
-        hours_autonomy,
+        hours_autonomy:int,
         regime:Regime,
         *extra_component:Component)->None:
         """auto config energy storage with default 250Ah GEL equipment"""
@@ -356,6 +356,7 @@ class Project:
 
     def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 6/100,fmt=False):
         """"VAN TIR flux financial analysis"""
+        
         investment = self.bucket.total().value
         first_period_income:float = self._performance['benefits'].sum()
         flux:list[float] = [-investment,first_period_income]
@@ -416,7 +417,7 @@ class Project:
             return None
 
         aux = {
-            "specification":list(map(lambda it:it.specification,container)),
+            "specification":list(map(lambda it:f'{it.specification:a}',container)),
             "wh_per_module":reduce(lambda acc,it:acc+it,[it.storage for it in container]),
             "hours_autonomy":reduce(lambda acc,it:acc+it,[it.hours_autonomy for it in container]),
             "units":reduce(lambda acc,it:acc+it,[it.quantity for it in container]),

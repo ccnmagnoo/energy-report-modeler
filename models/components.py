@@ -2,11 +2,7 @@
 from enum import Enum
 from typing import Literal
 
-
-if __name__ == "__main__":
-    from econometrics import Cost,Currency
-else:
-    from models.econometrics import Cost, Currency
+from models.econometrics import Cost, Currency
 
 type EquipmentCategory = Literal[
     'Photovoltaic',
@@ -120,14 +116,3 @@ class Assembly:
         if group not in self.package:
             raise ValueError('no group on list ->',list(self.package.keys()))
         return self.package[group]
-
-
-#manual test
-if __name__ == "__main__":
-    com1 = Component('test')
-    com2 = Component('test')
-    com3 = Component('test')
-    ass = Assembly("energético",com1,com2,com3)
-
-
-    print(ass["energétic"])

@@ -19,6 +19,7 @@ class EnergyStorage(Component):
 
 type Voltage = Literal[12,24,48,110,220,380,400]
 type Regime = Literal['24/7','16/7','8/7','24/5','16/5','8/5',]
+
 class Battery(EnergyStorage):
     """Battery is set in function of certain demand
     >>> variables
