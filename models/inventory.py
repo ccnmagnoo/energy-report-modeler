@@ -169,7 +169,7 @@ class Project:
             )
 
         self.add_component('generación',*eq,generator=True)
-        
+
     def add_storage(
         self,
         tag:str,
@@ -177,7 +177,7 @@ class Project:
         regime:Regime,
         *extra_component:Component)->None:
         """auto config energy storage with default 250Ah GEL equipment"""
-        
+
         self.add_component(
             tag,
             Battery(
@@ -200,7 +200,7 @@ class Project:
             ),
             *extra_component
         )
-    
+
     def has_storage(self)->bool:
         """check storage capability"""
         for _,group in self.components.items():
@@ -208,8 +208,8 @@ class Project:
                 if isinstance(comp,EnergyStorage):
                     return True
         return False
-                
-        
+
+
 
 
     def energy_production(self)->DataFrame|None:
@@ -227,12 +227,10 @@ class Project:
 
         #check for Photovoltaic component
         for it in self.components[self.generation_group_id]:
-            if not isinstance(it,Photovoltaic):
+            if not isinstance(it,EnergyGenerator):
                 raise ValueError(f'{it}is not a energy gen component')
 
         #proceed for loop addition
-        gx_equipment:list[EnergyGenerator] = self.components[self.generation_group_id]
-        
         container:DataFrame = self.components[self.generation_group_id][0].get_energy().copy() #copy class fix overwriting object
 
         if number_of_components>1:
@@ -337,7 +335,7 @@ class Project:
             redux+= it
 
         return (redux,power_list)
-    
+
     @property
     def n_generator(self)->int:
         """number of generation units"""
@@ -357,7 +355,7 @@ class Project:
 
     def economical_analysis(self,currency:Currency,n_years:int=10,rate:float = 6/100,fmt=False):
         """"VAN TIR flux financial analysis"""
-        
+
         investment = self.bucket.total().value
         first_period_income:float = self._performance['benefits'].sum()
         flux:list[float] = [-investment,first_period_income]
@@ -503,7 +501,7 @@ class Project:
                 'cantidad':it.quantity,
                 'costo':it.cost.net(Currency.CLP)[0]})
             .to_markdown(index=True,floatfmt=',.0f'),
-        
+
             "table_energy_components":self.bucket.bucket_df()[self.bucket.bucket_df()['glosa']=='Gx']\
                 [['glosa','descripción','cantidad','global']]
                     .to_markdown(index=True),
@@ -525,7 +523,6 @@ class Project:
 
         }
         return ctx
-
 
     def _load_exchanges(self):
         #env values

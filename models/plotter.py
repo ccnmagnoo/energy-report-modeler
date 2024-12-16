@@ -1,14 +1,76 @@
+from datetime import datetime
+import os
 import folium
 from matplotlib import pyplot as plt
 import numpy as np
 from pandas import DataFrame,ExcelWriter
 from html2image import Html2Image
+from docxtpl import DocxTemplate
 from models.bucket import BucketItem
 from models.econometrics import Currency
 from models.inventory import Project
 #cspell: disable
 
-def to_table(project:Project,path:str)->None:
+def generate_docs(project):
+    """doct generator fun wrapper"""
+    #path
+    path = get_path(project)
+
+    #generate tables and store CSV
+    to_table(project,path)
+
+    #generate plots and store PNG
+    plotter(project,path)
+
+    #load templates
+    memory_report = DocxTemplate("templates/memory_template.docx")
+    bidding_report = DocxTemplate("templates/bidding_template.docx")
+
+    #fill with context
+    memory_report.render(project.context(template=memory_report))
+    bidding_report.render(project.context(template=bidding_report))
+
+    #fill with graph
+    #set into doc
+    plot_list = [
+        'plot_consumption_forecast',
+        'plot_irradiance',
+        'plot_temperature',
+        'plot_components',
+        'plot_components_irr',
+        'plot_components_production',
+        'plot_production_performance',
+        'plot_performance_frequency',
+        'plot_flux',
+        'map_location'
+    ]
+
+    for plot in plot_list:
+        memory_report.replace_pic(plot,path+f'{plot}.png')
+        print('replaced plot:',plot)
+
+    #save docs
+    memory_report.save(path+"reporte_memoria_calculo.docx")
+    bidding_report.save(path+"reporte_pliegos_técnicos.docx")
+    print('work',project,'finish at: ',datetime.now())
+
+def get_path(project:Project)->str:
+    """get path name, and if not exists create it"""
+    path = 'build/'+f'r_{project.building.city.lower()[:3]}_{project.building.name}/'
+    create_path_if_not_exist(path)
+
+    return path
+
+def create_path_if_not_exist(path:str):
+    """create new dir"""
+    if not os.path.exists(path):
+        #create
+        os.makedirs(path)
+
+def to_table(
+    project:Project,
+    path:str
+    )->None:
     """generate excel results"""
     data_to_file:dict[str,DataFrame] = {
         'clima':project.weather.get_data(),
@@ -16,6 +78,8 @@ def to_table(project:Project,path:str)->None:
         'performance':project.performance(consumptions=['main']),
         'presupuesto':project.bucket.bucket_df()
     }
+
+    #create path
 
     for key,data in data_to_file.items():
         with ExcelWriter(path+f'calc_{project.building.city}_{project.building.name}_{key}.xlsx') as writer:#pylint: disable=abstract-class-instantiated
@@ -104,18 +168,18 @@ def plot_temperature(weather:DataFrame,path:str):
 
 def plot_components(project:Project,path:str):
     """plot components cost pie plot"""
-    
+
     def plot_comp_t(bi:BucketItem)->dict[str,float]:
         return {
             "gloss":bi.gloss,
             "description":bi.description,
             "row_total":bi.cost.net(Currency.CLP)[0]
         }
-    
+
     bkt = project.bucket.bucket(plot_comp_t)
     bkt_list = [*bkt['items'],*bkt['overloads']]
     bkt_df:DataFrame = DataFrame.from_dict(data=bkt_list) #only items and overloads
-    
+
     plt.figure(figsize=(7,5))
     p = plt.subplot()
 
@@ -186,7 +250,7 @@ def plot_components_production(project:Project,path:str):
 
         for i, value in enumerate(group['System_capacity_KW'].round(0).values):
             plt.text(group.index[i], group['System_capacity_KW'][i], value, ha='center', va='bottom')
-            
+
     plt.legend()
     plt.savefig(path+'plot_components_production'+'.png',dpi=300)
 
@@ -250,7 +314,7 @@ def plot_flux(project:Project,path:str):
         plt.text(data.index[i], (data['acumulado']/1000)[i], f'{value/1000:.0f}', ha='center', va='bottom',color='#045993',)
     plt.legend()
     plt.savefig(path+'plot_flux'+'.png',dpi=300)
-    
+
 def plot_map(project:Project, path:str):
     #init
     geo = project.building.geolocation
@@ -263,14 +327,14 @@ def plot_map(project:Project, path:str):
         popup=project.building.address,
         icon=folium.Icon(color='blue'),
     ).add_to(map)
-    
+
     #circle marker
     folium.CircleMarker(
         location=[geo.latitude,geo.longitude],
         radius = 25,
         fill=True,
     ).add_to(map)
-    
+
     map.save(path+'map_location'+'.html')
 
 def map_to_image(html_path:str)->None:
@@ -279,4 +343,3 @@ def map_to_image(html_path:str)->None:
     hti.screenshot(
         html_file=html_path+'map_location'+'.html',
         save_as='map_location'+'.png')
-    
