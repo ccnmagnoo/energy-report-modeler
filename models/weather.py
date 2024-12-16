@@ -83,6 +83,7 @@ class Weather:
 
         #create a list of data list
         result_df = pd.DataFrame()
+        
         for param,data_by_hour in result['properties']['parameter'].items():
             #data[param] = (hourlyData)
             column = pd.DataFrame(list(data_by_hour.items()),columns=['date',param])
