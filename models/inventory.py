@@ -66,7 +66,7 @@ class Building:
         '''defining energy bill, '''
         instance=Consumption(energetic)
         instance.set_cost_increment(cost_increment)
-        instance.set_bill(consumption)
+        instance.set_bill(*consumption)
         self.consumptions[description] = instance
 
     def consumption_forecast(self,group:list[str])->DataFrame:

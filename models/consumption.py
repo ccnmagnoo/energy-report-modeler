@@ -1,8 +1,8 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import datetime
 from enum import Enum
-from typing import Callable
+from typing import Callable, Self
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
@@ -96,6 +96,10 @@ class EnergyBill(ABC):
     def unitary_cost(self)->float:
         """unitary cost in $curr/kWh equivalent, default currency"""
         return self.cost.gross(None)[0]/self.energy
+    
+    @abstractmethod
+    def to_dict(self,adapter:Callable[[Self],dict])->dict:
+        """return all properties stores as a dict"""
 
 
 class FareTension(Enum):
@@ -149,38 +153,33 @@ class ElectricityBill(EnergyBill):
                 date_billing: str,
                 cost:float = 0,
                 currency:Currency = Currency.CLP,
-                fare:Fare = Fare()
+                fare:Fare = Fare(),
+                **props:float
                 ) -> None:
         super().__init__(date_billing,consumption, Energetic.ELI, cost,currency)
         self.energy_unit:Unit = Unit.KWH
         self.fare = fare
+        self.props = props
+        
+    def to_dict(self, adapter:Callable[[Self],dict])->dict:
+        return adapter(self)
+        
 
 class Consumption:
     """global energy billing and estimate  projection in 12 month"""
     
-    bucket:list[EnergyBill]=[]
+    _records:list[EnergyBill]=[]
     _cost_increment=1
     
     def __init__(self,energetic:Energetic) -> None:
         self.energetic = energetic
         self.property = properties[energetic]
 
-    def set_bill(self,billing:list[EnergyBill]|EnergyBill)->None:
+    def set_bill(self,*billing:EnergyBill)->None:
         """set list o single billing"""
-        if isinstance(billing,list):
-            # when is a bulk of bills 📄📄📄
-            if len(self.bucket) > 0:
-                self.bucket = [*self.bucket,*billing]
-            else:
-                self.bucket = billing
-        else:
-            # when just a one bill 📄
-            if len(self.bucket) > 0:
-                self.bucket = [*self.bucket,billing]
-            else:
-                self.bucket = [billing] # inventory (\r\n)
+        self._records = [*self._records,*billing]
         #acs sorting by date
-        self.bucket.sort(key=lambda bill:bill.date_billing)
+        self._records.sort(key=lambda bill:bill.date_billing)
 
     def set_cost_increment(self,value:float):
         """set cost increment factor"""
@@ -199,7 +198,7 @@ class Consumption:
 
         return list(
             map(lambda bill:{"date":bill.date_billing,"energy":bill.energy},
-            self.bucket)
+            self._records)
             )
 
     def base(self)->list[dict[str,int]]:
@@ -208,7 +207,7 @@ class Consumption:
         """
         base  = [{"month":period,"energy":0,"unit_cost":0} for period in range(1,13)]
 
-        for bill in self.bucket:
+        for bill in self._records:
             #load consumptions
             bill_month = bill.date_billing.month
             base[bill_month-1]["energy"]=base[bill_month-1]["energy"]+bill.energy
