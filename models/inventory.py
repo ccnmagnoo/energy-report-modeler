@@ -90,7 +90,7 @@ class Building:
         plotter.set_ylabel('kWh')
         plt.savefig("build/plot_consumption_forecast.png")
 
-type Connection = Literal['netbilling','ongrid','offgrid']
+type Connection = Literal['hybrid','netbilling','ongrid','offgrid']
 
 
 class Project:
@@ -255,23 +255,24 @@ class Project:
         return list(map(lambda unit:unit.get_energy(),self.components[self.generation_group_id]))
 
     def performance(self,
-                    consumptions:list[str]=['main'],
+                    consumptions:list[str]=None,
                     connection:Connection = 'netbilling',):
         """generates monthly result for
         savings and netbilling performance"""
 
         production:DataFrame = self.energy_production()[["month","System_capacity_KW"]]\
             .groupby(["month"],as_index=False).sum()
-
+                
         future:DataFrame = self.building.consumption_forecast(
-            group=consumptions,
+            group=consumptions if consumptions else ['main'],
             )
 
         res = future.merge(right=production,how='left')
         res = res.rename(columns={'energy':'consumption','System_capacity_KW':'generation'})
 
         match connection:
-            case 'netbilling':
+            case 'netbilling':#energy sell to net
+                #when energy generation is bigger than consumption return delta, else 0
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
                     res['generation']-res['consumption'],
@@ -283,7 +284,8 @@ class Project:
                     res['consumption'],
                     res['generation']
                     )
-            case 'ongrid':
+            
+            case 'ongrid': #not netbilling
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
                     0,
@@ -295,7 +297,8 @@ class Project:
                     res['consumption'],
                     res['generation']
                     )
-            case 'offgrid':
+                
+            case 'offgrid':#only battery saving
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
                     0,
@@ -308,7 +311,8 @@ class Project:
                     res['generation']
                     )
         #emissions
-        res['benefits'] = res['savings']*res['unit_cost']
+        res['benefits'] = (res['savings']+res['netbilling'])*res['unit_cost']
+        
         eva_period = datetime.now().year +1
         res['CO2 kg'] = res['generation']*self.emissions.annual_projection(eva_period)
 

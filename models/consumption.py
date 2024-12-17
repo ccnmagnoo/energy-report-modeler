@@ -138,6 +138,9 @@ class Fare:
     def get_fare(self)->str:
         '''return properly compose fare'''
         return self.tension + self.contract + self.sub_type
+    
+    def __str__(self)->str:
+        return self.get_fare()
 
 class ElectricityBill(EnergyBill):
     '''Electricity billing details consumption'''
@@ -154,8 +157,10 @@ class ElectricityBill(EnergyBill):
 
 class Consumption:
     """global energy billing and estimate  projection in 12 month"""
+    
     bucket:list[EnergyBill]=[]
     _cost_increment=1
+    
     def __init__(self,energetic:Energetic) -> None:
         self.energetic = energetic
         self.property = properties[energetic]
