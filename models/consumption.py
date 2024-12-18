@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import datetime
 from enum import Enum
-from typing import Callable, Self
+from typing import Callable, Self, TypeVar
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
@@ -20,8 +20,8 @@ class Energetic(Enum):
     '''
     ELI = 'electricidad'
     GLP = 'gas licuado'
-    GNL = 'gas natural licuado',
-    GN = 'gas natural cañería',
+    GNL = 'gas natural licuado'
+    GN = 'gas natural cañería'
     DIESEL = 'diesel oil'
     WOOD = 'leña'
     CARBON = 'carbón'
@@ -29,10 +29,10 @@ class Energetic(Enum):
 
 class Unit(Enum):
     '''Physical unit specification'''
-    KG = 'kg',
-    M3 = 'm³',
-    KWH = 'kWh',
-    M = 'm',
+    KG = 'kg'
+    M3 = 'm³'
+    KWH = 'kWh'
+    M = 'm'
     LT = 'lt'
 
 class Supply(Enum):
@@ -41,7 +41,7 @@ class Supply(Enum):
     > - STORE : distribution by reserves, diesel
     > - DEMAND : distribution on-demand, electricity
     """
-    STORAGE = "storage",
+    STORAGE = "storage"
     DEMAND = "on-demand"
 @dataclass
 class Property:
@@ -87,6 +87,7 @@ class EnergyBill(ABC):
         self.property:Property = properties[energetic]
         self.energy = properties[energetic].energy_equivalent(consumption)  # in equivalent kWh
         self.cost = Cost(cost,currency)
+
         #date from string
         datestr = date_billing.split("-",maxsplit=3)
         datestr = [int(cal) for cal in datestr]
@@ -96,53 +97,49 @@ class EnergyBill(ABC):
     def unitary_cost(self)->float:
         """unitary cost in $curr/kWh equivalent, default currency"""
         return self.cost.gross(None)[0]/self.energy
-    
+
     @abstractmethod
     def to_dict(self,adapter:Callable[[Self],dict])->dict:
         """return all properties stores as a dict"""
 
-
-class FareTension(Enum):
-    '''fare type'''
-    AT='AT',
+class Tension(Enum):
+    """level of tension AT:400v o BT:220v"""
+    AT='AT'
     BT='BT'
 
-class FareType(Enum):
-    '''
-    Fare contract model
-    '''
-    A1 = '1A',
-    B1 = '1B',
-    T2 = '2',
-    T3 = '3PP',
-    T41 = '4.1',
-    T42 = '4.2',
+class Contract(Enum):
+    """type of contract"""
+    A1 = '1A'
+    B1 = '1B'
+    T2 = '2'
+    T3 = '3'
+    T41 = '4.1'
+    T42 = '4.2'
     T43 = '4.3'
 
-class FareSubType(Enum):
-    '''
-    Fare contract model
-    '''
-    PP = 'PP',
+class RushHour(Enum):
+    """rush hours config"""
+    PP = 'PP'
     PPP = 'PPP'
+    NA = ''
 
 class Fare:
     '''
     Fare electric billing :default BT1A
     '''
     def __init__(self,
-                tension:FareTension = FareTension.BT,
-                contract:FareType = FareType.A1,
-                sub_type:FareSubType|None = None
+                tension:Tension = Tension.BT,
+                contract:Contract = Contract.A1,
+                rush_hour:RushHour = RushHour.NA
                 ) -> None:
-        self.tension = tension,
-        self.contract = contract,
-        self.sub_type = sub_type
+        self.tension = tension
+        self.contract = contract
+        self.rush_hour = rush_hour
 
     def get_fare(self)->str:
         '''return properly compose fare'''
-        return self.tension + self.contract + self.sub_type
-    
+        return self.tension.value + self.contract.value + self.rush_hour.value
+
     def __str__(self)->str:
         return self.get_fare()
 
@@ -160,17 +157,28 @@ class ElectricityBill(EnergyBill):
         self.energy_unit:Unit = Unit.KWH
         self.fare = fare
         self.props = props
-        
-    def to_dict(self, adapter:Callable[[Self],dict])->dict:
-        return adapter(self)
-        
+
+    @staticmethod
+    def _default_adapter(it:Self)->dict:
+        return {
+            "tarifa":it.fare,
+            "hasta":it.date_billing,
+            "consumo":it.energy,
+            **it.props
+        }
+
+    def to_dict(self,
+                adapter:Callable[[Self],dict]=None)->dict:
+        adapter_cfg = adapter if adapter else self._default_adapter
+        return adapter_cfg(self)
+
 
 class Consumption:
     """global energy billing and estimate  projection in 12 month"""
-    
+
     _records:list[EnergyBill]=[]
     _cost_increment=1
-    
+
     def __init__(self,energetic:Energetic) -> None:
         self.energetic = energetic
         self.property = properties[energetic]
@@ -187,7 +195,7 @@ class Consumption:
             self._cost_increment = value+1
         else:
             raise ValueError('cost increment value must be between 0 an 1')
-        
+
     @property
     def get_cost_increment(self)->float:
         """return float -1 of cost increment"""
@@ -200,6 +208,9 @@ class Consumption:
             map(lambda bill:{"date":bill.date_billing,"energy":bill.energy},
             self._records)
             )
+    def records_df(self)->DataFrame:
+        """consumption billing in DataFrame format"""
+        return DataFrame.from_dict(list(map(lambda it:it.to_dict(),self._records)))
 
     def base(self)->list[dict[str,int]]:
         """generate energy consumption base
