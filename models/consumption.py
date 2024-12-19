@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import datetime
 from enum import Enum
-from typing import Callable, Self, TypeVar
+from typing import Callable, Self
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
@@ -122,7 +122,6 @@ class RushHour(Enum):
     PP = 'PP'
     PPP = 'PPP'
     NA = ''
-
 class Fare:
     '''
     Fare electric billing :default BT1A
@@ -178,6 +177,7 @@ class Consumption:
 
     _records:list[EnergyBill]=[]
     _cost_increment=1
+    _index=0
 
     def __init__(self,energetic:Energetic) -> None:
         self.energetic = energetic
@@ -189,26 +189,39 @@ class Consumption:
         #acs sorting by date
         self._records.sort(key=lambda bill:bill.date_billing)
 
-    def set_cost_increment(self,value:float):
+    def set_cost_increment(self,percentage:float=0):
         """set cost increment factor"""
-        if value >= 0 and value<=1:
-            self._cost_increment = value+1
+        if percentage >= 0 and percentage<=100:
+            self._cost_increment = (percentage/100)+1
         else:
-            raise ValueError('cost increment value must be between 0 an 1')
+            raise ValueError('cost increment value must be between 0 an 100')
 
     @property
     def get_cost_increment(self)->float:
         """return float -1 of cost increment"""
         return self._cost_increment
 
-    def records(self)->dict:
+    def to_list(self)->list[dict]:
         """return a list of consumptions value"""
 
         return list(
             map(lambda bill:{"date":bill.date_billing,"energy":bill.energy},
             self._records)
             )
-    def records_df(self)->DataFrame:
+
+    def __iter__(self):
+        return self
+
+    def __next__(self)->EnergyBill:
+        if self._index < len(self._records):
+            res = self._records[self._index]
+            self._index+=1
+            return res
+        else:
+            self._index=0
+            raise StopIteration
+
+    def to_dataframe(self)->DataFrame:
         """consumption billing in DataFrame format"""
         return DataFrame.from_dict(list(map(lambda it:it.to_dict(),self._records)))
 

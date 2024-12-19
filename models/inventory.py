@@ -58,10 +58,10 @@ class Building:
 
     def add_consumptions(
         self,
-        energetic:Energetic,
-        cost_increment:float,
-        consumption:list[EnergyBill],
+        energetic:Energetic=Energetic.ELI,
+        cost_increment:float=0,
         description:str='main',
+        consumption:list[EnergyBill]=None,
         ):
         '''defining energy bill, '''
         instance=Consumption(energetic)
