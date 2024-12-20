@@ -59,12 +59,15 @@ class Building:
     def add_consumptions(
         self,
         energetic:Energetic=Energetic.ELI,
+        client_id:str=None,
+        measurer_id:str=None,
+        contract_id:str='BT1A',
         cost_increment:float=0,
         description:str='main',
         consumption:list[EnergyBill]=None,
         ):
         '''defining energy bill, '''
-        instance=Consumption(energetic)
+        instance=Consumption(energetic,client_id,measurer_id,contract_id)
         instance.set_cost_increment(cost_increment)
         instance.set_bill(*consumption)
         self.consumptions[description] = instance
@@ -111,7 +114,6 @@ class Project:
         title:str,
         building:Building,
         technology:list[Tech]|None = None,
-        consumption:dict[str,Any]|None=None
         ) -> None:
 
 
@@ -129,20 +131,6 @@ class Project:
 
         #currency init
         self._load_exchanges()
-
-        #consumptions
-        print('adding consumptions data...')
-        model:type[EnergyBill] = None
-        match consumption['energetic']:
-            case Energetic.ELI:
-                model = ElectricityBill
-
-        self.building.add_consumptions(
-            description=consumption['description'],
-            energetic=consumption['energetic'],
-            cost_increment=consumption['cost_increment'],
-            consumption= [model(it[0],it[1],it[2]) for it in consumption['consumption']]
-        )
 
     def add_component(self,gloss:str,*components:Component,generator:bool=False):
         """

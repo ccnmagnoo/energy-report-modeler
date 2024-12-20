@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import datetime
 from enum import Enum
-from typing import Callable, Self
+from typing import Callable, Literal, Self
 import numpy as np
 from sklearn.linear_model import LinearRegression
 
@@ -87,16 +87,20 @@ class EnergyBill(ABC):
         self.property:Property = properties[energetic]
         self.energy = properties[energetic].energy_equivalent(consumption)  # in equivalent kWh
         self.cost = Cost(cost,currency)
-
-        #date from string
-        datestr = date_billing.split("-",maxsplit=3)
-        datestr = [int(cal) for cal in datestr]
-        datestr.reverse()
-        self.date_billing = datetime.datetime(*datestr)
+        self.date_billing = self.str_to_date(date_billing)
 
     def unitary_cost(self)->float:
         """unitary cost in $curr/kWh equivalent, default currency"""
         return self.cost.gross(None)[0]/self.energy
+
+    @staticmethod
+    def str_to_date(date_str:str)->datetime.datetime:
+        """ dd-mm-yyy string to datetime"""
+        s = date_str.split("-",maxsplit=3)
+        s = [int(cal) for cal in s]
+        s.reverse()
+        return datetime.datetime(*s)
+
 
     @abstractmethod
     def to_dict(self,adapter:Callable[[Self],dict])->dict:
@@ -106,29 +110,34 @@ class Tension(Enum):
     """level of tension AT:400v o BT:220v"""
     AT='AT'
     BT='BT'
+type ITension = Literal['AT','BT']
+
 
 class Contract(Enum):
     """type of contract"""
-    A1 = '1A'
-    B1 = '1B'
-    T2 = '2'
-    T3 = '3'
-    T41 = '4.1'
-    T42 = '4.2'
-    T43 = '4.3'
+    _1A = '1A'
+    _1B = '1B'
+    _2 = '2'
+    _3 = '3'
+    _41 = '4.1'
+    _42 = '4.2'
+    _43 = '4.3'
+type IContract = Literal['_A1','_B1','_2','_3','_41','_42','_43']
 
 class RushHour(Enum):
     """rush hours config"""
     PP = 'PP'
     PPP = 'PPP'
     NA = ''
+type IRushHour = Literal['NA','PP','PPP']
+
 class Fare:
     '''
     Fare electric billing :default BT1A
     '''
     def __init__(self,
                 tension:Tension = Tension.BT,
-                contract:Contract = Contract.A1,
+                contract:Contract = Contract._1A,
                 rush_hour:RushHour = RushHour.NA
                 ) -> None:
         self.tension = tension
@@ -137,7 +146,7 @@ class Fare:
 
     def get_fare(self)->str:
         '''return properly compose fare'''
-        return self.tension.value + self.contract.value + self.rush_hour.value
+        return self.tension.value +'-'+ self.contract.value +((' '+self.rush_hour.value) if self.rush_hour.value != '' else '')
 
     def __str__(self)->str:
         return self.get_fare()
@@ -145,24 +154,32 @@ class Fare:
 class ElectricityBill(EnergyBill):
     '''Electricity billing details consumption'''
     def __init__(self,
-                consumption:float,
-                date_billing: str,
-                cost:float = 0,
+                lecture_start: str,
+                lecture_end: str,
+                energy_consumption:float,
+                energy_cost:float = 0,
                 currency:Currency = Currency.CLP,
-                fare:Fare = Fare(),
+                fare:tuple[ITension,IContract,IRushHour] = ('BT','_1A','NA'),
                 **props:float
                 ) -> None:
-        super().__init__(date_billing,consumption, Energetic.ELI, cost,currency)
+        super().__init__(lecture_end,energy_consumption, Energetic.ELI, energy_cost,currency)
+
+        self.lecture_star = self.str_to_date(lecture_start)
         self.energy_unit:Unit = Unit.KWH
-        self.fare = fare
+        self.fare = Fare(
+            tension=Tension[fare[0]],
+            contract=Contract[fare[1]],
+            rush_hour=RushHour[fare[2]]
+            )
         self.props = props
 
     @staticmethod
     def _default_adapter(it:Self)->dict:
         return {
-            "tarifa":it.fare,
-            "hasta":it.date_billing,
-            "consumo":it.energy,
+            "tarifa":str(it.fare),
+            "hasta":str(it.date_billing),
+            "consumo":f'{it.energy} {it.energy_unit.name}',
+            "costo net":it.cost,
             **it.props
         }
 
@@ -179,9 +196,18 @@ class Consumption:
     _cost_increment=1
     _index=0
 
-    def __init__(self,energetic:Energetic) -> None:
+    def __init__(
+        self,
+        energetic:Energetic,
+        client_id:str=None,
+        measurer_id:str=None,
+        contract_id:str=None,
+        ) -> None:
         self.energetic = energetic
         self.property = properties[energetic]
+        self.client_id:str=client_id,
+        self.measurer_id:str=measurer_id,
+        self.contract_id:str=contract_id,
 
     def set_bill(self,*billing:EnergyBill)->None:
         """set list o single billing"""
