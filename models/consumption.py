@@ -193,7 +193,7 @@ class Consumption:
     """global energy billing and estimate  projection in 12 month"""
 
     _records:list[EnergyBill]=[]
-    _cost_increment=1
+    _cost_increment_rate:float=1
     _index=0
 
     def __init__(
@@ -218,14 +218,14 @@ class Consumption:
     def set_cost_increment(self,percentage:float=0):
         """set cost increment factor"""
         if percentage >= 0 and percentage<=100:
-            self._cost_increment = (percentage/100)+1
+            self._cost_increment_rate = (percentage/100)+1
         else:
             raise ValueError('cost increment value must be between 0 an 100')
 
     @property
     def get_cost_increment(self)->float:
         """return float -1 of cost increment"""
-        return self._cost_increment
+        return self._cost_increment_rate
 
     def to_list(self)->list[dict]:
         """return a list of consumptions value"""
@@ -267,7 +267,6 @@ class Consumption:
 
     def forecast(self,
                             method:Callable[[float,float],float]=lambda a,b:(a+b)/2,
-                            cost_increment:float|None=None
                             )->DataFrame:
         """estimate monthly energy consumption from the next year
         >>>>completion: forecast has an estimated consumption
@@ -284,7 +283,7 @@ class Consumption:
         df = pd.DataFrame.from_dict(data)
         df = self._calc_cost_increment(
             data=df,
-            weight=(( cost_increment and cost_increment+1 ) or self._cost_increment))
+            weight= self._cost_increment_rate)
         return df
 
     def _calc_cost_increment(self,data:DataFrame,weight:float=1.0)->pd.DataFrame:
