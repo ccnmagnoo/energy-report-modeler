@@ -157,5 +157,5 @@ class Bucket:
         """
         >>> df params        - "glosa","descripción","detalles","cantidad","unitario","global"
         """
-        b = self.bucket_df()
-        return b[b[['glosa']==generate_tag]]
+        df = self.bucket_df()
+        return df[df['glosa']==generate_tag]

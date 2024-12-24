@@ -13,7 +13,7 @@ import numpy
 import pandas as pd
 from pandas import DataFrame
 from docxtpl import DocxTemplate,RichText
-from uuid import uuid1
+from uuid import uuid1 # pylint: disable=no-name-in-module
 # pylint: disable=no-member
 # error
 from pyxirr import irr, npv # pylint: disable=no-name-in-module
@@ -21,7 +21,7 @@ import requests # pylint: disable=no-member
 
 from models.bucket import Bucket
 from models.components import Component, Specs, Tech
-from models.consumption import Consumption, ElectricityBill, Energetic, EnergyBill
+from models.consumption import Consumption, Energetic, EnergyBill
 from models.econometrics import Cost, Currency
 from models.emission import Emission
 from models.energy_storage import Battery, EnergyStorage,Regime
@@ -435,7 +435,8 @@ class Project:
                     underline=True)
         #demand projection
         forecast:DataFrame = self.building.consumptions['main'].forecast()
-        base = pd.DataFrame.from_dict(self.building.consumptions['main'].base())
+        base:DataFrame= self.building.consumptions['main'].to_dataframe()
+        
         #production
         performance  = self.performance(
             consumptions=['main']
@@ -467,17 +468,16 @@ class Project:
             #emissions
             "emission_reduction":f"{performance['CO2 kg'].sum():,.2f} kg CO2",
             "emission_forecast":f'{self.emissions.annual_projection(2024):.4f} Ton CO2/MWh',
-            "table_emission_historic":self.emissions.annual_avg().round(4).to_markdown(index=False),
-            "table_emission_reduction":performance[['month','CO2 kg']].round(2).rename(columns={'month':'mes'}).to_markdown(index=False),
+            "table_emission_historic":self.emissions
+            .annual_avg().round(4)
+            .to_markdown(index=False),
+            "table_emission_reduction":performance[['month','CO2 kg']]
+            .round(2).rename(columns={'month':'mes'})
+            .to_markdown(index=False),
 
             #consumptions
                 ##base
-            "table_base_consumptions":
-                base.rename(columns={
-                        "energy": "proyectado kWh",
-                        "month":'mes',
-                        'unit_cost':'costo $CLP/kWh'
-                        }).to_markdown(index=False),
+            "table_base_consumptions":base.to_markdown(index=False),
                 ##projected or future
             "cost_increment":f"{self.building.consumptions['main'].get_cost_increment*100-100:.2f} %",
             "forecast_consumption":f"{forecast['energy'].sum()} kWh/año",

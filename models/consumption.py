@@ -175,12 +175,15 @@ class ElectricityBill(EnergyBill):
 
     @staticmethod
     def _default_adapter(it:Self)->dict:
+        i:ElectricityBill = it
+
         return {
-            "tarifa":str(it.fare),
-            "hasta":str(it.date_billing),
-            "consumo":f'{it.energy} {it.energy_unit.name}',
-            "costo net":it.cost,
-            **it.props
+            "tarifa":str(i.fare),
+            "lectura":str(i.date_billing),
+            "consumo":f'{i.energy} {i.energy_unit.value}',
+            **i.props,
+            "unitario":f'{i.cost.value/i.energy:.2f} {i.cost.currency.name}/{i.energy_unit.value}',
+            "total":i.cost,
         }
 
     def to_dict(self,
@@ -234,6 +237,10 @@ class Consumption:
             map(lambda bill:{"date":bill.date_billing,"energy":bill.energy},
             self._records)
             )
+    @property
+    def total_consumption(self)->tuple[float,str]:
+        """return total sum"""
+        return sum(list(map(lambda it:it.energy,self._records))),"kWh"
 
     def __iter__(self):
         return self
@@ -255,13 +262,15 @@ class Consumption:
         """generate energy consumption base
             without completion or any approximation
         """
-        base  = [{"month":period,"energy":0,"unit_cost":0} for period in range(1,13)]
+        base  = [{"month":period,"lecture":0,"energy":0,"unit_cost":0,"total":0} for period in range(1,13)]
 
         for bill in self._records:
             #load consumptions
             bill_month = bill.date_billing.month
             base[bill_month-1]["energy"]=base[bill_month-1]["energy"]+bill.energy
+            base[bill_month-1]["lecture"]=bill.date_billing.strftime(format="%d-%m-%Y")
             base[bill_month-1]["unit_cost"]=bill.unitary_cost()
+            base[bill_month-1]["total"]=str(bill.cost)
 
         return base
 
@@ -274,17 +283,21 @@ class Consumption:
         completion defines how many month has to be completed,
         between  Zero (default: without changes) and 12, por each month projection.
         """
-        data:list = None
+        data:list[dict[str,float]] = []
         if self.property.supply == Supply.DEMAND:
             data = self._interpolate(method)
 
         if self.property.supply == Supply.STORAGE:
             data =  self._distribute()
+
         df = pd.DataFrame.from_dict(data)
         df = self._calc_cost_increment(
             data=df,
             weight= self._cost_increment_rate)
-        return df
+        
+        df.total = df.unit_cost*df.energy
+
+        return df[['month','unit_cost','energy','total']]
 
     def _calc_cost_increment(self,data:DataFrame,weight:float=1.0)->pd.DataFrame:
         """estimate cost incremental by unitary volume clp/kWh
@@ -319,6 +332,7 @@ class Consumption:
                 right = [i["energy"] for i in cycle[paginate+idx:] if i['energy']>0]# all next non zero energy month
                 print(f"boundaries in month {it["month"]} :",left[-1],"<->",right[0])
                 it['energy'] = method(left[-1],right[0])
+                
         return forecast
 
     def _distribute(self)-> list[dict[str,float]]:
