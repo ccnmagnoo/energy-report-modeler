@@ -434,7 +434,7 @@ class Project:
                     bold=True,
                     underline=True)
         #demand projection
-        forecast:DataFrame = self.building.consumptions['main'].forecast(cost_increment=5/100)
+        forecast:DataFrame = self.building.consumptions['main'].forecast()
         base = pd.DataFrame.from_dict(self.building.consumptions['main'].base())
         #production
         performance  = self.performance(
@@ -458,7 +458,7 @@ class Project:
             #about this project
             "project_type" : self.technology[0].value.capitalize(),
             "project_size":f"{self.nominal_power[0]:.2f} kW",
-            "total_cost": f"{self.bucket.total():n.CLP}",
+            "total_cost": f"{self.bucket.total():net.CLP}",
             #benefits
             "annual_benefits": f"CLP$ {performance['benefits'].sum():,.0f}",
             "energy_production": f"{performance['generation'].sum():.0f} kWh/año",
@@ -494,7 +494,7 @@ class Project:
                 'costo':it.cost.net(Currency.CLP)[0]})
             .to_markdown(index=True,floatfmt=',.0f'),
 
-            "table_energy_components":self.bucket.bucket_df()[self.bucket.bucket_df()['glosa']=='Gx']\
+            "table_energy_components":self.bucket.gx_bucket_df()\
                 [['glosa','descripción','cantidad','global']]
                     .to_markdown(index=True),
             #production
