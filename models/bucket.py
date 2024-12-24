@@ -91,7 +91,12 @@ class Bucket:
         self._overloads = {}
 
     def total(self)->Cost:
-        """calculate total returning COST handler"""
+        """calculate total returning COST handler
+        >>> Format (eg: net.CURRENCY):
+         net = net value
+         gross= gross value
+         CURRENCY = USD, UF, CLP, EUR available
+        """
         wallet:Cost = self.subtotal()
         for _,value in self.overloads().items():
             wallet+=value
@@ -142,5 +147,15 @@ class Bucket:
 
 
     def bucket_df(self,fn:Callable[[BucketItem],dict]=BucketItem.local_dict)->DataFrame:
-        """return dict as a DataFrame with covered None"""
+        """return dict as a DataFrame with covered None
+        >>> df params
+        - "glosa","descripción","detalles","cantidad","unitario","global"
+        """
         return DataFrame.from_dict(self._flat_bucket(fn)).fillna('')
+    
+    def gx_bucket_df(self,generate_tag='generación',)->DataFrame:
+        """
+        >>> df params        - "glosa","descripción","detalles","cantidad","unitario","global"
+        """
+        b = self.bucket_df()
+        return b[b[['glosa']==generate_tag]]
