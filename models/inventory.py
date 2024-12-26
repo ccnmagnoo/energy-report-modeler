@@ -123,7 +123,7 @@ class Project:
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
         self.title:str = title + ' ' + self._connection_type_local(connection_type)
-        self._connection_type=connection_type
+        self.connection_type=connection_type
 
         #weather env
         print('getting weather data...')
@@ -135,8 +135,9 @@ class Project:
         self._load_exchanges()
         
     @property
-    def connection_type(self)->str:
-        return self._connection_type_local(self._connection_type)
+    def connection_type_local(self)->str:
+        """name in local spanish lang ES-cl"""
+        return self._connection_type_local(self.connection_type)
 
     def _connection_type_local(self, connection_type:Connection)->str:
         match connection_type:

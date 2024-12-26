@@ -183,7 +183,7 @@ class ElectricityBill(EnergyBill):
             "consumo":f'{i.energy} {i.energy_unit.value}',
             **i.props,
             "unitario":f'{i.cost.value/i.energy:.2f} {i.cost.currency.name}/{i.energy_unit.value}',
-            "total":i.cost,
+            "total":f"{i.cost:net.CLP}",
         }
 
     def to_dict(self,

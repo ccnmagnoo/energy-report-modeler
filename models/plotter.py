@@ -48,6 +48,9 @@ def generate_docs(project):
     for plot in plot_list:
         memory_report.replace_pic(plot,path+f'{plot}.png')
         print('replaced plot:',plot)
+        
+    #set scketch connection_diagram
+    memory_report.replace_pic('connection_diagram',f'templates/diagram_{project.connection_type}.png')
 
     #save docs
     memory_report.save(path+"reporte_memoria_calculo.docx")
