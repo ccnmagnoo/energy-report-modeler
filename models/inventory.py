@@ -112,6 +112,7 @@ class Project:
     def __init__(
         self,
         title:str,
+        connection_type:Literal['offgrid','netbilling','hybrid'],
         building:Building,
         technology:list[Tech]|None = None,
         ) -> None:
@@ -121,7 +122,8 @@ class Project:
         self.emissions = Emission()
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
-        self.title:str = title
+        self.title:str = title + ' ' + self._connection_type_local(connection_type)
+        self.connection_type=connection_type
 
         #weather env
         print('getting weather data...')
@@ -131,6 +133,18 @@ class Project:
 
         #currency init
         self._load_exchanges()
+        
+    def _connection_type_local(self, connection_type:Literal['offgrid','netbilling','hybrid'])->str:
+        match connection_type:
+            case 'offgrid':
+                return 'Off-grid'
+            case 'netbilling':
+                return 'Net-billing'
+            case 'hybrid':
+                return 'Híbrido'
+            case _:
+                return ''
+        
 
     def add_component(self,gloss:str,*components:Component,generator:bool=False):
         """
