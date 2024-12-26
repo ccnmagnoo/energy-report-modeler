@@ -112,7 +112,7 @@ class Project:
     def __init__(
         self,
         title:str,
-        connection_type:Literal['offgrid','netbilling','hybrid'],
+        connection_type:Connection,
         building:Building,
         technology:list[Tech]|None = None,
         ) -> None:
@@ -123,7 +123,7 @@ class Project:
         self.technology = technology or [Tech.PHOTOVOLTAIC]
         self.building = building
         self.title:str = title + ' ' + self._connection_type_local(connection_type)
-        self.connection_type=connection_type
+        self._connection_type=connection_type
 
         #weather env
         print('getting weather data...')
@@ -134,7 +134,11 @@ class Project:
         #currency init
         self._load_exchanges()
         
-    def _connection_type_local(self, connection_type:Literal['offgrid','netbilling','hybrid'])->str:
+    @property
+    def connection_type(self)->str:
+        return self._connection_type_local(self._connection_type)
+
+    def _connection_type_local(self, connection_type:Connection)->str:
         match connection_type:
             case 'offgrid':
                 return 'Off-grid'
@@ -142,9 +146,11 @@ class Project:
                 return 'Net-billing'
             case 'hybrid':
                 return 'Híbrido'
+            case 'ongrid':
+                return 'Net-billing'
             case _:
                 return ''
-        
+
 
     def add_component(self,gloss:str,*components:Component,generator:bool=False):
         """
@@ -264,7 +270,7 @@ class Project:
 
         production:DataFrame = self.energy_production()[["month","System_capacity_KW"]]\
             .groupby(["month"],as_index=False).sum()
-                
+
         future:DataFrame = self.building.consumption_forecast(
             group=consumptions if consumptions else ['main'],
             )
@@ -286,7 +292,7 @@ class Project:
                     res['consumption'],
                     res['generation']
                     )
-            
+
             case 'ongrid': #not netbilling
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
@@ -299,7 +305,7 @@ class Project:
                     res['consumption'],
                     res['generation']
                     )
-                
+
             case 'offgrid':#only battery saving
                 res['netbilling'] = numpy.where(
                     res['generation']>=res['consumption'],
@@ -314,7 +320,7 @@ class Project:
                     )
         #emissions
         res['benefits'] = (res['savings']+res['netbilling'])*res['unit_cost']
-        
+
         eva_period = datetime.now().year +1
         res['CO2 kg'] = res['generation']*self.emissions.annual_projection(eva_period)
 
@@ -450,7 +456,7 @@ class Project:
         #demand projection
         forecast:DataFrame = self.building.consumptions['main'].forecast()
         base:DataFrame= self.building.consumptions['main'].to_dataframe()
-        
+
         #production
         performance  = self.performance(
             consumptions=['main']
