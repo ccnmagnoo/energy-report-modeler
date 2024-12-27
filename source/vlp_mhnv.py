@@ -1,9 +1,9 @@
-
+"""permanent project data"""
 #cspell: disable
 from typing import Literal
-from models.components import Component as Eq, Specs, Tech
+from models.components import Component as Equip, Specs, Tech
 from models.consumption import ElectricityBill as Bill
-from models.econometrics import Cost, Currency as Cr
+from models.econometrics import Cost, Currency as Curr
 from models.geometry import Orientation
 from models.inventory import Building
 from models.photovoltaic import PvInput
@@ -28,18 +28,18 @@ data:dict[Subject,any] = {
         'measurer_id':'10025437',
         'contract_id':'BT-3 PPP',
         'consumption':[
-            Bill("04-01-2023","01-02-2023",1051,97_36_1,Cr.CLP,('BT','_3','PPP')),
-            Bill("02-02-2023","02-03-2023",1123,104_031,Cr.CLP,('BT','_3','PPP')),
-            Bill("03-03-2023","03-04-2023",1157,107_181,Cr.CLP,('BT','_3','PPP')),
-            Bill("04-04-2023","04-05-2023",1220,137_911,Cr.CLP,('BT','_3','PPP')),
-            Bill("05-05-2023","01-06-2023",1299,146_841,Cr.CLP,('BT','_3','PPP')),
-            Bill("02-06-2023","04-07-2023",1549,175_101,Cr.CLP,('BT','_3','PPP')),
-            Bill("05-07-2023","02-08-2023",1353,152_946,Cr.CLP,('BT','_3','PPP')),
-            Bill("03-08-2023","01-09-2023",1420,160_519,Cr.CLP,('BT','_3','PPP')),
-            Bill("02-09-2023","03-10-2023",1283,145_033,Cr.CLP,('BT','_3','PPP')),
-            Bill("04-10-2023","03-11-2023",1275,144_128,Cr.CLP,('BT','_3','PPP')),
-            Bill("04-11-2023","03-12-2023",1346,152_155,Cr.CLP,('BT','_3','PPP')),
-            Bill("04-12-2023","03-01-2024",1346,162_554,Cr.CLP,('BT','_3','PPP')),          
+            Bill("04-01-2023","01-02-2023",1051,97_36_1,Curr.CLP,('BT','_3','PPP')),
+            Bill("02-02-2023","02-03-2023",1123,104_031,Curr.CLP,('BT','_3','PPP')),
+            Bill("03-03-2023","03-04-2023",1157,107_181,Curr.CLP,('BT','_3','PPP')),
+            Bill("04-04-2023","04-05-2023",1220,137_911,Curr.CLP,('BT','_3','PPP')),
+            Bill("05-05-2023","01-06-2023",1299,146_841,Curr.CLP,('BT','_3','PPP')),
+            Bill("02-06-2023","04-07-2023",1549,175_101,Curr.CLP,('BT','_3','PPP')),
+            Bill("05-07-2023","02-08-2023",1353,152_946,Curr.CLP,('BT','_3','PPP')),
+            Bill("03-08-2023","01-09-2023",1420,160_519,Curr.CLP,('BT','_3','PPP')),
+            Bill("02-09-2023","03-10-2023",1283,145_033,Curr.CLP,('BT','_3','PPP')),
+            Bill("04-10-2023","03-11-2023",1275,144_128,Curr.CLP,('BT','_3','PPP')),
+            Bill("04-11-2023","03-12-2023",1346,152_155,Curr.CLP,('BT','_3','PPP')),
+            Bill("04-12-2023","03-01-2024",1346,162_554,Curr.CLP,('BT','_3','PPP')),          
         ]
     },
     'components':{
@@ -65,23 +65,23 @@ data:dict[Subject,any] = {
             'instalación',
             repoEquipment['Inverter']['DY 12kW H'],# inverter
             repoEquipment['Medidor']['FR 3F'],# lectura
-            Eq(
+            Equip(
                 description='eléctrica interior',
                 specification=Specs(
                     category='Obra',
                     brand='conexionado',
                     model='interiores'
                     ),
-                cost_per_unit=Cost(225_000,Cr.CLP),
+                cost_per_unit=Cost(225_000,Curr.CLP),
                 quantity=16#power kW
             ),
-            Eq(
+            Equip(
                 description='estructura montaje',
                 specification=Specs(
                     category='Montaje',
                     montaje='coplanar',
                     ),
-                cost_per_unit=Cost(45_000,Cr.CLP),
+                cost_per_unit=Cost(45_000,Curr.CLP),
                 quantity=24#panels
                 ),
             ),
@@ -92,16 +92,16 @@ data:dict[Subject,any] = {
         ),
         'accesories':(
             'obras',
-            Eq(
+            Equip(
                 description='Faenas',
                 specification=Specs(
                     category='Obra',
                     brand='equipamiento',
                     model='provisorio'),
-                cost_per_unit=Cost(18_750,Cr.CLP),
+                cost_per_unit=Cost(18_750,Curr.CLP),
                 quantity=24#panels
                 ),
-            Eq(
+            Equip(
                 description='Capacitación',
                 specification=Specs(
                     category='Obra',
@@ -110,9 +110,9 @@ data:dict[Subject,any] = {
                     taller='2 Hrs',
                     manual='3 u. impreso',
                     ),
-                cost_per_unit=Cost(250_000,Cr.CLP),
+                cost_per_unit=Cost(250_000,Curr.CLP),
                 ),
-            Eq(
+            Equip(
                 description='Letrero',
                 specification=Specs(
                     category='Obra',
@@ -121,7 +121,7 @@ data:dict[Subject,any] = {
                     specs_url='#pliegos-técnicos',
                     dim='3.6m x 1.5m',
                     ),
-                cost_per_unit=Cost(450_000,Cr.CLP),
+                cost_per_unit=Cost(450_000,Curr.CLP),
                 )
         ),
         'overloads':{
