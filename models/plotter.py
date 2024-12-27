@@ -172,14 +172,16 @@ def plot_temperature(weather:DataFrame,path:str):
 def plot_components(project:Project,path:str):
     """plot components cost pie plot"""
 
-    def plot_comp_t(bi:BucketItem)->dict[str,float]:
+    def _plot_comp_t(bi:BucketItem)->dict[str,float]:
         return {
             "gloss":bi.gloss,
             "description":bi.description,
             "row_total":bi.cost.net(Currency.CLP)[0]
         }
 
-    bkt = project.bucket.bucket(plot_comp_t)
+    bkt = project.bucket.bucket(_plot_comp_t)
+    #bucket is splitted by several key, ITEMS are the components 
+    # & OVERLOADS are porcentual carge as "utilities" of provider
     bkt_list = [*bkt['items'],*bkt['overloads']]
     bkt_df:DataFrame = DataFrame.from_dict(data=bkt_list) #only items and overloads
 
@@ -190,13 +192,15 @@ def plot_components(project:Project,path:str):
     p.pie(
         bkt_df['row_total'],
         labels = bkt_df['description'],
+        # labeldistance=1.5,
         colors=colors,
-        autopct='%1.1f%%'
+        autopct='%1.1f%%',
+        pctdistance=0.8,
         )
     p.set_xlabel('')
     p.set_ylabel('')
     p.legend().remove()
-    plt.savefig(path+'plot_components'+'.png',dpi=250,)
+    plt.savefig(path+'plot_components'+'.png',dpi=350,)
 
 def plot_components_irr(project:Project,path:str):
     """plot each generation component irradiance on surface"""
