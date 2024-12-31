@@ -12,38 +12,39 @@ from libs.repository import repoEquipment,panelRepo
 type Subject = Literal['project','consumptions','components']
 
 #gen
-
+PANELS:int=40
+POWER:int=PANELS*655/1000
 #
 
 data:dict[Subject,any] = {
     'project':{
-        'title':'Sistema ERNC MHNV',
-        'connection_type':'hybrid',
+        'title':'Sistema ERNC SSVSA',
+        'connection_type':'netbilling',
         'technology':[Tech.PHOTOVOLTAIC],
         'building':Building(
-            geolocation=(-33.047016, -71.621509),
-            name='Edificio C_Porter MHNV',
-            address='Calle Condell 1546',
+            geolocation=(-33.04401, -71.62143),
+            name='Edificio SSVSA',
+            address='Av. Brasil 1435',
             city='Valparaíso'),
     },
     'consumptions':{
-        'cost_increment':5.5,
-        'client_id':'642180-6',
-        'measurer_id':'10025437',
-        'contract_id':'BT-3 PPP',
+        'cost_increment':5.8,
+        'client_id':'672250-4',
+        'measurer_id':'10034493',
+        'contract_id':'BT-3 PP',
         'consumption':[
-            Bill("04-01-2023","01-02-2023",1051,97_36_1,('BT','_3','PPP')),
-            Bill("02-02-2023","02-03-2023",1123,104_031,('BT','_3','PPP')),
-            Bill("03-03-2023","03-04-2023",1157,107_181,('BT','_3','PPP')),
-            Bill("04-04-2023","04-05-2023",1220,137_911,('BT','_3','PPP')),
-            Bill("05-05-2023","01-06-2023",1299,146_841,('BT','_3','PPP')),
-            Bill("02-06-2023","04-07-2023",1549,175_101,('BT','_3','PPP')),
-            Bill("05-07-2023","02-08-2023",1353,152_946,('BT','_3','PPP')),
-            Bill("03-08-2023","01-09-2023",1420,160_519,('BT','_3','PPP')),
-            Bill("02-09-2023","03-10-2023",1283,145_033,('BT','_3','PPP')),
-            Bill("04-10-2023","03-11-2023",1275,144_128,('BT','_3','PPP')),
-            Bill("04-11-2023","03-12-2023",1346,152_155,('BT','_3','PPP')),
-            Bill("04-12-2023","03-01-2024",1346,162_554,('BT','_3','PPP')),
+            Bill("13-11-2023","12-12-2023",15_720,1_495_284,Curr.CLP,('BT','_3','PP'),p_leida=53.3,dmax=80.7),#costo_dmax=1_601_133),
+            Bill("12-12-2023","11-01-2024",15_660,1_487_594,Curr.CLP,('BT','_3','PP'),p_leida=53.5,dmax=80.7),#costo_dmax=1.601_133),
+            Bill("11-01-2024","09-02-2024",16_560,1_573_087,Curr.CLP,('BT','_3','PP'),p_leida=59.2,dmax=80.7),#costo_dmax=1_601_133),
+            Bill("09-02-2024","11-03-2024",15_900,1_510_934,Curr.CLP,('BT','_3','PP'),p_leida=51.7,dmax=80.7),#costo_dmax=1_601_133),
+            Bill("11-03-2024","11-04-2024",16_680,1_584_487,Curr.CLP,('BT','_3','PP'),p_leida=53.0,dmax=80.7),#costo_dmax=1_601_133),
+            Bill("11-04-2024","13-05-2024",17_880,1_698_480,Curr.CLP,('BT','_3','PP'),p_leida=66.8,dmax=80.7),#costo_dmax=1_601_133),
+            Bill("13-05-2024","11-06-2024",17_580,1_761_547,Curr.CLP,('BT','_3','PP'),p_leida=67.6,dmax=80.7),#costo_dmax=1_779_615),
+            Bill("11-06-2024","11-07-2024",19_020,2_423_419,Curr.CLP,('BT','_3','PP'),p_leida=81.1,dmax=81.1),#costo_dmax=1_812_578),
+            Bill("11-07-2024","11-08-2024",20_460,2_606_897,Curr.CLP,('BT','_3','PP'),p_leida=82.0,dmax=82.0),#costo_dmax=1_823_287),
+            Bill("04-08-2024","03-09-2024",19_980,2_163_495,Curr.CLP,('BT','_3','PP'),p_leida=72.6,dmax=81.6),#costo_dmax=1_819_721),
+            Bill("03-09-2024","09-10-2024",16_080,2_188_191,Curr.CLP,('BT','_3','PP'),p_leida=59.2,dmax=81.6),#costo_dmax=1_926_901),
+            Bill("09-10-2024","11-11-2024",17_940,2_411_302,Curr.CLP,('BT','_3','PP'),p_leida=55.9,dmax=81.6),#costo_dmax=1_925_662),
         ]
     },
     'components':{
@@ -51,23 +52,18 @@ data:dict[Subject,any] = {
             panelRepo['CS 655W'],# equipment
             PvInput(
                 description='FV 655W MOD 01',
-                quantity=9,
-                orientation=Orientation(35,28),
+                quantity=40,
+                orientation=Orientation(15,-90+19),
                 ),
             PvInput(
                 description='FV 655W MOD 02',
-                quantity=11,
-                orientation=Orientation(20,28),
+                quantity=40,
+                orientation=Orientation(15,-90+19+180),
                 ),
-            PvInput(
-                description='FV 655W MOD 03',
-                quantity=4,
-                orientation=Orientation(10,28),
-            )
         ),
         'install':(
             'instalación',
-            repoEquipment['Inverter']['DY 12kW H'],# inverter
+            repoEquipment['Inverter']['CS 50kW H'],# inverter
             repoEquipment['Medidor']['FR 3F'],# lectura
             Equip(
                 description='eléctrica interior',
@@ -77,7 +73,7 @@ data:dict[Subject,any] = {
                     model='interiores'
                     ),
                 cost_per_unit=Cost(225_000),
-                quantity=16#power kW
+                quantity=POWER#power kW
             ),
             Equip(
                 description='estructura montaje',
@@ -86,14 +82,15 @@ data:dict[Subject,any] = {
                     montaje='coplanar',
                     ),
                 cost_per_unit=Cost(45_000),
-                quantity=24#panels
+                quantity=PANELS#panels
                 ),
             ),
-        'storage':(
-            'almacenamiento',4,'24/5',
+        'storage':(#0 hours for not install storage at all
+            'almacenamiento',0,'24/5',
             repoEquipment['Monitor']['VC 700'],
             repoEquipment['Regulator']['VT 45A']
         ),
+
         'accesories':(
             'obras',
             Equip(
@@ -103,7 +100,7 @@ data:dict[Subject,any] = {
                     brand='equipamiento',
                     model='provisorio'),
                 cost_per_unit=Cost(18_750),
-                quantity=24#panels
+                quantity=PANELS#panels
                 ),
             Equip(
                 description='Capacitación',
@@ -111,8 +108,8 @@ data:dict[Subject,any] = {
                     category='Obra',
                     brand='Uso y',
                     model='mantenimiento',
-                    taller='2 Hrs',
-                    manual='3 u. impreso',
+                    taller='3 Hrs',
+                    manual='6 u. impreso',
                     ),
                 cost_per_unit=Cost(250_000),
                 ),
