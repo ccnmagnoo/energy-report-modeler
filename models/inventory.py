@@ -186,6 +186,9 @@ class Project:
         regime:Regime,
         *extra_component:Component)->None:
         """auto config energy storage with default 250Ah GEL equipment"""
+        
+        if hours_autonomy == 0:
+            return None
 
         self.add_component(
             tag,
