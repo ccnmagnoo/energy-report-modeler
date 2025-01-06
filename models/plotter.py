@@ -48,7 +48,7 @@ def generate_docs(project):
     for plot in plot_list:
         memory_report.replace_pic(plot,path+f'{plot}.png')
         print('replaced plot:',plot)
-        
+
     #set scketch connection_diagram
     memory_report.replace_pic('connection_diagram',f'templates/diagram_{project.connection_type}.png')
 
@@ -180,9 +180,22 @@ def plot_components(project:Project,path:str):
         }
 
     bkt = project.bucket.bucket(_plot_comp_t)
-    #bucket is splitted by several key, ITEMS are the components 
+    #bucket is splitted by several key, ITEMS are the components
     # & OVERLOADS are porcentual carge as "utilities" of provider
     bkt_list = [*bkt['items'],*bkt['overloads']]
+
+    #merge small fractions
+    def _merge_smallest_items(it:list[dict],percentage:int=4)->list[dict]:
+        total:float = sum([i['row_total'] for i in it])
+        bigger_than = [i for i in it if (100*i['row_total']/total)>percentage]
+        smallr_than = [i for i in it if (100*i['row_total']/total)<=percentage]
+        smallr_summ = sum([i['row_total'] for i in smallr_than])
+
+        return [*bigger_than,{'gloss':'otros','description':'otros','row_total':smallr_summ}]
+
+    bkt_list = _merge_smallest_items(bkt_list)
+
+    #into DF
     bkt_df:DataFrame = DataFrame.from_dict(data=bkt_list) #only items and overloads
 
     plt.figure(figsize=(7,5))
@@ -196,6 +209,7 @@ def plot_components(project:Project,path:str):
         colors=colors,
         autopct='%1.1f%%',
         pctdistance=0.8,
+        startangle=45,
         )
     p.set_xlabel('')
     p.set_ylabel('')
