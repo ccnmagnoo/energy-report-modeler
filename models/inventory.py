@@ -323,7 +323,9 @@ class Project:
                     res['generation']
                     )
         #emissions
-        res['benefits'] = (res['savings']+res['netbilling'])*res['unit_cost']
+        res['benefits'] = res['savings']*res['unit_cost']#"+res['netbilling']*res['unit_cost']
+        res['netbilling_income'] = res['netbilling']*res['unit_cost']*(1-0.07)#"+res['netbilling']*res['unit_cost']
+        
 
         eva_period = datetime.now().year +1
         res['CO2 kg'] = res['generation']*self.emissions.annual_projection(eva_period)
@@ -373,8 +375,16 @@ class Project:
         """"VAN TIR flux financial analysis"""
 
         investment = self.bucket.total().value
-        first_period_income:float = self._performance['benefits'].sum()
-        flux:list[float] = [-investment,first_period_income]
+        income_by_saving:float = self._performance['benefits'].sum() 
+        income_by_netbilling:float = self._performance['netbilling_income'].sum()
+        ratio = self.building.consumptions['main'].get_cost_increment
+        
+        in_by_sv = [0,*[income_by_saving*ratio**period for period in ratio(n_years)]]
+        in_by_nb = [0,*[income_by_netbilling*ratio**period for period in ratio(n_years)]]
+        ex_by_inv= [-investment,[0]*n_years]
+        
+        #flux:list[float] = [-investment,income_by_saving+income_by_netbilling]
+        flux:list[float] = [-investment,income_by_saving+income_by_netbilling]
 
         for period in range(2,n_years+1):#project benefits in n years
             last_period = flux[period-1]
@@ -407,6 +417,7 @@ class Project:
                 'inverts':investment,
                 'years':n_years,
                 'flux':flux,
+                ''
                 'accumulated':flux_acc,
                 'currency':currency.value,
                 'npv':res_npv,
