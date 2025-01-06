@@ -106,8 +106,7 @@ class Weather:
         period 365 days interval corresponding previous year
         '''
         current:datetime = datetime.now()
-        last_year:int = current.date().year-1
-        #TODO:on production change period.
+        last_year:int = current.date().year-2        #WEATHER DATA is incomplete yet 2024, so is using current_Year - 2 !!!.
         return {'start':date(last_year,1,1),'end':date(last_year,12,31)}
 
     def _date_api_format(self,user_date:date)->str:
