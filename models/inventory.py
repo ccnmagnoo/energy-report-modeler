@@ -518,7 +518,7 @@ class Project:
                         "energy": "proyectado kWh",
                         "month":'mes',
                         'unit_cost':'costo $CLP/kWh'
-                        }).to_markdown(index=False),
+                        }).to_markdown(index=False,floatfmt=',.2f'),
             #components
             "table_components":self.bucket.bucket_df(lambda it:{
                 'descripción':it.description,
