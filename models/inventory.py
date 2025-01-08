@@ -133,7 +133,7 @@ class Project:
 
         #currency init
         self._load_exchanges()
-        
+
     @property
     def connection_type_local(self)->str:
         """name in local spanish lang ES-cl"""
@@ -186,7 +186,7 @@ class Project:
         regime:Regime,
         *extra_component:Component)->None:
         """auto config energy storage with default 250Ah GEL equipment"""
-        
+
         if hours_autonomy == 0:
             return None
 
@@ -325,7 +325,7 @@ class Project:
         #emissions
         res['benefits'] = res['savings']*res['unit_cost']#"+res['netbilling']*res['unit_cost']
         res['netbilling_income'] = res['netbilling']*res['unit_cost']*(1-0.07)#"+res['netbilling']*res['unit_cost']
-        
+
 
         eva_period = datetime.now().year +1
         res['CO2 kg'] = res['generation']*self.emissions.annual_projection(eva_period)
@@ -375,20 +375,16 @@ class Project:
         """"VAN TIR flux financial analysis"""
 
         investment = self.bucket.total().value
-        income_by_saving:float = self._performance['benefits'].sum() 
+        income_by_saving:float = self._performance['benefits'].sum()
         income_by_netbilling:float = self._performance['netbilling_income'].sum()
         ratio = self.building.consumptions['main'].get_cost_increment
-        
-        in_by_sv = [0,*[income_by_saving*ratio**period for period in ratio(n_years)]]
-        in_by_nb = [0,*[income_by_netbilling*ratio**period for period in ratio(n_years)]]
-        ex_by_inv= [-investment,[0]*n_years]
-        
-        #flux:list[float] = [-investment,income_by_saving+income_by_netbilling]
-        flux:list[float] = [-investment,income_by_saving+income_by_netbilling]
 
-        for period in range(2,n_years+1):#project benefits in n years
-            last_period = flux[period-1]
-            flux.append(last_period*(self.building.consumptions['main'].get_cost_increment))
+        flux_by_saving = [0,*[float(income_by_saving*(ratio**period)) for period in range(n_years)]]
+        flux_by_netbilling = [0,*[float(income_by_netbilling*(ratio**period)) for period in range(n_years)]]
+        flux_by_inv= [-investment,*[0]*n_years]
+
+        flux:list[float] = [flux_by_saving[i]+flux_by_netbilling[i]+flux_by_inv[i] for i in range(len(flux_by_saving))]
+        flux_acc:list[float]=[]
 
         flux_acc:list[float] = [] #project sum flux
         for i,period in enumerate(flux):
@@ -416,8 +412,9 @@ class Project:
         return {'rate':rate,
                 'inverts':investment,
                 'years':n_years,
+                'flux_by_savings':flux_by_saving,
+                'flux_by_netbilling':flux_by_netbilling,
                 'flux':flux,
-                ''
                 'accumulated':flux_acc,
                 'currency':currency.value,
                 'npv':res_npv,
