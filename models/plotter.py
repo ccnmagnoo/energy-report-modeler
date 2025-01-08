@@ -285,7 +285,7 @@ def plot_production_performance(project:Project,path:str):
     p = plt.subplot()
     x = production_performance['month']
     p.plot(x,production_performance['consumption'],'o--',label='demanda')
-    p.plot(x,production_performance['generation'],'o--',label='generación',linewidth=2)
+    p.plot(x,production_performance['generation'],marker='o',linestyle='dashed',label='generación',linewidth=2)
     sv=p.bar(x,production_performance['savings'],label='ahorro',width=0.5)
     nb= p.bar(x,production_performance['netbilling'],label='netbilling',width=0.4)
     p.bar_label(sv,label_type='center',fmt='%.0f',color='w')
