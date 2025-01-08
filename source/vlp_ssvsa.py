@@ -12,7 +12,7 @@ from libs.repository import repoEquipment,panelRepo
 type Subject = Literal['project','consumptions','components']
 
 #gen
-PANELS:int=40
+PANELS:int=80
 POWER:int=PANELS*655/1000
 #
 
