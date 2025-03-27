@@ -42,7 +42,7 @@ def generate_docs(project):
         'plot_production_performance',
         'plot_performance_frequency',
         'plot_flux',
-        'map_location'
+        #'map_location'
     ]
 
     for plot in plot_list:
@@ -104,7 +104,7 @@ def plotter(project:Project,path:str)->None:
     plot_performance_frecuency(project,path)
     plot_flux(project,path)
     plot_map(project,path)
-    map_to_image(path)
+    #map_to_image(path)
 
     print('plot_done')
 
@@ -364,3 +364,4 @@ def map_to_image(html_path:str)->None:
     hti.screenshot(
         html_file=html_path+'map_location'+'.html',
         save_as='map_location'+'.png')
+    print(f'{html_path+'map_location.html'} converted to .png')
