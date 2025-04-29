@@ -53,12 +53,12 @@ data:dict[Subject,any] = {
             PvInput(
                 description='PV mod.01 655w',
                 quantity=17*3,
-                orientation=Orientation(5,20),
+                orientation=Orientation(30,20),
                 ),
             PvInput(
                 description='PV mod.02 655w',
                 quantity=17*2,
-                orientation=Orientation(5,20),
+                orientation=Orientation(30,20),
                 ),
         ),
         'install':(
