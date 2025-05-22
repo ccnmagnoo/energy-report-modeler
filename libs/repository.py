@@ -262,6 +262,22 @@ repoEquipment:Repo = {
                         ),
         cost_per_unit=Cost(5_995,Currency.EUR)
         ),
+        'KH 25kW':Component(
+                description='Inversor Ongrid 3/F 25kW',
+                specification=Specs(
+                        'Inverter',
+                        'Kehua',
+                        'SPI25K-B-X2',
+                        'https://rhona.cl/producto/11229/inversor-on-grid-trifasico-25kw.html',
+                        'https://rhona.cl/producto/11229/inversor-on-grid-trifasico-25kw.html',
+                        mode='ON-GRID',
+                        power='25KWp',
+                        volt='600V',
+                        fase='3|f',
+                        MPPT_r='180a/1100V',
+                        ),
+        cost_per_unit=Cost(2_114_111,Currency.CLP)
+        ),
         'CS 50kW H':Component('Inversor Híbrido 3/F 50kW',
                 specification=Specs(
                         'Inverter',
