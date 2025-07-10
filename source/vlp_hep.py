@@ -28,23 +28,23 @@ data:dict[Subject,any] = {
             city='Valparaíso'),
     },
     'consumptions':{
-        'cost_increment':5.8,
-        'client_id':'672250-4',
-        'measurer_id':'10034493',
+        'cost_increment':15.8,
+        'client_id':'250837-0',
+        'measurer_id':'10033891',
         'contract_id':'AT-4.3 ',
         'consumption':[
-            Bill("13-11-2023","12-12-2023",15_720,1_495_284,Curr.CLP,('AT','_43'),p_leida=53.3,dmax=80.7),#costo_dmax=1_601_133),
-            Bill("12-12-2023","11-01-2024",15_660,1_487_594,Curr.CLP,('AT','_43'),p_leida=53.5,dmax=80.7),#costo_dmax=1.601_133),
-            Bill("11-01-2024","09-02-2024",16_560,1_573_087,Curr.CLP,('AT','_43'),p_leida=59.2,dmax=80.7),#costo_dmax=1_601_133),
-            Bill("09-02-2024","11-03-2024",15_900,1_510_934,Curr.CLP,('AT','_43'),p_leida=51.7,dmax=80.7),#costo_dmax=1_601_133),
-            Bill("11-03-2024","11-04-2024",16_680,1_584_487,Curr.CLP,('AT','_43'),p_leida=53.0,dmax=80.7),#costo_dmax=1_601_133),
-            Bill("11-04-2024","13-05-2024",17_880,1_698_480,Curr.CLP,('AT','_43'),p_leida=66.8,dmax=80.7),#costo_dmax=1_601_133),
-            Bill("13-05-2024","11-06-2024",17_580,1_761_547,Curr.CLP,('AT','_43'),p_leida=67.6,dmax=80.7),#costo_dmax=1_779_615),
-            Bill("11-06-2024","11-07-2024",19_020,2_423_419,Curr.CLP,('AT','_43'),p_leida=81.1,dmax=81.1),#costo_dmax=1_812_578),
-            Bill("11-07-2024","11-08-2024",20_460,2_606_897,Curr.CLP,('AT','_43'),p_leida=82.0,dmax=82.0),#costo_dmax=1_823_287),
-            Bill("04-08-2024","03-09-2024",19_980,2_163_495,Curr.CLP,('AT','_43'),p_leida=72.6,dmax=81.6),#costo_dmax=1_819_721),
-            Bill("03-09-2024","09-10-2024",16_080,2_188_191,Curr.CLP,('AT','_43'),p_leida=59.2,dmax=81.6),#costo_dmax=1_926_901),
-            Bill("09-10-2024","11-11-2024",17_940,2_411_302,Curr.CLP,('AT','_43'),p_leida=55.9,dmax=81.6),#costo_dmax=1_925_662),
+            Bill("11-04-2024","13-05-2024",81_480,9550_805,Curr.CLP,('AT','_43','NA'),Dms=203.3,Dmhp=111.7),
+            Bill("13-05-2024","11-06-2024",78_400,9375_183,Curr.CLP,('AT','_43','NA'),Dms=198.2,Dmhp=115.4),
+            Bill("11-06-2024","11-07-2024",82_040,12235857,Curr.CLP,('AT','_43','NA'),Dms=213.1,Dmhp=118.4),
+            Bill("11-07-2024","12-08-2024",89_040,13991898,Curr.CLP,('AT','_43','NA'),Dms=218.4,Dmhp=206.4),
+            Bill("12-08-2024","09-09-2024",75_040,12140939,Curr.CLP,('AT','_43','NA'),Dms=206.4,Dmhp=110.6),
+            Bill("09-09-2024","09-10-2024",75_040,13024816,Curr.CLP,('AT','_43','NA'),Dms=189.3,Dmhp=101.6),
+            Bill("09-10-2024","11-11-2024",83_160,13976540,Curr.CLP,('AT','_43','NA'),Dms=185.4,Dmhp=0),
+            Bill("11-11-2024","10-12-2024",68_320,11880503,Curr.CLP,('AT','_43','NA'),Dms=183.1,Dmhp=0),
+            Bill("10-12-2024","10-01-2025",70_280,12307253,Curr.CLP,('AT','_43','NA'),Dms=161.8,Dmhp=0),
+            Bill("10-01-2025","12-02-2025",76_160,13470140,Curr.CLP,('AT','_43','NA'),Dms=169.4,Dmhp=0),
+            Bill("12-02-2025","12-03-2025",65_800,12066719,Curr.CLP,('AT','_43','NA'),Dms=166.0,Dmhp=0),
+            Bill("12-03-2024","11-04-2025",73_080,13050247,Curr.CLP,('AT','_43','NA'),Dms=174.7,Dmhp=105.3)
         ]
     },
     'components':{
@@ -68,7 +68,7 @@ data:dict[Subject,any] = {
         ),
         'install':(
             'instalación',
-            repoEquipment['Inverter']['CS 50kW H'],# inverter
+            repoEquipment['Inverter']['CS 100kW H'],# inverter
             repoEquipment['Medidor']['FR 3F'],# lectura
             Equip(
                 description='eléctrica interior',

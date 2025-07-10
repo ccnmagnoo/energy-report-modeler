@@ -360,7 +360,7 @@ def plot_map(project:Project, path:str):
 
 def map_to_image(html_path:str)->None:
     """screenshot html map file to png"""
-    hti = Html2Image(browser='chrome',size=(640,480),output_path=html_path)
+    hti = Html2Image(browser='edge',size=(640,480),output_path=html_path)
     hti.screenshot(
         html_file=html_path+'map_location'+'.html',
         save_as='map_location'+'.png')
