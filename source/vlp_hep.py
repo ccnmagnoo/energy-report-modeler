@@ -7,7 +7,7 @@ from models.econometrics import Cost, Currency as Curr
 from models.geometry import Orientation
 from models.inventory import Building
 from models.photovoltaic import PvInput
-from libs.repository import repoEquipment,panelRepo
+from libs.repository import forehouse,panelRepo
 
 type Subject = Literal['project','consumptions','components']
 
@@ -28,13 +28,13 @@ data:dict[Subject,any] = {
             city='Valparaíso'),
     },
     'consumptions':{
-        'cost_increment':15.8,
+        'cost_increment':4.7,
         'client_id':'250837-0',
         'measurer_id':'10033891',
         'contract_id':'AT-4.3 ',
         'consumption':[
-            Bill("11-04-2024","13-05-2024",81_480,9550_805,Curr.CLP,('AT','_43','NA'),Dms=203.3,Dmhp=111.7),
-            Bill("13-05-2024","11-06-2024",78_400,9375_183,Curr.CLP,('AT','_43','NA'),Dms=198.2,Dmhp=115.4),
+            Bill("11-04-2024","13-05-2024",81_480,9_550805,Curr.CLP,('AT','_43','NA'),Dms=203.3,Dmhp=111.7),
+            Bill("13-05-2024","11-06-2024",78_400,9_375183,Curr.CLP,('AT','_43','NA'),Dms=198.2,Dmhp=115.4),
             Bill("11-06-2024","11-07-2024",82_040,12235857,Curr.CLP,('AT','_43','NA'),Dms=213.1,Dmhp=118.4),
             Bill("11-07-2024","12-08-2024",89_040,13991898,Curr.CLP,('AT','_43','NA'),Dms=218.4,Dmhp=206.4),
             Bill("12-08-2024","09-09-2024",75_040,12140939,Curr.CLP,('AT','_43','NA'),Dms=206.4,Dmhp=110.6),
@@ -68,8 +68,8 @@ data:dict[Subject,any] = {
         ),
         'install':(
             'instalación',
-            repoEquipment['Inverter']['CS 100kW H'],# inverter
-            repoEquipment['Medidor']['FR 3F'],# lectura
+            forehouse['Inverter']['CS 100kW H'],# inverter
+            forehouse['Medidor']['FR 3F'],# lectura
             Equip(
                 description='eléctrica interior',
                 specification=Specs(
@@ -86,14 +86,14 @@ data:dict[Subject,any] = {
                     category='Montaje',
                     montaje='coplanar',
                     ),
-                cost_per_unit=Cost(45_000),
+                cost_per_unit=Cost(55_000),
                 quantity=PANELS#panels
                 ),
             ),
         'storage':(#0 hours for not install storage at all
             'almacenamiento',0,'24/5',
-            repoEquipment['Monitor']['VC 700'],
-            repoEquipment['Regulator']['VT 45A']
+            forehouse['Monitor']['VC 700'],
+            forehouse['Regulator']['VT 45A']
         ),
 
         'accesories':(
@@ -131,7 +131,7 @@ data:dict[Subject,any] = {
                 )
         ),
         'overloads':{
-            'gastos_gral':25,
+            'gastos_gral':30,
             'utilidad':20
         }
     }
