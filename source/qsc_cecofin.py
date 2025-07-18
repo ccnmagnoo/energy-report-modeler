@@ -7,7 +7,7 @@ from models.econometrics import Cost, Currency as Curr
 from models.geometry import Orientation
 from models.inventory import Building
 from models.photovoltaic import PvInput
-from libs.repository import forehouse,panelRepo
+from libs.repository import warehouse,panelRepo
 
 type Subject = Literal['project','consumptions','components']
 
@@ -48,8 +48,8 @@ data:dict[Subject,any] = {
         ),
         'install':(
             'instalación',
-            forehouse['Inverter']['KH 25kW'],# inverter
-            forehouse['Medidor']['FR 3F'],# lectura
+            warehouse['Inverter']['KH 25kW'],# inverter
+            warehouse['Medidor']['FR 3F'],# lectura
             Equip(
                 description='eléctrica interior',
                 specification=Specs(

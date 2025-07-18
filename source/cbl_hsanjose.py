@@ -7,7 +7,7 @@ from models.econometrics import Cost, Currency as Curr
 from models.geometry import Orientation
 from models.inventory import Building
 from models.photovoltaic import PvInput
-from libs.repository import forehouse,panelRepo
+from libs.repository import warehouse,panelRepo
 
 type Subject = Literal['project','consumptions','components']
 
@@ -29,11 +29,11 @@ data:dict[Subject,any] = {
     },
     'consumptions':{
         'cost_increment':4.7,
-        'client_id':'250837-0',
-        'measurer_id':'10033891',
+        'client_id':'9610083',
+        'measurer_id':'N/I',
         'contract_id':'AT-4.3 ',
         'consumption':[
-            Bill("11-04-2024","13-05-2024",81_480,9_550805,Curr.CLP,('AT','_43','NA')),
+            Bill("01-06-2025","30-06-2025",156_069,19_718_806,Curr.CLP,('AT','_43','NA'),dm=238),
         ]
     },
     'components':{
@@ -47,8 +47,8 @@ data:dict[Subject,any] = {
         ),
         'install':(
             'instalación',
-            forehouse['Inverter']['CS 50kW H'],# inverter
-            forehouse['Medidor']['FR 3F'],# lectura
+            warehouse['Inverter']['CS 50kW H'],# inverter
+            # forehouse['Medidor']['FR 3F'],# lectura
             Equip(
                 description='eléctrica interior',
                 specification=Specs(
@@ -71,8 +71,8 @@ data:dict[Subject,any] = {
             ),
         'storage':(#0 hours for not install storage at all
             'almacenamiento',0,'24/5',
-            forehouse['Monitor']['VC 700'],
-            forehouse['Regulator']['VT 45A']
+            warehouse['Monitor']['VC 700'],
+            warehouse['Regulator']['VT 45A']
         ),
 
         'accesories':(
@@ -115,3 +115,4 @@ data:dict[Subject,any] = {
         }
     }
 }
+# End-of-file (EOF)
