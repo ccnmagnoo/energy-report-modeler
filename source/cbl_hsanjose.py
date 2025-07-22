@@ -23,17 +23,18 @@ data:dict[Subject,any] = {
         'technology':[Tech.PHOTOVOLTAIC],
         'building':Building(
             geolocation=(-33.314975, -71.414803),
-            name='H. San José',
+            name='Hospital San José',
             address='Juan Verdaguer 122',
             city='Casablanca'),
     },
     'consumptions':{
         'cost_increment':4.7,
-        'client_id':'9610083',
-        'measurer_id':'N/I',
+        'client_id':'10010102041220',
+        'measurer_id':'312966',
         'contract_id':'AT-4.3 ',
         'consumption':[
             Bill("01-06-2025","30-06-2025",156_069,19_718_806,Curr.CLP,('AT','_43','NA'),dm=238),
+            Bill("01-01-2025","01-02-2025",156_069*.9,19_718_806*.9,Curr.CLP,('AT','_43','NA'),dm=238),
         ]
     },
     'components':{
