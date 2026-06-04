@@ -12,7 +12,7 @@ from libs.repository import warehouse,panelRepo
 type Subject = Literal['project','consumptions','components']
 
 #gen
-PANELS:int=80
+PANELS:int=108
 POWER:int=PANELS*655/1000
 #
 
@@ -42,13 +42,13 @@ data:dict[Subject,any] = {
             panelRepo['CS 655W'],# equipment
             PvInput(
                 description='FV 655W mod',
-                quantity=80,
+                quantity=PANELS,
                 orientation=Orientation(20,43),
                 ),
         ),
         'install':(
             'instalación',
-            warehouse['Inverter']['CS 50kW H'],# inverter
+            warehouse['Inverter']['CS 100kW H'],# inverter
             # forehouse['Medidor']['FR 3F'],# lectura
             Equip(
                 description='eléctrica interior',
