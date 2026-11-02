@@ -41,6 +41,35 @@ class ObstacleIn(BaseModel):
     kind: str = "otro"
 
 
+class GeometryIn(BaseModel):
+    geojson: dict
+
+
+def _invalidate_designs(db: Session, roof: Roof) -> int:
+    """Marca como obsoletos los diseños que dependen de esta techumbre."""
+
+    count = 0
+    for design in roof.designs:
+        design.status = "desactualizado"
+        design.project.status = "desactualizado"
+        count += 1
+    return count
+
+
+@router.post("/geometry/area")
+def geometry_area(
+    payload: GeometryIn,
+    user: User = Depends(require_api_user),
+):
+    try:
+        as_polygon(payload.geojson)
+        longitude, latitude = centroid_lonlat(payload.geojson)
+        measured = area_m2(payload.geojson, latitude, longitude)
+        return {"valid": True, "area_m2": measured, "message": ""}
+    except GeometryError as exc:
+        return {"valid": False, "area_m2": 0, "message": str(exc)}
+
+
 @router.get("/geocode")
 def geocode(
     q: str = Query("", min_length=0, max_length=250),
@@ -146,6 +175,8 @@ def update_roof(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     site = roof.site
+    previous_geometry = json.loads(roof.geom_geojson)
+    geometry_changed = previous_geometry != payload.geojson
     measured_area = area_m2(payload.geojson, site.latitude, site.longitude)
     roof.name = payload.name.strip() or roof.name
     roof.geom_geojson = json.dumps(payload.geojson)
@@ -154,9 +185,21 @@ def update_roof(
     roof.azimuth_deg = payload.azimuth_deg
     roof.material = payload.material.strip() or roof.material
     roof.usable_factor = max(0.1, min(1.0, payload.usable_factor))
-    log(db, user, "roof", roof.id, "updated", {"area_m2": measured_area})
+    invalidated = _invalidate_designs(db, roof) if geometry_changed else 0
+    log(
+        db,
+        user,
+        "roof",
+        roof.id,
+        "updated",
+        {"area_m2": measured_area, "invalidated_designs": invalidated},
+    )
     db.commit()
-    return {"id": roof.id, "area_m2": roof.area_m2}
+    return {
+        "id": roof.id,
+        "area_m2": roof.area_m2,
+        "invalidated_designs": invalidated,
+    }
 
 
 @router.post("/roofs/{roof_id}/obstacles")
@@ -183,9 +226,73 @@ def create_obstacle(
     )
     db.add(obstacle)
     db.flush()
-    log(db, user, "obstacle", obstacle.id, "created", {"roof_id": roof.id})
+    invalidated = _invalidate_designs(db, roof)
+    log(
+        db,
+        user,
+        "obstacle",
+        obstacle.id,
+        "created",
+        {"roof_id": roof.id, "invalidated_designs": invalidated},
+    )
     db.commit()
-    return {"id": obstacle.id}
+    return {"id": obstacle.id, "invalidated_designs": invalidated}
+
+
+@router.put("/obstacles/{obstacle_id}")
+def update_obstacle(
+    obstacle_id: int,
+    payload: ObstacleIn,
+    user: User = Depends(require_api_user),
+    db: Session = Depends(get_db),
+):
+    obstacle = db.get(Obstacle, obstacle_id)
+    if obstacle is None:
+        raise HTTPException(status_code=404, detail="Obstáculo no encontrado")
+    try:
+        as_polygon(payload.geojson)
+    except GeometryError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    obstacle.name = payload.name.strip() or obstacle.name
+    obstacle.geom_geojson = json.dumps(payload.geojson)
+    obstacle.height_m = max(0.0, payload.height_m)
+    obstacle.kind = payload.kind.strip() or obstacle.kind
+    invalidated = _invalidate_designs(db, obstacle.roof)
+    log(
+        db,
+        user,
+        "obstacle",
+        obstacle.id,
+        "updated",
+        {"invalidated_designs": invalidated},
+    )
+    db.commit()
+    return {"id": obstacle.id, "invalidated_designs": invalidated}
+
+
+@router.delete("/obstacles/{obstacle_id}")
+def delete_obstacle(
+    obstacle_id: int,
+    user: User = Depends(require_api_user),
+    db: Session = Depends(get_db),
+):
+    obstacle = db.get(Obstacle, obstacle_id)
+    if obstacle is None:
+        raise HTTPException(status_code=404, detail="Obstáculo no encontrado")
+    roof = obstacle.roof
+    invalidated = _invalidate_designs(db, roof)
+    db.delete(obstacle)
+    log(
+        db,
+        user,
+        "obstacle",
+        obstacle_id,
+        "deleted",
+        {"roof_id": roof.id, "invalidated_designs": invalidated},
+    )
+    db.commit()
+    return {"ok": True, "invalidated_designs": invalidated}
 
 
 @router.get("/projects/{project_id}/export.geojson")

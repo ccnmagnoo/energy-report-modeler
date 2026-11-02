@@ -19,9 +19,22 @@
     <form method="post" action="/designs/{{ design.id }}/layout" class="inline-form"><button class="btn btn-secondary" type="submit">Recalcular distribución</button></form>
     <form method="post" action="/designs/{{ design.id }}/simulate" class="inline-form"><button class="btn btn-primary" type="submit">Simular producción</button></form>
     <form method="post" action="/designs/{{ design.id }}/financial" class="inline-form"><button class="btn btn-secondary" type="submit">Evaluar economía</button></form>
-    <form method="post" action="/designs/{{ design.id }}/documents" class="inline-form"><button class="btn btn-secondary" type="submit">Generar documentos</button></form>
+    <form method="post" action="/designs/{{ design.id }}/documents/memory" class="inline-form"><button class="btn btn-secondary" type="submit">Generar memoria</button></form>
+    <form method="post" action="/designs/{{ design.id }}/documents/bidding" class="inline-form"><button class="btn btn-secondary" type="submit">Generar pliego</button></form>
   </div>
 </section>
+
+{% if design.status == 'desactualizado' %}
+<div class="notice warning stale-banner">
+  <div>
+    <strong>Techumbre modificada.</strong>
+    La distribución de paneles está desactualizada. Recalcula antes de simular o generar documentos.
+  </div>
+  <form method="post" action="/designs/{{ design.id }}/layout" class="inline-form">
+    <button class="btn btn-small btn-secondary" type="submit">Recalcular distribución</button>
+  </form>
+</div>
+{% endif %}
 
 <section class="stats-grid compact">
   <article class="stat-card"><span class="stat-label">Módulos</span><strong>{{ design.panel_count }}</strong></article>
@@ -125,12 +138,13 @@
 
 <section class="card">
   <div class="card-head">
-    <div><h2>Documentos del diseño</h2><p class="muted">La generación requiere simulación y evaluación económica.</p></div>
+    <div><h2>Documentos del diseño</h2><p class="muted">La memoria requiere simulación y economía; el pliego requiere simulación.</p></div>
     <a class="btn btn-ghost" href="/projects/{{ project.id }}/documents">Ver documentos del proyecto</a>
   </div>
   <div class="inline-actions">
     <form method="post" action="/designs/{{ design.id }}/compliance" class="inline-form"><button class="btn btn-small btn-ghost" type="submit">Actualizar chequeos</button></form>
-    <form method="post" action="/designs/{{ design.id }}/documents" class="inline-form"><button class="btn btn-small btn-primary" type="submit">Generar DOCX + PDF + TOML</button></form>
+    <form method="post" action="/designs/{{ design.id }}/documents/memory" class="inline-form"><button class="btn btn-small btn-primary" type="submit">Memoria de cálculo DOCX + PDF + TOML</button></form>
+    <form method="post" action="/designs/{{ design.id }}/documents/bidding" class="inline-form"><button class="btn btn-small btn-secondary" type="submit">Pliego de licitación DOCX + PDF + TOML</button></form>
   </div>
 </section>
 

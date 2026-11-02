@@ -64,6 +64,7 @@ def analyze(
     annual_kwh: float,
     years: int = 25,
     discount_rate: float = 0.08,
+    price_increment: float = 0.0,
 ) -> dict:
     if years <= 0:
         raise ValueError("El horizonte de análisis debe ser positivo")
@@ -71,7 +72,10 @@ def analyze(
         raise ValueError("La tasa de descuento no es válida")
 
     annual_net = annual_savings_clp - annual_opex_clp
-    cashflows = [-capex_clp] + [annual_net] * years
+    cashflows = [-capex_clp]
+    for period in range(years):
+        escalated_savings = annual_savings_clp * ((1 + price_increment) ** period)
+        cashflows.append(escalated_savings - annual_opex_clp)
     result_npv = npv(discount_rate, cashflows)
     result_irr = irr(cashflows)
     payback = capex_clp / annual_net if annual_net > 0 else None
@@ -97,4 +101,5 @@ def analyze(
         "cashflows": [round(value, 2) for value in cashflows],
         "years": years,
         "discount_rate": discount_rate,
+        "price_increment": price_increment,
     }

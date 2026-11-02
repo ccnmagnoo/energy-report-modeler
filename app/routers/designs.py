@@ -27,13 +27,18 @@ from app.services.design import (
     latest_simulation,
     recalculate_design,
 )
-from app.services.documents import render_documents
+from app.services.documents import generate_document
 from app.services.finance import analyze, annual_savings
 from app.services.pv import simulate_pv
 from app.services.weather import get_weather
 from app.web import templates
 
 router = APIRouter()
+STALE_NOTICE = "La+techumbre+cambi%C3%B3%3B+recalcula+la+distribuci%C3%B3n"
+
+
+def _is_stale(design: Design) -> bool:
+    return design.status == "desactualizado"
 
 
 def _design(db: Session, design_id: int) -> Design:
@@ -158,6 +163,8 @@ def simulate(
     db: Session = Depends(get_db),
 ):
     design = _design(db, design_id)
+    if _is_stale(design):
+        return RedirectResponse(f"/designs/{design.id}?notice={STALE_NOTICE}", status_code=303)
     site = design.roof.site if design.roof else None
     if site is None:
         raise HTTPException(status_code=400, detail="El diseño no tiene emplazamiento")
@@ -184,6 +191,7 @@ def simulate(
         weather_year=weather["year"],
         result_json={
             "monthly": result["monthly"],
+            "month_hour_matrix": result["month_hour_matrix"],
             "capacity_factor": result["capacity_factor"],
             "poa_kwh_m2": result["poa_kwh_m2"],
             "warning": weather["warning"],
@@ -209,6 +217,8 @@ def financial_analysis(
     db: Session = Depends(get_db),
 ):
     design = _design(db, design_id)
+    if _is_stale(design):
+        return RedirectResponse(f"/designs/{design.id}?notice={STALE_NOTICE}", status_code=303)
     simulation = latest_simulation(db, design)
     if simulation is None:
         return RedirectResponse(
@@ -229,6 +239,7 @@ def financial_analysis(
         annual_kwh=simulation.annual_kwh,
         years=design.project.analysis_years,
         discount_rate=design.project.discount_rate,
+        price_increment=design.project.energy_price_increment,
     )
     run = FinancialRun(design_id=design.id)
     db.add(run)
@@ -242,7 +253,9 @@ def financial_analysis(
         "annual_opex_clp": result["annual_opex_clp"],
         "years": result["years"],
         "discount_rate": result["discount_rate"],
+        "price_increment": result["price_increment"],
         "tariff_clp_kwh": design.project.tariff_clp_kwh,
+        "cashflows": result["cashflows"],
     }
     design.status = "evaluado"
     design.project.status = "evaluado"
@@ -261,6 +274,8 @@ def compliance_check(
     db: Session = Depends(get_db),
 ):
     design = _design(db, design_id)
+    if _is_stale(design):
+        return RedirectResponse(f"/designs/{design.id}?notice={STALE_NOTICE}", status_code=303)
     recalculate_design(db, design, design.roof, design.panel, design.inverter)
     log(db, user, "design", design.id, "compliance_checked")
     db.commit()
@@ -269,27 +284,31 @@ def compliance_check(
     )
 
 
-@router.post("/designs/{design_id}/documents")
-def generate_documents(
-    design_id: int,
-    request: Request,
-    user: User = Depends(require_user),
-    db: Session = Depends(get_db),
-):
-    design = _design(db, design_id)
+def _generate_document(db: Session, user: User, design: Design, kind: str):
+    if _is_stale(design):
+        return None, STALE_NOTICE
     simulation = latest_simulation(db, design)
     financial = latest_financial(db, design)
-    if simulation is None or financial is None:
-        return RedirectResponse(
-            f"/designs/{design.id}?notice=Completa+simulaci%C3%B3n+y+econom%C3%ADa+antes+de+generar+documentos",
-            status_code=303,
-        )
+    if simulation is None:
+        return None, "Primero+debes+simular+la+producci%C3%B3n"
+    if kind == "memoria_calculo" and financial is None:
+        return None, "Completa+la+evaluaci%C3%B3n+econ%C3%B3mica+antes+de+generar+la+memoria"
 
     compliance = [
         {"rule": check.rule, "status": check.status, "message": check.message}
         for check in latest_compliance(db, design)
     ]
-    paths = render_documents(
+    version = (
+        db.scalar(
+            select(func.count(Document.id)).where(
+                Document.project_id == design.project_id,
+                Document.design_id == design.id,
+                Document.kind == kind,
+            )
+        )
+        or 0
+    )
+    paths = generate_document(
         project=design.project,
         site=design.roof.site if design.roof else None,
         roof=design.roof,
@@ -298,21 +317,13 @@ def generate_documents(
         financial=financial,
         compliance=compliance,
         bom_items=list(design.bom_items),
-    )
-    version = (
-        db.scalar(
-            select(func.count(Document.id)).where(
-                Document.project_id == design.project_id,
-                Document.design_id == design.id,
-                Document.kind == "memoria_calculo",
-            )
-        )
-        or 0
+        kind=kind,
+        version=int(version) + 1,
     )
     document = Document(
         project_id=design.project_id,
         design_id=design.id,
-        kind="memoria_calculo",
+        kind=kind,
         version=int(version) + 1,
         docx_path=paths["docx_path"],
         pdf_path=paths["pdf_path"],
@@ -322,9 +333,64 @@ def generate_documents(
     design.status = "documentado"
     design.project.status = "documentado"
     db.flush()
-    log(db, user, "document", document.id, "generated", {"design_id": design.id})
+    log(
+        db,
+        user,
+        "document",
+        document.id,
+        "generated",
+        {"design_id": design.id, "kind": kind},
+    )
     db.commit()
+    return document, None
+
+
+@router.post("/designs/{design_id}/documents")
+def generate_memory_alias(
+    design_id: int,
+    request: Request,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    design = _design(db, design_id)
+    document, error = _generate_document(db, user, design, "memoria_calculo")
+    if error:
+        return RedirectResponse(f"/designs/{design.id}?notice={error}", status_code=303)
     return RedirectResponse(
-        f"/projects/{design.project_id}/documents?notice=Documentos+generados",
+        f"/projects/{design.project_id}/documents?notice=Memoria+de+c%C3%A1lculo+generada",
+        status_code=303,
+    )
+
+
+@router.post("/designs/{design_id}/documents/memory")
+def generate_memory(
+    design_id: int,
+    request: Request,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    design = _design(db, design_id)
+    document, error = _generate_document(db, user, design, "memoria_calculo")
+    if error:
+        return RedirectResponse(f"/designs/{design.id}?notice={error}", status_code=303)
+    return RedirectResponse(
+        f"/projects/{design.project_id}/documents?notice=Memoria+de+c%C3%A1lculo+generada",
+        status_code=303,
+    )
+
+
+@router.post("/designs/{design_id}/documents/bidding")
+def generate_bidding(
+    design_id: int,
+    request: Request,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    design = _design(db, design_id)
+    document, error = _generate_document(db, user, design, "pliego_licitacion")
+    if error:
+        return RedirectResponse(f"/designs/{design.id}?notice={error}", status_code=303)
+    return RedirectResponse(
+        f"/projects/{design.project_id}/documents?notice=Pliego+de+licitaci%C3%B3n+generado",
         status_code=303,
     )

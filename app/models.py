@@ -62,6 +62,7 @@ class Project(Base):
     discount_rate: Mapped[float] = mapped_column(Float, default=0.08)
     analysis_years: Mapped[int] = mapped_column(Integer, default=25)
     opex_pct: Mapped[float] = mapped_column(Float, default=0.01)
+    energy_price_increment: Mapped[float] = mapped_column(Float, default=0.03)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 

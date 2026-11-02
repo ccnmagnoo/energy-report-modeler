@@ -36,11 +36,21 @@ con datos reales.
 ## Flujo de uso
 
 1. **Proyecto:** crea el expediente con cliente, consumo, tarifa y parámetros económicos.
-2. **Emplazamiento:** busca una dirección, ajusta coordenadas y dibuja la techumbre en el mapa.
+2. **Emplazamiento:** busca una dirección, ajusta coordenadas, dibuja la techumbre y edita sus vértices arrastrando los nodos. También puedes editar o eliminar obstáculos.
 3. **Diseño:** elige panel e inversor; el sistema distribuye módulos y calcula el BOM.
 4. **Simulación:** consulta NASA POWER y calcula producción anual y mensual.
 5. **Economía:** calcula CAPEX, ahorro, VAN, TIR, payback y LCOE.
-6. **Documentos:** genera la memoria DOCX, el PDF y el snapshot TOML.
+6. **Documentos:** genera dos entregables usando las plantillas originales:
+   - **Memoria de cálculo:** `templates/memory_template.docx`, con tablas nativas, gráficos y mapa.
+   - **Pliego de licitación:** `templates/bidding_template.docx`, conservando el texto legal y técnico.
+
+Cada documento se guarda en `data/projects/{project_id}/documents/...` en DOCX,
+PDF y TOML. El PDF se convierte con Word cuando está disponible; si no, se usa
+ReportLab como respaldo. Controla el comportamiento con `FV_PDF_CONVERTER`.
+
+Si editas los vértices de la techumbre o de un obstáculo después de crear un
+diseño, el diseño queda como `desactualizado`. Vuelve al diseño y pulsa
+**Recalcular distribución** antes de simular o generar documentos.
 
 ## Datos y configuración
 
@@ -61,6 +71,7 @@ seguridad adicional.
 | `FV_ADMIN_EMAIL` / `FV_ADMIN_PASSWORD` | Credenciales iniciales |
 | `FV_WEATHER_OFFLINE=1` | Fuerza clima sintético para pruebas |
 | `FV_WEATHER_YEAR_OFFSET` | Años hacia atrás para NASA POWER; por defecto 2 |
+| `FV_PDF_CONVERTER` | `auto`, `word`, `reportlab` o `none`; por defecto `auto` |
 
 ## Pruebas
 

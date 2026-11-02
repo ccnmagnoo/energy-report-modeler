@@ -20,7 +20,8 @@ python -m venv .venv
 Abre <http://127.0.0.1:8000>. Credenciales iniciales: `admin@local` / `admin123`.
 
 Flujo: crear proyecto → geocodificar y dibujar techumbre → seleccionar panel e
-inversor → simular producción → evaluar economía → generar DOCX/PDF/TOML.
+inversor → simular producción → evaluar economía → generar **memoria de cálculo**
+y **pliego de licitación** en DOCX/PDF/TOML.
 
 La app usa internet para NASA POWER, teselas OpenStreetMap y geocodificación
 Nominatim. Si la red corporativa usa una CA interna, `truststore` permite

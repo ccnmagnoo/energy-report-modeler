@@ -56,15 +56,20 @@
     </div>
     <div class="map-actions">
       <button class="btn btn-primary" type="button" id="save-roof">Guardar polígono</button>
+      <button class="btn btn-secondary" type="button" id="edit-nodes" {% if not roof %}disabled{% endif %}>Editar nodos</button>
+      <button class="btn btn-ghost" type="button" id="cancel-edit" hidden>Cancelar edición</button>
       <span class="muted" id="draw-status">Dibuja al menos 3 vértices.</span>
+    </div>
+    <div class="area-readout" id="area-readout">
+      Área: <strong>{{ roof.area_m2|num(1) if roof else "—" }}</strong>{% if roof %} m²{% endif %}
     </div>
     {% if roof %}
     <div class="notice-box">
       <strong>Techumbre registrada:</strong> {{ roof.area_m2|num(1) }} m².
-      Puedes volver a dibujar para reemplazar la geometría.
+      Puedes editar los nodos o volver a dibujar para reemplazar la geometría.
     </div>
     <details class="mt-16">
-      <summary class="details-summary">Añadir obstáculo</summary>
+      <summary class="details-summary">Añadir o editar obstáculo</summary>
       <div class="form-grid two mt-16">
         <label>Nombre <input id="obstacle-name" value="Obstáculo"></label>
         <label>Altura <span class="hint">m</span><input id="obstacle-height" value="1.0" inputmode="decimal"></label>
@@ -79,6 +84,22 @@
         </label>
       </div>
       <button class="btn btn-secondary mt-16" type="button" id="save-obstacle">Guardar obstáculo dibujado</button>
+      {% if roof.obstacles %}
+      <ul class="obstacle-list mt-16">
+        {% for obstacle in roof.obstacles %}
+        <li>
+          <div>
+            <strong>{{ obstacle.name }}</strong>
+            <small>{{ obstacle.kind }} · {{ obstacle.height_m }} m</small>
+          </div>
+          <div class="doc-actions">
+            <button class="btn btn-small btn-ghost obstacle-edit" type="button" data-obstacle-id="{{ obstacle.id }}">Editar nodos</button>
+            <button class="btn btn-small btn-ghost obstacle-delete" type="button" data-obstacle-id="{{ obstacle.id }}">Eliminar</button>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
     </details>
     {% endif %}
   </section>
@@ -92,7 +113,7 @@
     </div>
     <div class="map-tools">
       <button type="button" class="btn btn-small btn-ghost" id="clear-draw">Limpiar dibujo</button>
-      <span class="map-hint">Clic para agregar vértices · doble clic para cerrar</span>
+      <span class="map-hint">Clic para agregar vértices · doble clic para cerrar · arrastra los nodos para ajustar</span>
     </div>
   </div>
   <div id="site-map" class="map"></div>

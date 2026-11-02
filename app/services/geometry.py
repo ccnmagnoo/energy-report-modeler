@@ -46,11 +46,19 @@ def as_shape(geojson: dict[str, Any] | str) -> BaseGeometry:
 
 def as_polygon(geojson: dict[str, Any] | str) -> Polygon:
     geom = as_shape(geojson)
-    if isinstance(geom, Polygon):
-        return geom
     if isinstance(geom, MultiPolygon):
-        return max(geom.geoms, key=lambda item: item.area)
-    raise GeometryError("Se requiere un polígono")
+        geom = max(geom.geoms, key=lambda item: item.area)
+    if not isinstance(geom, Polygon):
+        raise GeometryError("Se requiere un polígono")
+    if len(geom.exterior.coords) < 4:
+        raise GeometryError("El polígono debe tener al menos 3 vértices")
+    if not geom.is_valid:
+        raise GeometryError(
+            "El polígono se auto-intersecta o no es válido; corrige los nodos."
+        )
+    if geom.area <= 0:
+        raise GeometryError("El polígono no tiene superficie válida")
+    return geom
 
 
 def utm_epsg(latitude: float, longitude: float) -> str:

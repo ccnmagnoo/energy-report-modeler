@@ -16,9 +16,14 @@
 - `app/models.py` is SQLite-first. Geometries are GeoJSON text; UTM projection is done in `app/services/geometry.py` and `app/services/layout.py`. Never buffer polygons in degrees.
 - `app/services/layout.py` picks portrait/landscape by panel count, insets the roof by 25 cm, and returns WGS84 panel polygons.
 - `app/services/weather.py` uses NASA POWER for `current_year - 2`, caches raw JSON under `data/cache/weather/`, and falls back to synthetic weather on failure. `FV_WEATHER_OFFLINE=1` forces synthetic.
-- `app/services/pv.py` uses pvlib. `app/services/finance.py` computes NPV/IRR/payback/LCOE. `app/services/documents.py` writes DOCX via python-docx, PDF via ReportLab, and TOML via tomli-w.
+- `app/services/pv.py` uses pvlib and stores a 12×24 `month_hour_matrix` in `Simulation.result_json`. `app/services/finance.py` computes NPV/IRR/payback/LCOE and stores cashflows in `FinancialRun.assumptions_json`.
+- The document engine is template-based: `app/services/docx_templates.py` sanitizes smart quotes/split Jinja tags at runtime into `data/cache/templates/`; `docx_context.py` maps SQLite data to the legacy placeholders; `docx_tables.py` replaces `table_*` tokens with native Word tables; `docx_plots.py` builds the 11 memory images; `pdf.py` converts DOCX to PDF with Word (`docx2pdf`) and falls back to ReportLab.
+- `Document.kind` is `memoria_calculo` or `pliego_licitacion`. Routes are `/designs/{id}/documents/memory` and `/designs/{id}/documents/bidding`. Memory requires simulation + financial; bidding requires simulation.
+- `FV_PDF_CONVERTER` accepts `auto` (Word then ReportLab), `word`, `reportlab`, or `none`. Tests set `reportlab` to avoid opening Word.
+- Roof and obstacle geometry live-edit in `app/static/js/site-map.js` via draggable vertex handles. `POST /api/geometry/area` recalculates live area; `PUT /api/roofs/{id}` and `PUT/DELETE /api/obstacles/{id}` persist edits. Any geometry change marks dependent designs `desactualizado`; simulation/financial/document routes block until the layout is recalculated.
 - `app/__init__.py` injects `truststore` so HTTPS works behind public-sector corporate proxies with internal CAs. Keep it.
-- Templates are in `app/templates/`; static assets in `app/static/`. MapLibre and OSM tiles load from the internet at runtime.
+- HTML templates are in `app/templates/`; static assets in `app/static/`. Word source templates are in `templates/`; runtime-sanitized copies go to `data/cache/templates/` and must not be edited by hand.
+- MapLibre and OSM tiles load from the internet at runtime. `staticmap` also fetches OSM tiles for the memory map; if that fails, a coordinate placeholder is embedded instead.
 - The MVP is intentionally single-tenant. `org_id` and `AuditEvent` are already present for a future PostGIS/SaaS migration.
 
 ## Legacy notebook

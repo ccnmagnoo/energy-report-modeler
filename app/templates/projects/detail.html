@@ -133,10 +133,13 @@
     <ul class="doc-list">
       {% for document in documents %}
       <li>
-        <div><strong>Memoria de cálculo v{{ document.version }}</strong><small>{{ document.created_at|date_cl }}</small></div>
+        <div>
+          <strong>{{ 'Memoria de cálculo' if document.kind == 'memoria_calculo' else 'Pliego de licitación' }} v{{ document.version }}</strong>
+          <small>{{ document.created_at|date_cl }}</small>
+        </div>
         <div class="doc-actions">
           <a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/docx">DOCX</a>
-          <a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/pdf">PDF</a>
+          {% if document.pdf_path %}<a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/pdf">PDF</a>{% endif %}
           <a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/toml">TOML</a>
         </div>
       </li>
@@ -168,6 +171,7 @@
           <label>Tasa descuento % <input name="discount_rate" value="{{ project.discount_rate * 100 }}"></label>
           <label>Horizonte años <input name="analysis_years" value="{{ project.analysis_years }}"></label>
           <label>OPEX % <input name="opex_pct" value="{{ project.opex_pct * 100 }}"></label>
+          <label>Incremento energía % <input name="energy_price_increment" value="{{ project.energy_price_increment * 100 }}"></label>
         </div>
         <button class="btn btn-secondary" type="submit">Guardar cambios</button>
       </form>

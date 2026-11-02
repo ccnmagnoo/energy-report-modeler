@@ -80,6 +80,17 @@ def simulate_pv(
         for month in range(1, 13)
     ]
 
+    hourly_average = (
+        pd.Series(ac_w, index=times).groupby([times.month, times.hour]).mean() / 1000
+    )
+    month_hour_matrix = [
+        [
+            round(float(hourly_average.get((month, hour), 0.0)), 4)
+            for hour in range(24)
+        ]
+        for month in range(1, 13)
+    ]
+
     return {
         "annual_kwh": round(annual_kwh, 2),
         "specific_yield": round(specific_yield, 2),
@@ -89,5 +100,6 @@ def simulate_pv(
         "dc_kw": round(dc_kw, 3),
         "ac_kw": round(inverter_ac_w / 1000, 3),
         "monthly": monthly,
+        "month_hour_matrix": month_hour_matrix,
         "hours": int(len(times)),
     }

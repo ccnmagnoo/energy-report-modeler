@@ -65,6 +65,7 @@ def create_project(
     discount_rate: str = Form("8"),
     analysis_years: str = Form("25"),
     opex_pct: str = Form("1"),
+    energy_price_increment: str = Form("3"),
     user: User = Depends(require_user),
     db: Session = Depends(get_db),
 ):
@@ -80,6 +81,7 @@ def create_project(
         discount_rate=percent(discount_rate, 8),
         analysis_years=to_int(analysis_years, 25),
         opex_pct=percent(opex_pct, 1),
+        energy_price_increment=percent(energy_price_increment, 3),
     )
     db.add(project)
     db.flush()
@@ -156,6 +158,7 @@ def update_project(
     discount_rate: str = Form("8"),
     analysis_years: str = Form("25"),
     opex_pct: str = Form("1"),
+    energy_price_increment: str = Form("3"),
     user: User = Depends(require_user),
     db: Session = Depends(get_db),
 ):
@@ -170,6 +173,7 @@ def update_project(
     project.discount_rate = percent(discount_rate, 8)
     project.analysis_years = to_int(analysis_years, 25)
     project.opex_pct = percent(opex_pct, 1)
+    project.energy_price_increment = percent(energy_price_increment, 3)
     log(db, user, "project", project.id, "updated", {"name": project.name})
     db.commit()
     return RedirectResponse(f"/projects/{project.id}?notice=Proyecto+actualizado", status_code=303)
@@ -194,6 +198,7 @@ def site_page(
         "roofGeojson": json.loads(roof.geom_geojson) if roof else None,
         "obstacles": [
             {
+                "id": obstacle.id,
                 "name": obstacle.name,
                 "heightM": obstacle.height_m,
                 "kind": obstacle.kind,

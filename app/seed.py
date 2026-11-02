@@ -172,6 +172,7 @@ def _seed_demo_project(db: Session, org: Organization) -> None:
         discount_rate=0.08,
         analysis_years=25,
         opex_pct=0.01,
+        energy_price_increment=0.03,
     )
     db.add(project)
     db.flush()

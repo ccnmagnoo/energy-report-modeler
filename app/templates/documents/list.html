@@ -16,15 +16,17 @@
   {% if documents %}
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Versión</th><th>Fecha</th><th>Diseño</th><th>DOCX</th><th>PDF</th><th>TOML</th></tr></thead>
+      <thead><tr><th>Tipo</th><th>Versión</th><th>Fecha</th><th>Diseño</th><th>DOCX</th><th>PDF</th><th>TOML</th></tr></thead>
       <tbody>
         {% for document in documents %}
+        {% set is_memory = document.kind == 'memoria_calculo' %}
         <tr>
-          <td><strong>Memoria v{{ document.version }}</strong></td>
+          <td><span class="badge badge-category">{{ 'Memoria de cálculo' if is_memory else 'Pliego de licitación' }}</span></td>
+          <td><strong>v{{ document.version }}</strong></td>
           <td>{{ document.created_at|date_cl }}</td>
           <td>{% if document.design_id %}<a class="link" href="/designs/{{ document.design_id }}">Diseño #{{ document.design_id }}</a>{% else %}—{% endif %}</td>
           <td><a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/docx">Descargar</a></td>
-          <td><a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/pdf">Descargar</a></td>
+          <td>{% if document.pdf_path %}<a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/pdf">Descargar</a>{% else %}<span class="muted">—</span>{% endif %}</td>
           <td><a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/toml">Descargar</a></td>
         </tr>
         {% endfor %}

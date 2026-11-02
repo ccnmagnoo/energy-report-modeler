@@ -13,7 +13,10 @@
   let mode = "roof";
   let coords = [];
   let drawing = true;
+  let editMode = false;
+  let activeObstacleId = null;
   let roofId = data.roofId || null;
+  let vertexMarkers = [];
 
   const map = new maplibregl.Map({
     container: "site-map",
@@ -45,6 +48,25 @@
   function asGeometry(value) {
     if (!value) return null;
     return value.type === "Feature" ? value.geometry : value;
+  }
+
+  function geometryCoords(value) {
+    const geometry = asGeometry(value);
+    if (!geometry) return [];
+    if (geometry.type === "Polygon" && Array.isArray(geometry.coordinates[0])) {
+      return geometry.coordinates[0]
+        .slice(0, -1)
+        .map(([lng, lat]) => [Number(lng), Number(lat)]);
+    }
+    return [];
+  }
+
+  function polygonFromCoords() {
+    if (coords.length < 3) return null;
+    return {
+      type: "Polygon",
+      coordinates: [[...coords, coords[0]]],
+    };
   }
 
   function extendBounds(bounds, value) {
@@ -82,10 +104,7 @@
     } else {
       setSource("draft", {
         type: "Feature",
-        geometry: {
-          type: "Polygon",
-          coordinates: [[...coords, coords[0]]],
-        },
+        geometry: polygonFromCoords(),
         properties: {},
       });
     }
@@ -101,9 +120,105 @@
       status.textContent = `${coords.length} vértice(s). Faltan ${3 - coords.length}.`;
     } else if (drawing) {
       status.textContent = `${coords.length} vértices. Doble clic para cerrar.`;
+    } else if (editMode) {
+      status.textContent = `${coords.length} vértices. Arrastra los nodos para ajustar.`;
     } else {
       status.textContent = `${coords.length} vértices. Listo para guardar.`;
     }
+  }
+
+  function removeVertexHandles() {
+    vertexMarkers.forEach((marker) => marker.remove());
+    vertexMarkers = [];
+  }
+
+  function renderVertexHandles() {
+    removeVertexHandles();
+    if (!map.getSource("draft") || coords.length === 0) return;
+    coords.forEach((coord, index) => {
+      const element = document.createElement("div");
+      element.className = "vertex-handle";
+      element.title = `Vértice ${index + 1}`;
+      const handle = new maplibregl.Marker({ element, draggable: true })
+        .setLngLat(coord)
+        .addTo(map);
+      handle.on("dragstart", () => element.classList.add("dragging"));
+      handle.on("drag", () => {
+        const position = handle.getLngLat();
+        coords[index] = [position.lng, position.lat];
+        renderDraft();
+      });
+      handle.on("dragend", () => {
+        element.classList.remove("dragging");
+        updateArea();
+      });
+      vertexMarkers.push(handle);
+    });
+  }
+
+  function updateButtons() {
+    document.querySelectorAll("[data-draw-mode]").forEach((button) => {
+      button.classList.toggle("active", button.dataset.drawMode === mode);
+    });
+    const cancel = document.getElementById("cancel-edit");
+    if (cancel) cancel.hidden = !editMode && coords.length === 0;
+  }
+
+  async function updateArea() {
+    const readout = document.getElementById("area-readout");
+    if (!readout) return;
+    const polygon = polygonFromCoords();
+    if (!polygon) {
+      readout.textContent = "Área: —";
+      return;
+    }
+    readout.textContent = "Calculando área…";
+    try {
+      const response = await fetch("/api/geometry/area", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ geojson: polygon }),
+      });
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      const body = await response.json();
+      if (!body.valid) {
+        readout.textContent = body.message || "Geometría no válida";
+        readout.classList.add("negative");
+        return;
+      }
+      readout.classList.remove("negative");
+      const formatted = Number(body.area_m2).toLocaleString("es-CL", {
+        maximumFractionDigits: 1,
+      });
+      readout.textContent = `Área: ${formatted} m²`;
+    } catch (_) {
+      readout.textContent = "No fue posible calcular el área";
+    }
+  }
+
+  function startEditing(kind, coordinates, obstacleId = null) {
+    mode = kind;
+    coords = coordinates.map(([lng, lat]) => [Number(lng), Number(lat)]);
+    drawing = false;
+    editMode = true;
+    activeObstacleId = obstacleId;
+    renderDraft();
+    renderVertexHandles();
+    updateButtons();
+    updateArea();
+  }
+
+  function resetEditing() {
+    removeVertexHandles();
+    coords = [];
+    drawing = true;
+    editMode = false;
+    activeObstacleId = null;
+    renderDraft();
+    updateButtons();
   }
 
   function setMode(nextMode) {
@@ -112,12 +227,7 @@
       return;
     }
     mode = nextMode;
-    coords = [];
-    drawing = true;
-    document.querySelectorAll("[data-draw-mode]").forEach((button) => {
-      button.classList.toggle("active", button.dataset.drawMode === mode);
-    });
-    renderDraft();
+    resetEditing();
   }
 
   map.on("load", () => {
@@ -182,21 +292,27 @@
         })),
       });
     }
+    renderDraft();
+    if (editMode) renderVertexHandles();
+    updateButtons();
     updateStatus();
   });
 
   map.on("click", (event) => {
-    if (!drawing) return;
+    if (!drawing || editMode) return;
     if (event.originalEvent && event.originalEvent.detail > 1) return;
     coords.push([event.lngLat.lng, event.lngLat.lat]);
     renderDraft();
   });
 
   map.on("dblclick", (event) => {
-    event.preventDefault();
-    if (coords.length >= 3) {
+    if (event.originalEvent) event.originalEvent.preventDefault();
+    if (drawing && coords.length >= 3) {
       drawing = false;
-      updateStatus();
+      editMode = true;
+      renderVertexHandles();
+      updateButtons();
+      updateArea();
     }
   });
 
@@ -207,9 +323,28 @@
   const clearButton = document.getElementById("clear-draw");
   if (clearButton) {
     clearButton.addEventListener("click", () => {
-      coords = [];
-      drawing = true;
-      renderDraft();
+      resetEditing();
+      const readout = document.getElementById("area-readout");
+      if (readout) readout.textContent = "Área: —";
+    });
+  }
+
+  const cancelButton = document.getElementById("cancel-edit");
+  if (cancelButton) {
+    cancelButton.addEventListener("click", () => {
+      window.location.reload();
+    });
+  }
+
+  const editNodesButton = document.getElementById("edit-nodes");
+  if (editNodesButton) {
+    editNodesButton.addEventListener("click", () => {
+      const source = coords.length ? coords : geometryCoords(data.roofGeojson);
+      if (source.length < 3) {
+        alert("Primero dibuja y guarda una techumbre.");
+        return;
+      }
+      startEditing("roof", source, null);
     });
   }
 
@@ -220,10 +355,7 @@
     }
     return {
       name: document.getElementById("roof-name").value || "Techumbre principal",
-      geojson: {
-        type: "Polygon",
-        coordinates: [[...coords, coords[0]]],
-      },
+      geojson: polygonFromCoords(),
       tilt_deg: Number(document.getElementById("roof-tilt").value || 20),
       azimuth_deg: Number(document.getElementById("roof-azimuth").value || 180),
       material: document.getElementById("roof-material").value,
@@ -257,11 +389,21 @@
   const saveRoofButton = document.getElementById("save-roof");
   if (saveRoofButton) {
     saveRoofButton.addEventListener("click", async () => {
+      if (mode === "obstacle" || activeObstacleId) {
+        alert("Estás editando un obstáculo. Usa “Guardar obstáculo dibujado”.");
+        return;
+      }
+      if (!coords.length && data.roofGeojson) {
+        coords = geometryCoords(data.roofGeojson);
+        renderDraft();
+      }
       const payload = polygonPayload();
       if (!payload) return;
       saveRoofButton.disabled = true;
       try {
-        const url = roofId ? `/api/roofs/${roofId}` : `/api/projects/${data.projectId}/roofs`;
+        const url = roofId
+          ? `/api/roofs/${roofId}`
+          : `/api/projects/${data.projectId}/roofs`;
         const result = await sendJson(url, roofId ? "PUT" : "POST", payload);
         if (result) {
           window.location.href = `/projects/${data.projectId}/site?notice=Techumbre+guardada`;
@@ -276,6 +418,10 @@
   const saveObstacleButton = document.getElementById("save-obstacle");
   if (saveObstacleButton) {
     saveObstacleButton.addEventListener("click", async () => {
+      if (mode !== "obstacle") {
+        alert("Selecciona el modo “Obstáculo” o edita un obstáculo existente.");
+        return;
+      }
       if (!roofId) {
         alert("Primero guarda la techumbre.");
         return;
@@ -285,13 +431,18 @@
         return;
       }
       saveObstacleButton.disabled = true;
+      const payload = {
+        name: document.getElementById("obstacle-name").value || "Obstáculo",
+        geojson: polygonFromCoords(),
+        height_m: Number(document.getElementById("obstacle-height").value || 1),
+        kind: document.getElementById("obstacle-kind").value,
+      };
       try {
-        await sendJson(`/api/roofs/${roofId}/obstacles`, "POST", {
-          name: document.getElementById("obstacle-name").value || "Obstáculo",
-          geojson: { type: "Polygon", coordinates: [[...coords, coords[0]]] },
-          height_m: Number(document.getElementById("obstacle-height").value || 1),
-          kind: document.getElementById("obstacle-kind").value,
-        });
+        if (activeObstacleId) {
+          await sendJson(`/api/obstacles/${activeObstacleId}`, "PUT", payload);
+        } else {
+          await sendJson(`/api/roofs/${roofId}/obstacles`, "POST", payload);
+        }
         window.location.href = `/projects/${data.projectId}/site?notice=Obst%C3%A1culo+guardado`;
       } catch (error) {
         alert(error.message);
@@ -299,6 +450,44 @@
       }
     });
   }
+
+  document.querySelectorAll(".obstacle-edit").forEach((button) => {
+    button.addEventListener("click", () => {
+      const obstacleId = Number(button.dataset.obstacleId);
+      const obstacle = (data.obstacles || []).find(
+        (item) => Number(item.id) === obstacleId
+      );
+      if (!obstacle) return;
+      document.getElementById("obstacle-name").value = obstacle.name;
+      document.getElementById("obstacle-height").value = obstacle.heightM;
+      document.getElementById("obstacle-kind").value = obstacle.kind;
+      startEditing("obstacle", geometryCoords(obstacle.geojson), obstacleId);
+      document.getElementById("site-map").scrollIntoView({ behavior: "smooth" });
+    });
+  });
+
+  document.querySelectorAll(".obstacle-delete").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const obstacleId = Number(button.dataset.obstacleId);
+      if (!confirm("¿Eliminar este obstáculo?")) return;
+      try {
+        const response = await fetch(`/api/obstacles/${obstacleId}`, {
+          method: "DELETE",
+        });
+        if (response.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
+        if (!response.ok) {
+          const body = await response.json();
+          throw new Error(body.detail || "No fue posible eliminar el obstáculo.");
+        }
+        window.location.href = `/projects/${data.projectId}/site?notice=Obst%C3%A1culo+eliminado`;
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+  });
 
   const geocodeButton = document.getElementById("geocode-button");
   const geocodeResults = document.getElementById("geocode-results");
@@ -345,7 +534,7 @@
           });
           geocodeResults.appendChild(button);
         });
-      } catch (error) {
+      } catch (_) {
         geocodeResults.innerHTML = "";
         const message = document.createElement("span");
         message.className = "muted";
