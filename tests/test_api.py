@@ -79,6 +79,8 @@ def test_full_vertical_flow(auth_client, monkeypatch):
     assert site_page.status_code == 200
     assert 'id="edit-nodes"' in site_page.text
     assert 'id="area-readout"' in site_page.text
+    assert 'id="basemap-select"' in site_page.text
+    assert "js/basemaps.js" in site_page.text
 
     with SessionLocal() as db:
         panel = db.scalar(select(Equipment).where(Equipment.category == "Panel"))
@@ -100,7 +102,10 @@ def test_full_vertical_flow(auth_client, monkeypatch):
     )
     assert design_response.status_code == 303
     design_id = int(design_response.headers["location"].rsplit("/", 1)[-1])
-    assert auth_client.get(f"/designs/{design_id}").status_code == 200
+    design_page = auth_client.get(f"/designs/{design_id}")
+    assert design_page.status_code == 200
+    assert 'id="basemap-select"' in design_page.text
+    assert "js/basemaps.js" in design_page.text
 
     monkeypatch.setattr(
         "app.routers.designs.get_weather",

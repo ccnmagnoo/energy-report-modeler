@@ -5,6 +5,7 @@
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script defer src="{{ request.url_for('static', path='js/basemaps.js') }}"></script>
 <script defer src="{{ request.url_for('static', path='js/site-map.js') }}"></script>
 {% endblock %}
 
@@ -112,6 +113,14 @@
       <button type="button" class="seg" data-draw-mode="obstacle" {% if not roof %}disabled title="Guarda primero la techumbre"{% endif %}>Obstáculo</button>
     </div>
     <div class="map-tools">
+      <label class="basemap-control">Mapa base
+        <select id="basemap-select" class="basemap-select">
+          <option value="streets">Calles</option>
+          <option value="satellite">Satélite</option>
+          <option value="hybrid" selected>Híbrido</option>
+          <option value="topo">Topográfico</option>
+        </select>
+      </label>
       <button type="button" class="btn btn-small btn-ghost" id="clear-draw">Limpiar dibujo</button>
       <span class="map-hint">Clic para agregar vértices · doble clic para cerrar · arrastra los nodos para ajustar</span>
     </div>

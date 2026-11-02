@@ -24,6 +24,7 @@
 - `app/__init__.py` injects `truststore` so HTTPS works behind public-sector corporate proxies with internal CAs. Keep it.
 - HTML templates are in `app/templates/`; static assets in `app/static/`. Word source templates are in `templates/`; runtime-sanitized copies go to `data/cache/templates/` and must not be edited by hand.
 - MapLibre and OSM tiles load from the internet at runtime. `staticmap` also fetches OSM tiles for the memory map; if that fails, a coordinate placeholder is embedded instead.
+- Basemap switching is centralized in `app/static/js/basemaps.js` and used by both `site-map.js` and `design-map.js`. Layers are Streets/OSM, Satellite/Esri, Hybrid/Esri+labels, and Topographic/OpenTopoMap. The selection persists in `localStorage["fv-basemap"]` and defaults to `hybrid`. Never use `map.setStyle()` for switching: it would remove roof, obstacle, panel, and vertex-handle layers.
 - The MVP is intentionally single-tenant. `org_id` and `AuditEvent` are already present for a future PostGIS/SaaS migration.
 
 ## Legacy notebook

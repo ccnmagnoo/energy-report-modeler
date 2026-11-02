@@ -18,21 +18,24 @@
   let roofId = data.roofId || null;
   let vertexMarkers = [];
 
+  const basemaps = window.FVBasemaps;
+  const fallbackStyle = {
+    version: 8,
+    sources: {
+      osm: {
+        type: "raster",
+        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+        tileSize: 256,
+        maxzoom: 19,
+        attribution: "© OpenStreetMap contributors",
+      },
+    },
+    layers: [{ id: "osm", type: "raster", source: "osm" }],
+  };
+
   const map = new maplibregl.Map({
     container: "site-map",
-    style: {
-      version: 8,
-      sources: {
-        osm: {
-          type: "raster",
-          tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-          tileSize: 256,
-          maxzoom: 19,
-          attribution: "© OpenStreetMap contributors",
-        },
-      },
-      layers: [{ id: "osm", type: "raster", source: "osm" }],
-    },
+    style: basemaps ? basemaps.buildStyle() : fallbackStyle,
     center: [data.longitude, data.latitude],
     zoom: 18,
   });
@@ -40,6 +43,9 @@
   map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
   map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
   map.doubleClickZoom.disable();
+  if (basemaps) {
+    basemaps.init(map, document.getElementById("basemap-select"));
+  }
 
   const marker = new maplibregl.Marker({ color: "#0f766e" })
     .setLngLat([data.longitude, data.latitude])

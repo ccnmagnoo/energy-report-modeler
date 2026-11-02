@@ -5,6 +5,7 @@
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script defer src="{{ request.url_for('static', path='js/basemaps.js') }}"></script>
 <script defer src="{{ request.url_for('static', path='js/design-map.js') }}"></script>
 {% endblock %}
 
@@ -48,6 +49,16 @@
   <div class="card-head">
     <div><h2>Distribución de módulos</h2><p class="muted">{{ design.panel_count }} módulos · {{ design.panel.label }}</p></div>
     <span class="badge badge-ok">Layout automático</span>
+  </div>
+  <div class="map-toolbar">
+    <label class="basemap-control">Mapa base
+      <select id="basemap-select" class="basemap-select">
+        <option value="streets">Calles</option>
+        <option value="satellite">Satélite</option>
+        <option value="hybrid" selected>Híbrido</option>
+        <option value="topo">Topográfico</option>
+      </select>
+    </label>
   </div>
   <div id="design-map" class="map"></div>
 </section>

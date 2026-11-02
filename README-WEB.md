@@ -6,9 +6,10 @@ producción, evaluar la economía y generar memorias en DOCX, PDF y TOML.
 ## Requisitos
 
 - Python 3.12 o superior.
-- Internet para NASA POWER, OpenStreetMap y geocodificación.
+- Internet para NASA POWER, teselas OpenStreetMap/Esri/OpenTopoMap y geocodificación.
 - LibreOffice no es obligatorio: el PDF se genera con ReportLab.
 - `truststore` permite confiar en la CA corporativa del organismo sin desactivar SSL.
+- Revisa los términos de uso de cada proveedor de teselas antes de un despliegue institucional.
 
 ## Instalación
 
@@ -36,7 +37,7 @@ con datos reales.
 ## Flujo de uso
 
 1. **Proyecto:** crea el expediente con cliente, consumo, tarifa y parámetros económicos.
-2. **Emplazamiento:** busca una dirección, ajusta coordenadas, dibuja la techumbre y edita sus vértices arrastrando los nodos. También puedes editar o eliminar obstáculos.
+2. **Emplazamiento:** busca una dirección, ajusta coordenadas, dibuja la techumbre y edita sus vértices arrastrando los nodos. También puedes editar o eliminar obstáculos. El mapa base se puede cambiar entre Calles, Satélite, Híbrido y Topográfico; la preferencia se recuerda y el valor inicial es Híbrido.
 3. **Diseño:** elige panel e inversor; el sistema distribuye módulos y calcula el BOM.
 4. **Simulación:** consulta NASA POWER y calcula producción anual y mensual.
 5. **Economía:** calcula CAPEX, ahorro, VAN, TIR, payback y LCOE.

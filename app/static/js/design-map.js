@@ -9,27 +9,33 @@
   }
 
   const data = JSON.parse(dataElement.textContent);
+  const basemaps = window.FVBasemaps;
+  const fallbackStyle = {
+    version: 8,
+    sources: {
+      osm: {
+        type: "raster",
+        tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+        tileSize: 256,
+        maxzoom: 19,
+        attribution: "© OpenStreetMap contributors",
+      },
+    },
+    layers: [{ id: "osm", type: "raster", source: "osm" }],
+  };
+
   const map = new maplibregl.Map({
     container: "design-map",
-    style: {
-      version: 8,
-      sources: {
-        osm: {
-          type: "raster",
-          tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-          tileSize: 256,
-          maxzoom: 19,
-          attribution: "© OpenStreetMap contributors",
-        },
-      },
-      layers: [{ id: "osm", type: "raster", source: "osm" }],
-    },
+    style: basemaps ? basemaps.buildStyle() : fallbackStyle,
     center: [data.longitude, data.latitude],
     zoom: 19,
   });
 
   map.addControl(new maplibregl.NavigationControl(), "top-right");
   map.addControl(new maplibregl.ScaleControl({ unit: "metric" }), "bottom-left");
+  if (basemaps) {
+    basemaps.init(map, document.getElementById("basemap-select"));
+  }
 
   function asGeometry(value) {
     if (!value) return null;
