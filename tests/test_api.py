@@ -6,10 +6,13 @@ import zipfile
 from pathlib import Path
 
 from docx import Document as DocxDocument
+from fastapi.testclient import TestClient
 from sqlalchemy import select
 
+from app.auth import hash_password
 from app.db import SessionLocal
-from app.models import Design, Document, Equipment
+from app.main import app
+from app.models import Design, Document, Equipment, Organization, User
 from app.services.weather import _synthetic_weather
 
 LAT = -33.314975
@@ -88,6 +91,24 @@ def test_full_vertical_flow(auth_client, monkeypatch):
         assert panel is not None and inverter is not None
         panel_id, inverter_id = panel.id, inverter.id
 
+    project_page = auth_client.get(f"/projects/{project_id}")
+    assert project_page.status_code == 200
+    assert 'id="design-chain"' in project_page.text
+    assert "design-preview" in project_page.text
+    assert "Cadena de producción" in project_page.text
+
+    preview_response = auth_client.get(
+        f"/projects/{project_id}/design-preview",
+        params={
+            "roof_id": roof_id,
+            "panel_id": panel_id,
+            "inverter_id": inverter_id,
+        },
+    )
+    assert preview_response.status_code == 200
+    assert "Paneles FV" in preview_response.text
+    assert "Strings" in preview_response.text
+
     design_response = auth_client.post(
         f"/projects/{project_id}/designs",
         data={
@@ -106,6 +127,8 @@ def test_full_vertical_flow(auth_client, monkeypatch):
     assert design_page.status_code == 200
     assert 'id="basemap-select"' in design_page.text
     assert "js/basemaps.js" in design_page.text
+    assert "Cadena de producción" in design_page.text
+    assert "Paneles FV" in design_page.text
 
     monkeypatch.setattr(
         "app.routers.designs.get_weather",
@@ -285,3 +308,109 @@ def test_full_vertical_flow(auth_client, monkeypatch):
     )
     assert stale_documents.status_code == 303
     assert "techumbre" in stale_documents.headers["location"].lower()
+
+
+def test_catalog_crud(auth_client):
+    new_form = auth_client.get("/catalog/new")
+    assert new_form.status_code == 200
+    assert "Datos eléctricos del panel" in new_form.text
+
+    payload = {
+        "category": "Panel",
+        "manufacturer": "Test",
+        "model": "TEST-PANEL-001",
+        "price_clp": "100000",
+        "currency": "CLP",
+        "datasheet_url": "https://example.com/ficha.pdf",
+        "power_w": "500",
+        "efficiency": "0.21",
+        "width_mm": "1000",
+        "height_mm": "2000",
+        "vmp": "40",
+        "imp": "12.5",
+        "voc": "48",
+        "isc": "13.5",
+        "temp_coef": "-0.35",
+        "warranty_years": "25",
+        "cell_type": "Mono",
+        "active": "on",
+    }
+    response = auth_client.post("/catalog/new", data=payload, follow_redirects=False)
+    assert response.status_code == 303
+    with SessionLocal() as db:
+        item = db.scalar(select(Equipment).where(Equipment.model == "TEST-PANEL-001"))
+        assert item is not None
+        equipment_id = item.id
+        assert item.specs["vmp"] == 40
+        assert item.active is True
+
+    edit_form = auth_client.get(f"/catalog/{equipment_id}/edit")
+    assert edit_form.status_code == 200
+    assert "TEST-PANEL-001" in edit_form.text
+
+    payload["power_w"] = "550"
+    response = auth_client.post(
+        f"/catalog/{equipment_id}/edit", data=payload, follow_redirects=False
+    )
+    assert response.status_code == 303
+    with SessionLocal() as db:
+        item = db.get(Equipment, equipment_id)
+        assert item.power_w == 550
+
+    response = auth_client.post(
+        f"/catalog/{equipment_id}/archive", follow_redirects=False
+    )
+    assert response.status_code == 303
+    with SessionLocal() as db:
+        item = db.get(Equipment, equipment_id)
+        assert item.active is False
+    archived_page = auth_client.get("/catalog?status=archived")
+    assert "TEST-PANEL-001" in archived_page.text
+
+    response = auth_client.post(
+        f"/catalog/{equipment_id}/restore", follow_redirects=False
+    )
+    assert response.status_code == 303
+    with SessionLocal() as db:
+        item = db.get(Equipment, equipment_id)
+        assert item.active is True
+    catalog_page = auth_client.get("/catalog")
+    assert "Paneles" in catalog_page.text
+    assert "TEST-PANEL-001" in catalog_page.text
+
+
+def test_catalog_permissions(client):
+    with SessionLocal() as db:
+        org = db.scalar(select(Organization).limit(1))
+        analyst = db.scalar(select(User).where(User.email == "analista@local"))
+        if analyst is None:
+            db.add(
+                User(
+                    org_id=org.id if org else None,
+                    email="analista@local",
+                    name="Analista",
+                    password_hash=hash_password("analista123"),
+                    role="analista",
+                )
+            )
+            db.commit()
+
+    with TestClient(app) as analyst_client:
+        response = analyst_client.post(
+            "/login",
+            data={"email": "analista@local", "password": "analista123"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert analyst_client.get("/catalog").status_code == 200
+        assert analyst_client.get("/catalog/new").status_code == 403
+
+
+def test_catalog_encoding(auth_client):
+    response = auth_client.get("/catalog")
+    assert response.status_code == 200
+    assert "Catálogo" in response.text
+    assert "Baterías" in response.text
+    assert "categoría" in response.text
+    for marker in ("Ã", "Â", "â€", "ï»¿"):
+        assert marker not in response.text

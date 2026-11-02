@@ -1,0 +1,94 @@
+{% if preview_error %}
+<div class="notice warning">{{ preview_error }}</div>
+{% elif preview and preview.error %}
+<div class="notice warning">{{ preview.error }}</div>
+{% elif preview %}
+<div class="chain-head">
+  {% if preview.estimated %}<span class="badge badge-warning">Estimado</span>{% endif %}
+  <span class="muted">{{ preview.panel_label }} · {{ preview.inverter_label }}</span>
+</div>
+
+<svg class="chain-svg" viewBox="0 0 1000 250" role="img" aria-label="Cadena eléctrica fotovoltaica">
+  <defs>
+    <marker id="chain-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#64748b"></path>
+    </marker>
+  </defs>
+
+  <rect class="chain-box chain-box-accent" x="15" y="50" width="180" height="110" rx="12"></rect>
+  <text class="chain-title" x="105" y="80" text-anchor="middle">Paneles FV</text>
+  <text class="chain-sub" x="105" y="103" text-anchor="middle">{{ preview.panel_count }} módulos</text>
+  <text class="chain-sub" x="105" y="122" text-anchor="middle">{{ preview.panel_label|truncate(27, True, '…') }}</text>
+  <text class="chain-sub" x="105" y="141" text-anchor="middle">{{ preview.dc_kw|num(2) }} kWp</text>
+
+  <line class="chain-line" x1="195" y1="105" x2="230" y2="105" marker-end="url(#chain-arrow)"></line>
+
+  <rect class="chain-box" x="235" y="50" width="175" height="110" rx="12"></rect>
+  <text class="chain-title" x="322" y="80" text-anchor="middle">Strings</text>
+  <text class="chain-sub" x="322" y="103" text-anchor="middle">{{ preview.strings or '—' }} × {{ preview.modules_per_string or '—' }} módulos</text>
+  <text class="chain-sub" x="322" y="122" text-anchor="middle">{{ preview.string_voltage or '—' }} V</text>
+  <text class="chain-sub" x="322" y="141" text-anchor="middle">{{ preview.string_current or '—' }} A</text>
+
+  <line class="chain-line" x1="410" y1="105" x2="445" y2="105" marker-end="url(#chain-arrow)"></line>
+
+  <rect class="chain-box chain-box-accent" x="450" y="50" width="175" height="110" rx="12"></rect>
+  <text class="chain-title" x="537" y="80" text-anchor="middle">Inversor</text>
+  <text class="chain-sub" x="537" y="103" text-anchor="middle">{{ preview.inverter_label|truncate(27, True, '…') }}</text>
+  <text class="chain-sub" x="537" y="122" text-anchor="middle">{{ preview.ac_kw|num(2) }} kW AC</text>
+  <text class="chain-sub" x="537" y="141" text-anchor="middle">DC/AC {{ preview.dc_ac_ratio if preview.dc_ac_ratio is not none else '—' }}</text>
+
+  <line class="chain-line" x1="625" y1="105" x2="660" y2="105" marker-end="url(#chain-arrow)"></line>
+
+  <rect class="chain-box" x="665" y="50" width="155" height="110" rx="12"></rect>
+  <text class="chain-title" x="742" y="80" text-anchor="middle">Protecciones</text>
+  <text class="chain-sub" x="742" y="103" text-anchor="middle">DC / AC</text>
+  <text class="chain-sub" x="742" y="122" text-anchor="middle">Puesta a tierra</text>
+
+  <line class="chain-line" x1="820" y1="105" x2="855" y2="105" marker-end="url(#chain-arrow)"></line>
+
+  <rect class="chain-box" x="860" y="50" width="125" height="110" rx="12"></rect>
+  <text class="chain-title" x="922" y="80" text-anchor="middle">Consumo / Red</text>
+  <text class="chain-sub" x="922" y="103" text-anchor="middle">Autoconsumo</text>
+  <text class="chain-sub" x="922" y="122" text-anchor="middle">Excedentes</text>
+
+  <line class="chain-line chain-line-dashed" x1="537" y1="160" x2="537" y2="185" marker-end="url(#chain-arrow)"></line>
+  <rect class="chain-box chain-box-muted" x="450" y="188" width="175" height="42" rx="10"></rect>
+  <text class="chain-sub" x="537" y="208" text-anchor="middle">
+    {% if preview.has_battery %}Batería incluida{% else %}Batería no incluida{% endif %}
+  </text>
+  <text class="chain-sub" x="537" y="223" text-anchor="middle">Opcional</text>
+</svg>
+
+<div class="metric-grid chain-metrics">
+  <div><span>Módulos</span><strong>{{ preview.panel_count }}</strong></div>
+  <div><span>Potencia DC</span><strong>{{ preview.dc_kw|num(2) }} <small>kWp</small></strong></div>
+  <div><span>Potencia AC</span><strong>{{ preview.ac_kw|num(2) }} <small>kW</small></strong></div>
+  <div><span>Relación DC/AC</span><strong>{{ preview.dc_ac_ratio if preview.dc_ac_ratio is not none else '—' }}</strong></div>
+  <div><span>Strings</span><strong>{{ preview.strings or '—' }}</strong></div>
+  <div><span>Módulos / string</span><strong>{{ preview.modules_per_string or '—' }}</strong></div>
+  <div><span>Tensión string</span><strong>{{ preview.string_voltage or '—' }} <small>V</small></strong></div>
+  <div><span>Corriente string</span><strong>{{ preview.string_current or '—' }} <small>A</small></strong></div>
+</div>
+
+<ul class="check-list mt-16">
+  {% for check in preview.checks %}
+  <li class="check-{{ check.status }}">
+    <span class="check-dot"></span>
+    <div><strong>{{ check.label }}</strong><p>{{ check.message }}</p></div>
+  </li>
+  {% endfor %}
+</ul>
+
+{% if user.role == 'admin' %}
+<p class="muted mt-16">
+  ¿Faltan datos? Edita la ficha del
+  {% if preview.panel %}<a class="link" href="/catalog/{{ preview.panel.id }}/edit">panel</a>{% endif %}
+  {% if preview.panel and preview.inverter %} o {% endif %}
+  {% if preview.inverter %}<a class="link" href="/catalog/{{ preview.inverter.id }}/edit">inversor</a>{% endif %}.
+</p>
+{% endif %}
+{% else %}
+<div class="empty-state">
+  <p>Selecciona techumbre, panel e inversor para ver la cadena de producción.</p>
+</div>
+{% endif %}

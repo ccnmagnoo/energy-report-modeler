@@ -45,6 +45,13 @@
   <article class="stat-card"><span class="stat-label">CAPEX</span><strong>{{ capex|clp }}</strong></article>
 </section>
 
+<section class="card">
+  <div class="card-head">
+    <div><h2>Cadena de producción</h2><p class="muted">Configuración eléctrica real del diseño.</p></div>
+  </div>
+  {% include "partials/design_chain.html" %}
+</section>
+
 <section class="card map-card">
   <div class="card-head">
     <div><h2>Distribución de módulos</h2><p class="muted">{{ design.panel_count }} módulos · {{ design.panel.label }}</p></div>

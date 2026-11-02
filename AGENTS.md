@@ -12,6 +12,7 @@
 ## Web app conventions
 
 - Run from the repo root: `.env.local`, `data/`, and all imports are resolved relative to the cwd.
+- Source files are UTF-8. Do not edit Spanish text with Windows PowerShell 5 `Get-Content -Raw` + `Set-Content -Encoding UTF8`: that round-trip reads UTF-8 as ANSI and corrupts accents. Use the editor tool or Python instead. `tests/test_encoding.py` guards against mojibake in `app/`.
 - `app/main.py` creates tables and seeds the demo project, catalog, and admin on startup. There are no migrations yet: after changing `app/models.py`, delete `data/app.db` and restart.
 - `app/models.py` is SQLite-first. Geometries are GeoJSON text; UTM projection is done in `app/services/geometry.py` and `app/services/layout.py`. Never buffer polygons in degrees.
 - `app/services/layout.py` picks portrait/landscape by panel count, insets the roof by 25 cm, and returns WGS84 panel polygons.
@@ -21,6 +22,8 @@
 - `Document.kind` is `memoria_calculo` or `pliego_licitacion`. Routes are `/designs/{id}/documents/memory` and `/designs/{id}/documents/bidding`. Memory requires simulation + financial; bidding requires simulation.
 - `FV_PDF_CONVERTER` accepts `auto` (Word then ReportLab), `word`, `reportlab`, or `none`. Tests set `reportlab` to avoid opening Word.
 - Roof and obstacle geometry live-edit in `app/static/js/site-map.js` via draggable vertex handles. `POST /api/geometry/area` recalculates live area; `PUT /api/roofs/{id}` and `PUT/DELETE /api/obstacles/{id}` persist edits. Any geometry change marks dependent designs `desactualizado`; simulation/financial/document routes block until the layout is recalculated.
+- The catalog is admin-only for writes (`require_admin`), grouped by `CATEGORY_ORDER` in `app/routers/catalog.py`, and never hard-deletes: `active=False` archives. Panel/inverter MPPT/electrical data lives in `Equipment.specs` and powers the design chain preview.
+- `app/services/design_preview.py` builds the electrical chain estimate. `GET /projects/{id}/design-preview` renders `app/templates/partials/design_chain.html` for HTMX in the project detail form; the design page reuses the same partial with actual panel count. If you add category-specific equipment fields, update both the catalog form and the preview expectations.
 - `app/__init__.py` injects `truststore` so HTTPS works behind public-sector corporate proxies with internal CAs. Keep it.
 - HTML templates are in `app/templates/`; static assets in `app/static/`. Word source templates are in `templates/`; runtime-sanitized copies go to `data/cache/templates/` and must not be edited by hand.
 - MapLibre and OSM tiles load from the internet at runtime. `staticmap` also fetches OSM tiles for the memory map; if that fails, a coordinate placeholder is embedded instead.

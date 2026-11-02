@@ -7,45 +7,110 @@
   <div>
     <p class="eyebrow">Biblioteca comercial</p>
     <h1>Catálogo de equipos</h1>
-    <p class="muted">Paneles, inversores, estructuras y baterías con precios de referencia local.</p>
+    <p class="muted">Paneles, inversores, estructuras y baterías organizados por categoría.</p>
   </div>
+  {% if is_admin %}
+  <a class="btn btn-primary" href="/catalog/new">+ Nuevo equipo</a>
+  {% endif %}
 </section>
 
 <form method="get" action="/catalog" class="card filter-bar">
-  <label>Buscar <input name="q" value="{{ q }}" placeholder="Fabricante o modelo"></label>
+  <label>Buscar <input name="q" value="{{ q }}" placeholder="Fabricante, modelo o categoría"></label>
   <label>Categoría
     <select name="category">
       <option value="">Todas</option>
       {% for item in categories %}
-      <option value="{{ item }}" {% if category == item %}selected{% endif %}>{{ item }}</option>
+      <option value="{{ item }}" {% if category == item %}selected{% endif %}>{{ category_labels.get(item, item) }}</option>
       {% endfor %}
+    </select>
+  </label>
+  <label>Estado
+    <select name="status">
+      <option value="active" {% if status == 'active' %}selected{% endif %}>Activos</option>
+      <option value="archived" {% if status == 'archived' %}selected{% endif %}>Archivados</option>
+      <option value="all" {% if status == 'all' %}selected{% endif %}>Todos</option>
     </select>
   </label>
   <button class="btn btn-secondary" type="submit">Filtrar</button>
 </form>
 
+{% if total == 0 %}
 <section class="card">
-  {% if equipment %}
+  <div class="empty-state">
+    <h2>No se encontraron equipos</h2>
+    <p>Ajusta los filtros o agrega un equipo nuevo.</p>
+    {% if is_admin %}<a class="btn btn-primary" href="/catalog/new">Crear equipo</a>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% for category_name in category_order %}
+{% set items = grouped.get(category_name, []) %}
+{% if items %}
+<section class="card catalog-section">
+  <div class="card-head">
+    <div>
+      <h2>{{ category_labels.get(category_name, category_name) }}</h2>
+      <p class="muted">{{ items|length }} equipo{{ 's' if items|length != 1 else '' }}</p>
+    </div>
+    {% if is_admin %}
+    <a class="btn btn-small btn-secondary" href="/catalog/new?category={{ category_name }}">+ Nuevo {{ category_singular.get(category_name, 'equipo') }}</a>
+    {% endif %}
+  </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Categoría</th><th>Equipo</th><th>Potencia</th><th>Dimensiones</th><th>Eficiencia</th><th>Precio ref.</th><th>Ficha</th></tr></thead>
+      <thead>
+        <tr><th>Equipo</th><th>Potencia</th><th>Especificaciones</th><th>Precio ref.</th><th>Ficha</th><th>Estado</th>{% if is_admin %}<th></th>{% endif %}</tr>
+      </thead>
       <tbody>
-        {% for item in equipment %}
+        {% for item in items %}
         <tr>
-          <td><span class="badge badge-category">{{ item.category }}</span></td>
           <td><strong>{{ item.model }}</strong><small>{{ item.manufacturer }}</small></td>
           <td>{% if item.power_w %}{{ item.power_w|num(0) }} W{% else %}—{% endif %}</td>
-          <td>{% if item.width_mm %}{{ item.width_mm|num(0) }} × {{ item.height_mm|num(0) }} mm{% else %}—{% endif %}</td>
-          <td>{% if item.efficiency %}{{ item.efficiency|pct(1) }}{% else %}—{% endif %}</td>
+          <td>
+            {% if category_name == 'Panel' %}
+              {{ (item.specs or {}).get('vmp', '—') }} Vmp · {{ (item.specs or {}).get('imp', '—') }} Imp
+            {% elif category_name == 'Inversor' %}
+              MPPT {{ (item.specs or {}).get('mppt_min', '—') }}–{{ (item.specs or {}).get('mppt_max', '—') }} V · {{ (item.specs or {}).get('max_dc_w', '—') }} W DC
+            {% elif category_name == 'Estructura' %}
+              {{ (item.specs or {}).get('roof_type', '—') }} · {{ (item.specs or {}).get('mounting', '—') }}
+            {% elif category_name == 'Batería' %}
+              {{ (item.specs or {}).get('capacity_kwh', '—') }} kWh · {{ (item.specs or {}).get('chemistry', '—') }}
+            {% else %}
+              {{ (item.specs or {}).get('notes', '—') }}
+            {% endif %}
+          </td>
           <td>{{ item.price_clp|clp }}</td>
           <td>{% if item.datasheet_url %}<a class="link" href="{{ item.datasheet_url }}" target="_blank" rel="noopener">Ver PDF</a>{% else %}—{% endif %}</td>
+          <td>
+            {% if item.active %}
+            <span class="badge badge-ok">Activo</span>
+            {% else %}
+            <span class="badge badge-borrador">Archivado</span>
+            {% endif %}
+          </td>
+          {% if is_admin %}
+          <td>
+            <div class="doc-actions">
+              <a class="btn btn-small btn-ghost" href="/catalog/{{ item.id }}/edit">Editar</a>
+              {% if item.active %}
+              <form method="post" action="/catalog/{{ item.id }}/archive" class="inline-form">
+                <button class="btn btn-small btn-ghost" type="submit">Archivar</button>
+              </form>
+              {% else %}
+              <form method="post" action="/catalog/{{ item.id }}/restore" class="inline-form">
+                <button class="btn btn-small btn-ghost" type="submit">Restaurar</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-  {% else %}
-  <div class="empty-state"><p>No se encontraron equipos con esos filtros.</p></div>
-  {% endif %}
 </section>
+{% endif %}
+{% endfor %}
 {% endblock %}

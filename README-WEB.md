@@ -38,7 +38,7 @@ con datos reales.
 
 1. **Proyecto:** crea el expediente con cliente, consumo, tarifa y parámetros económicos.
 2. **Emplazamiento:** busca una dirección, ajusta coordenadas, dibuja la techumbre y edita sus vértices arrastrando los nodos. También puedes editar o eliminar obstáculos. El mapa base se puede cambiar entre Calles, Satélite, Híbrido y Topográfico; la preferencia se recuerda y el valor inicial es Híbrido.
-3. **Diseño:** elige panel e inversor; el sistema distribuye módulos y calcula el BOM.
+3. **Diseño:** elige panel e inversor; el canvas muestra la cadena eléctrica estimada (paneles → strings → inversor → protecciones → consumo/red) y advierte sobre tensión, corriente, DC/AC y potencia DC. Luego el sistema distribuye módulos y calcula el BOM.
 4. **Simulación:** consulta NASA POWER y calcula producción anual y mensual.
 5. **Economía:** calcula CAPEX, ahorro, VAN, TIR, payback y LCOE.
 6. **Documentos:** genera dos entregables usando las plantillas originales:
@@ -53,11 +53,21 @@ Si editas los vértices de la techumbre o de un obstáculo después de crear un
 diseño, el diseño queda como `desactualizado`. Vuelve al diseño y pulsa
 **Recalcular distribución** antes de simular o generar documentos.
 
+## Catálogo
+
+El catálogo se agrupa en paneles, inversores, estructuras, baterías y otros.
+Solo los usuarios con rol `admin` pueden crear, editar, archivar o restaurar
+equipos; los analistas pueden consultar y seleccionar equipos activos. Los
+equipos archivados no aparecen en los selectores de diseño y conservan la
+trazabilidad de BOM y documentos históricos.
+
 ## Datos y configuración
 
 El MVP no incluye migraciones Alembic. Si cambias el esquema de `app/models.py`,
 detén el servidor, borra `data/app.db` y vuelve a iniciar para recrear las tablas
-y los datos iniciales.
+y los datos iniciales. Si ya tenías una base creada antes de enriquecer las
+fichas de paneles/inversores, borra `data/app.db` para recibir los nuevos
+valores de Vmp/Imp/Voc/Isc y rango MPPT.
 
 Esta versión está pensada para ejecutarse en `localhost`. No la expongas a
 Internet sin agregar CSRF, HTTPS, gestión de secretos y un endurecimiento de

@@ -12,6 +12,7 @@ from app.db import get_db
 from app.models import Design, Document, Equipment, Project, Roof, Site, User
 from app.routers.utils import percent, to_float, to_int
 from app.services.audit import log
+from app.services.design_preview import build_preview
 from app.web import templates
 
 router = APIRouter()
@@ -127,6 +128,14 @@ def project_detail(
         ).all()
     )
     roofs = list(project.site.roofs) if project.site else []
+    preview = None
+    if roofs and panels and inverters:
+        preview = build_preview(
+            roofs[0],
+            panels[0],
+            inverters[0],
+            estimated=True,
+        )
     return templates.TemplateResponse(
         request=request,
         name="projects/detail.html",
@@ -140,6 +149,46 @@ def project_detail(
             "inverters": inverters,
             "roofs": roofs,
             "latest_design": designs[0] if designs else None,
+            "preview": preview,
+            "preview_error": None,
+        },
+    )
+
+
+@router.get("/projects/{project_id}/design-preview", response_class=HTMLResponse)
+def design_preview(
+    project_id: int,
+    request: Request,
+    roof_id: int,
+    panel_id: int,
+    inverter_id: int,
+    user: User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    project = _project(db, project_id)
+    roof = db.get(Roof, roof_id)
+    panel = db.get(Equipment, panel_id)
+    inverter = db.get(Equipment, inverter_id)
+    error = None
+    if roof is None or roof.site is None or roof.site.project_id != project.id:
+        error = "La techumbre no pertenece al proyecto."
+    elif panel is None or panel.category != "Panel" or not panel.active:
+        error = "El panel seleccionado no está disponible."
+    elif inverter is None or inverter.category != "Inversor" or not inverter.active:
+        error = "El inversor seleccionado no está disponible."
+
+    preview = None
+    if error is None:
+        preview = build_preview(roof, panel, inverter, estimated=True)
+    return templates.TemplateResponse(
+        request=request,
+        name="partials/design_chain.html",
+        context={
+            "request": request,
+            "user": user,
+            "project": project,
+            "preview": preview,
+            "preview_error": error,
         },
     )
 

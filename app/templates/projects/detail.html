@@ -32,7 +32,13 @@
       </div>
     </div>
     {% if roofs and panels and inverters %}
-    <form method="post" action="/projects/{{ project.id }}/designs" class="stack">
+    <form method="post" action="/projects/{{ project.id }}/designs" class="stack"
+          id="design-form"
+          hx-get="/projects/{{ project.id }}/design-preview"
+          hx-trigger="change"
+          hx-target="#design-chain"
+          hx-swap="innerHTML"
+          hx-include="this">
       <label>Nombre del diseño <input name="name" value="Diseño FV principal"></label>
       <label>Techumbre
         <select name="roof_id" required>
@@ -95,6 +101,18 @@
     {% endif %}
   </section>
 </div>
+
+<section class="card">
+  <div class="card-head">
+    <div>
+      <h2>Cadena de producción</h2>
+      <p class="muted">Vista previa según la selección. Se actualiza al cambiar techumbre, panel o inversor.</p>
+    </div>
+  </div>
+  <div id="design-chain">
+    {% include "partials/design_chain.html" %}
+  </div>
+</section>
 
 <section class="card">
   <div class="card-head">

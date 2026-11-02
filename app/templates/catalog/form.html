@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block breadcrumb %}<a href="/catalog">Catálogo</a> / {{ title }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Catálogo editable</p>
+    <h1>{{ title }}</h1>
+    <p class="muted">Los campos específicos cambian según la categoría seleccionada.</p>
+  </div>
+  <a class="btn btn-secondary" href="/catalog">Volver al catálogo</a>
+</section>
+
+{% if error %}
+<div class="form-error mb-16">{{ error }}</div>
+{% endif %}
+
+<form method="post" action="{{ action }}" class="card form-card"
+      x-data='{"category": {{ (equipment.category or "Panel")|tojson }}}'>
+  <div class="section-title"><h2>Datos generales</h2></div>
+  <div class="form-grid">
+    <label>Categoría
+      <select name="category" x-model="category" required>
+        {% for item in categories %}
+        <option value="{{ item }}">{{ category_labels.get(item, item) }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Fabricante <input name="manufacturer" value="{{ equipment.manufacturer }}" required></label>
+    <label>Modelo <input name="model" value="{{ equipment.model }}" required></label>
+    <label>Precio <span class="hint">CLP neto</span>
+      <input name="price_clp" type="number" step="any" value="{{ equipment.price_clp or 0 }}">
+    </label>
+    <label>Moneda
+      <select name="currency">
+        {% for currency in currencies %}
+        <option value="{{ currency }}" {% if equipment.currency == currency %}selected{% endif %}>{{ currency }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Ficha técnica PDF <input name="datasheet_url" value="{{ equipment.datasheet_url or '' }}" placeholder="https://..."></label>
+    <label>Potencia <span class="hint">W</span>
+      <input name="power_w" type="number" step="any" value="{{ equipment.power_w or 0 }}">
+    </label>
+    <label>Eficiencia <span class="hint">0–1</span>
+      <input name="efficiency" type="number" step="any" value="{{ equipment.efficiency or 0 }}">
+    </label>
+    <label>Ancho <span class="hint">mm</span>
+      <input name="width_mm" type="number" step="any" value="{{ equipment.width_mm or 0 }}">
+    </label>
+    <label>Alto <span class="hint">mm</span>
+      <input name="height_mm" type="number" step="any" value="{{ equipment.height_mm or 0 }}">
+    </label>
+  </div>
+
+  <div x-show="category === 'Panel'" class="mt-16">
+    <div class="section-title"><h2>Datos eléctricos del panel</h2></div>
+    <div class="form-grid">
+      <label>Vmp <span class="hint">V</span><input name="vmp" type="number" step="any" value="{{ (equipment.specs or {}).get('vmp', '') }}"></label>
+      <label>Imp <span class="hint">A</span><input name="imp" type="number" step="any" value="{{ (equipment.specs or {}).get('imp', '') }}"></label>
+      <label>Voc <span class="hint">V</span><input name="voc" type="number" step="any" value="{{ (equipment.specs or {}).get('voc', '') }}"></label>
+      <label>Isc <span class="hint">A</span><input name="isc" type="number" step="any" value="{{ (equipment.specs or {}).get('isc', '') }}"></label>
+      <label>Coef. temperatura <span class="hint">%/°C</span><input name="temp_coef" type="number" step="any" value="{{ (equipment.specs or {}).get('temp_coef', '') }}"></label>
+      <label>Garantía <span class="hint">años</span><input name="warranty_years" type="number" step="1" value="{{ (equipment.specs or {}).get('warranty_years', '') }}"></label>
+      <label>Tipo de célula <input name="cell_type" value="{{ (equipment.specs or {}).get('cell_type', '') }}"></label>
+    </div>
+  </div>
+
+  <div x-show="category === 'Inversor'" class="mt-16">
+    <div class="section-title"><h2>Datos del inversor</h2></div>
+    <div class="form-grid">
+      <label>Potencia máxima DC <span class="hint">W</span><input name="max_dc_w" type="number" step="any" value="{{ (equipment.specs or {}).get('max_dc_w', '') }}"></label>
+      <label>MPPT mínimo <span class="hint">V</span><input name="mppt_min" type="number" step="any" value="{{ (equipment.specs or {}).get('mppt_min', '') }}"></label>
+      <label>MPPT máximo <span class="hint">V</span><input name="mppt_max" type="number" step="any" value="{{ (equipment.specs or {}).get('mppt_max', '') }}"></label>
+      <label>Tensión máxima DC <span class="hint">V</span><input name="max_voltage" type="number" step="any" value="{{ (equipment.specs or {}).get('max_voltage', '') }}"></label>
+      <label>Corriente máxima <span class="hint">A</span><input name="max_input_current" type="number" step="any" value="{{ (equipment.specs or {}).get('max_input_current', '') }}"></label>
+      <label>N.º MPPT <input name="mppt_count" type="number" step="1" value="{{ (equipment.specs or {}).get('mppt_count', '') }}"></label>
+      <label>Fases <input name="phases" value="{{ (equipment.specs or {}).get('phases', '') }}" placeholder="Monofásico / Trifásico"></label>
+    </div>
+  </div>
+
+  <div x-show="category === 'Estructura'" class="mt-16">
+    <div class="section-title"><h2>Datos de estructura</h2></div>
+    <div class="form-grid two">
+      <label>Tipo de cubierta <input name="roof_type" value="{{ (equipment.specs or {}).get('roof_type', '') }}" placeholder="Metálica, zinc, hormigón"></label>
+      <label>Montaje <input name="mounting" value="{{ (equipment.specs or {}).get('mounting', '') }}" placeholder="Coplanar, lastre, PV4"></label>
+    </div>
+  </div>
+
+  <div x-show="category === 'Batería'" class="mt-16">
+    <div class="section-title"><h2>Datos de batería</h2></div>
+    <div class="form-grid">
+      <label>Capacidad <span class="hint">kWh</span><input name="capacity_kwh" type="number" step="any" value="{{ (equipment.specs or {}).get('capacity_kwh', '') }}"></label>
+      <label>Química <input name="chemistry" value="{{ (equipment.specs or {}).get('chemistry', '') }}" placeholder="LFP, GEL"></label>
+      <label>Voltaje <span class="hint">V</span><input name="voltage" type="number" step="any" value="{{ (equipment.specs or {}).get('voltage', '') }}"></label>
+      <label>Profundidad de descarga <span class="hint">0–1</span><input name="depth_of_discharge" type="number" step="any" value="{{ (equipment.specs or {}).get('depth_of_discharge', '') }}"></label>
+    </div>
+  </div>
+
+  <div x-show="category === 'Otro'" class="mt-16">
+    <div class="section-title"><h2>Notas</h2></div>
+    <label>Descripción / notas <textarea name="notes" rows="3">{{ (equipment.specs or {}).get('notes', '') }}</textarea></label>
+  </div>
+
+  <div class="mt-16">
+    <label class="checkbox-row">
+      <input type="checkbox" name="active" {% if equipment.active %}checked{% endif %}>
+      Equipo activo para nuevas selecciones
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="/catalog">Cancelar</a>
+    <button class="btn btn-primary" type="submit">Guardar equipo</button>
+  </div>
+</form>
+{% endblock %}

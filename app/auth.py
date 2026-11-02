@@ -66,3 +66,12 @@ def require_api_user(request: Request, db: Session = Depends(get_db)) -> User:
     if user is None:
         raise HTTPException(status_code=401, detail="Sesión no válida")
     return user
+
+
+def require_admin(user: User = Depends(require_user)) -> User:
+    if user.role != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Solo un administrador puede modificar el catálogo.",
+        )
+    return user

@@ -27,6 +27,7 @@ from app.services.design import (
     latest_simulation,
     recalculate_design,
 )
+from app.services.design_preview import build_preview
 from app.services.documents import generate_document
 from app.services.finance import analyze, annual_savings
 from app.services.pv import simulate_pv
@@ -112,6 +113,18 @@ def design_detail(
         "latitude": design.roof.site.latitude if design.roof and design.roof.site else -33.45,
         "longitude": design.roof.site.longitude if design.roof and design.roof.site else -70.67,
     }
+    has_battery = any(
+        item.equipment is not None and item.equipment.category == "Batería"
+        for item in bom_items
+    )
+    preview = build_preview(
+        design.roof,
+        design.panel,
+        design.inverter,
+        panel_count=design.panel_count,
+        estimated=False,
+        has_battery=has_battery,
+    )
     return templates.TemplateResponse(
         request=request,
         name="designs/detail.html",
@@ -128,6 +141,8 @@ def design_detail(
             "bom_items": bom_items,
             "design_data": design_data,
             "capex": sum(item.total_clp for item in bom_items),
+            "preview": preview,
+            "preview_error": None,
         },
     )
 

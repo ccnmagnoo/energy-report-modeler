@@ -178,6 +178,12 @@ input:focus, select:focus, textarea:focus { border-color: var(--teal); box-shado
 .input-row { display: flex; gap: 8px; }
 .input-row input { flex: 1; }
 .form-error { background: #fef3f2; color: var(--danger); border: 1px solid #fecdca; padding: 9px 12px; border-radius: 8px; font-size: 13px; }
+[x-cloak] { display: none !important; }
+.checkbox-row { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: #334155; }
+.checkbox-row input { width: auto; }
+.mb-16 { margin-bottom: 16px; }
+.catalog-section .card-head { margin-bottom: 12px; }
+.catalog-section .card-head h2 { font-size: 20px; }
 
 .design-summary { display: flex; flex-direction: column; gap: 12px; }
 .design-big { font-size: 42px; font-weight: 800; letter-spacing: -0.04em; color: var(--navy); line-height: 1; }
@@ -233,6 +239,19 @@ summary { cursor: pointer; font-weight: 650; color: var(--navy); }
 .notice-box { margin-top: 14px; background: #f0fdfa; border: 1px solid #99f6e4; color: #115e59; padding: 10px 12px; border-radius: 9px; font-size: 13px; }
 .notice { margin: 12px 0; padding: 10px 12px; border-radius: 9px; font-size: 13px; }
 .notice.warning { background: #fffaeb; border: 1px solid #fedf89; color: var(--warning); }
+
+.chain-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.chain-svg { width: 100%; height: auto; background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; }
+.chain-box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; }
+.chain-box-accent { fill: #ecfdf5; stroke: #0f766e; }
+.chain-box-muted { fill: #f8fafc; stroke: #cbd5e1; stroke-dasharray: 4 3; }
+.chain-line { stroke: #64748b; stroke-width: 2; }
+.chain-line-dashed { stroke-dasharray: 4 3; }
+.chain-title { font-size: 14px; font-weight: 700; fill: #0f2a44; }
+.chain-sub { font-size: 11px; fill: #64748b; }
+.chain-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.check-missing .check-dot { background: #94a3b8; }
+.check-missing { border-color: #e2e8f0; background: #f8fafc; }
 
 .filter-bar { display: flex; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
 .filter-bar label { min-width: 220px; }
