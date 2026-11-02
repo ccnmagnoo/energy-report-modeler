@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block breadcrumb %}<a href="/projects">Proyectos</a> / {{ project.name }}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Expediente del proyecto</p>
+    <h1>{{ project.name }}</h1>
+    <p class="muted">{{ project.client_name or "Sin cliente" }} · {{ project.code or "Sin código" }} · <span class="badge badge-{{ project.status }}">{{ project.status }}</span></p>
+  </div>
+  <div class="head-actions">
+    <a class="btn btn-secondary" href="/projects/{{ project.id }}/site">Emplazamiento y techumbre</a>
+    <a class="btn btn-ghost" href="/api/projects/{{ project.id }}/export.geojson">Exportar GeoJSON</a>
+    <a class="btn btn-ghost" href="/projects/{{ project.id }}/documents">Documentos</a>
+  </div>
+</section>
+
+<section class="stats-grid compact">
+  <article class="stat-card"><span class="stat-label">Conexión</span><strong class="text">{{ project.connection_type }}</strong></article>
+  <article class="stat-card"><span class="stat-label">Consumo anual</span><strong>{{ project.annual_consumption_kwh|num(0) }} <small>kWh</small></strong></article>
+  <article class="stat-card"><span class="stat-label">Tarifa</span><strong>{{ project.tariff_clp_kwh|clp }} <small>/kWh</small></strong></article>
+  <article class="stat-card"><span class="stat-label">Horizonte</span><strong>{{ project.analysis_years }} <small>años</small></strong></article>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Nuevo diseño fotovoltaico</h2>
+        <p class="muted">Selecciona techumbre, módulo e inversor. El sistema distribuye los módulos automáticamente.</p>
+      </div>
+    </div>
+    {% if roofs and panels and inverters %}
+    <form method="post" action="/projects/{{ project.id }}/designs" class="stack">
+      <label>Nombre del diseño <input name="name" value="Diseño FV principal"></label>
+      <label>Techumbre
+        <select name="roof_id" required>
+          {% for roof in roofs %}
+          <option value="{{ roof.id }}">{{ roof.name }} — {{ roof.area_m2|num(1) }} m²</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="form-grid two">
+        <label>Módulo
+          <select name="panel_id" required>
+            {% for panel in panels %}
+            <option value="{{ panel.id }}">{{ panel.label }} — {{ panel.power_w|num(0) }} Wp</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Inversor
+          <select name="inverter_id" required>
+            {% for inverter in inverters %}
+            <option value="{{ inverter.id }}">{{ inverter.label }} — {{ inverter.power_w|num(0) }} W</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div class="form-grid two">
+        <label>Inclinación <span class="hint">°</span><input name="tilt_deg" value="{{ roofs[0].tilt_deg }}" inputmode="decimal"></label>
+        <label>Azimut <span class="hint">°</span><input name="azimuth_deg" value="{{ roofs[0].azimuth_deg }}" inputmode="decimal"></label>
+      </div>
+      <button class="btn btn-primary" type="submit">Crear y calcular diseño</button>
+    </form>
+    {% elif not roofs %}
+    <div class="empty-state">
+      <p>Primero debes dibujar y guardar una techumbre.</p>
+      <a class="btn btn-secondary" href="/projects/{{ project.id }}/site">Ir a emplazamiento</a>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>El catálogo no tiene paneles o inversores activos.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Diseño vigente</h2>
+        <p class="muted">Último cálculo generado para este proyecto.</p>
+      </div>
+    </div>
+    {% if latest_design %}
+    <div class="design-summary">
+      <div class="design-big">{{ latest_design.dc_kw|num(1) }} <small>kWp</small></div>
+      <div class="design-meta">
+        <span>{{ latest_design.panel_count }} módulos</span>
+        <span>{{ latest_design.panel.label }}</span>
+        <span>{{ latest_design.inverter.label }}</span>
+      </div>
+      <a class="btn btn-secondary" href="/designs/{{ latest_design.id }}">Abrir diseño</a>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>Aún no hay diseños. Usa el formulario de la izquierda.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head">
+    <div>
+      <h2>Diseños del proyecto</h2>
+      <p class="muted">Historial de versiones de cálculo.</p>
+    </div>
+  </div>
+  {% if designs %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Diseño</th><th>Módulos</th><th>DC</th><th>AC</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for design in designs %}
+        <tr>
+          <td><a class="strong-link" href="/designs/{{ design.id }}">{{ design.name }}</a><small>{{ design.created_at|date_cl }}</small></td>
+          <td>{{ design.panel_count }}</td>
+          <td>{{ design.dc_kw|num(2) }} kWp</td>
+          <td>{{ design.ac_kw|num(2) }} kW</td>
+          <td><span class="badge badge-{{ design.status }}">{{ design.status }}</span></td>
+          <td><a class="btn btn-small btn-ghost" href="/designs/{{ design.id }}">Abrir</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No hay diseños registrados.</p></div>
+  {% endif %}
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><div><h2>Documentos</h2><p class="muted">Memorias generadas.</p></div></div>
+    {% if documents %}
+    <ul class="doc-list">
+      {% for document in documents %}
+      <li>
+        <div><strong>Memoria de cálculo v{{ document.version }}</strong><small>{{ document.created_at|date_cl }}</small></div>
+        <div class="doc-actions">
+          <a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/docx">DOCX</a>
+          <a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/pdf">PDF</a>
+          <a class="btn btn-small btn-ghost" href="/documents/{{ document.id }}/download/toml">TOML</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state"><p>Los documentos se generan desde un diseño simulado y evaluado.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <details>
+      <summary class="details-summary">Editar datos del proyecto</summary>
+      <form method="post" action="/projects/{{ project.id }}/edit" class="stack mt-16">
+        <div class="form-grid two">
+          <label>Nombre <input name="name" value="{{ project.name }}" required></label>
+          <label>Código <input name="code" value="{{ project.code or '' }}"></label>
+          <label>Cliente <input name="client_name" value="{{ project.client_name or '' }}"></label>
+          <label>RUT <input name="client_rut" value="{{ project.client_rut or '' }}"></label>
+          <label>Tipo de conexión
+            <select name="connection_type">
+              {% for value in ['netbilling','ongrid','hybrid','offgrid'] %}
+              <option value="{{ value }}" {% if project.connection_type == value %}selected{% endif %}>{{ value }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Consumo anual <input name="annual_consumption_kwh" value="{{ project.annual_consumption_kwh }}"></label>
+          <label>Tarifa CLP/kWh <input name="tariff_clp_kwh" value="{{ project.tariff_clp_kwh }}"></label>
+          <label>Tasa descuento % <input name="discount_rate" value="{{ project.discount_rate * 100 }}"></label>
+          <label>Horizonte años <input name="analysis_years" value="{{ project.analysis_years }}"></label>
+          <label>OPEX % <input name="opex_pct" value="{{ project.opex_pct * 100 }}"></label>
+        </div>
+        <button class="btn btn-secondary" type="submit">Guardar cambios</button>
+      </form>
+    </details>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Nuevo proyecto{% endblock %}
+{% block breadcrumb %}<a href="/projects">Proyectos</a> / Nuevo{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Nuevo expediente</p>
+    <h1>Crear proyecto</h1>
+    <p class="muted">Registra los datos base. El emplazamiento y la techumbre se completan en el siguiente paso.</p>
+  </div>
+</section>
+
+<form method="post" action="/projects" class="card form-card">
+  <div class="section-title">
+    <h2>Identificación</h2>
+  </div>
+  <div class="form-grid">
+    <label class="span-2">Nombre del proyecto <input name="name" required placeholder="Ej. Hospital San José"></label>
+    <label>Código interno <input name="code" placeholder="FV-2026-001"></label>
+    <label>Cliente / organismo <input name="client_name" placeholder="Servicio de Salud"></label>
+    <label>RUT cliente <input name="client_rut" placeholder="61.000.000-0"></label>
+    <label>Tipo de conexión
+      <select name="connection_type">
+        <option value="netbilling">Net-billing</option>
+        <option value="ongrid">On-grid</option>
+        <option value="hybrid">Híbrido</option>
+        <option value="offgrid">Off-grid</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="section-title">
+    <h2>Parámetros energéticos y económicos</h2>
+  </div>
+  <div class="form-grid">
+    <label>Consumo anual <span class="hint">kWh/año</span><input name="annual_consumption_kwh" value="0" inputmode="decimal"></label>
+    <label>Tarifa eléctrica <span class="hint">CLP/kWh</span><input name="tariff_clp_kwh" value="150" inputmode="decimal"></label>
+    <label>Tasa de descuento <span class="hint">%</span><input name="discount_rate" value="8" inputmode="decimal"></label>
+    <label>Horizonte <span class="hint">años</span><input name="analysis_years" value="25" inputmode="numeric"></label>
+    <label>OPEX anual <span class="hint">% del CAPEX</span><input name="opex_pct" value="1" inputmode="decimal"></label>
+  </div>
+
+  <div class="form-actions">
+    <a class="btn btn-ghost" href="/projects">Cancelar</a>
+    <button class="btn btn-primary" type="submit">Crear proyecto</button>
+  </div>
+</form>
+{% endblock %}

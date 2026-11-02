@@ -1,48 +1,49 @@
-# Sustainable Energy Report Generator
+# Modelador de Reportes FV
 
-This project is dedicated to generating Microsoft Word reports about sustainable energy
-projects, such as photovoltaic systems. The reports are automatically generated using
-Python, docxtpl, and the OpenWeather API.
+Aplicación para generar estudios, memorias de cálculo, especificaciones y
+documentos de proyectos fotovoltaicos. El repositorio contiene dos etapas:
 
-## Features
+- **MVP web local (`app/`):** FastAPI + Jinja2 + HTMX + MapLibre, catálogo de
+  equipos, editor GIS, layout automático, simulación pvlib, finanzas y salida
+  DOCX/PDF/TOML.
+- **Generador legacy (`main_builder.ipynb`):** notebook original basado en
+  docxtpl y plantillas Word.
 
-- **Automated Report Generation**: This project uses Python and docxtpl to generate
-  detailed reports in Microsoft Word format.
-- **Sustainable Energy Focus**: The reports focus on sustainable energy projects, with a
-  particular emphasis on photovoltaic systems.
-- **Weather Data Integration**: The OpenWeather API is used to fetch real-time weather
-  data, which can impact the performance of photovoltaic systems.
+## Inicio rápido web
 
-## References
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements-web.txt
+.\run.ps1
+```
 
-Calculus model reference
-_[Explorador Solar Minenergía](https://solar.minenergia.cl/inicio)_ Data Resources
+Abre <http://127.0.0.1:8000>. Credenciales iniciales: `admin@local` / `admin123`.
 
-- [Photovoltaic Calculus Model](https://solar.minenergia.cl/downloads/fotovoltaico.pdf),
-- [Solar Radiation Model](https://solar.minenergia.cl/downloads/radiacion.pdf),
-- [Nasa Power DAV](https://power.larc.nasa.gov/data-access-viewer/)
+Flujo: crear proyecto → geocodificar y dibujar techumbre → seleccionar panel e
+inversor → simular producción → evaluar economía → generar DOCX/PDF/TOML.
 
-Dependencies
+La app usa internet para NASA POWER, teselas OpenStreetMap y geocodificación
+Nominatim. Si la red corporativa usa una CA interna, `truststore` permite
+confiar en el almacén de certificados del sistema.
 
-- [sunCalc](https://pypi.org/project/suncalc/)
-- [docxtlp](https://docxtpl.readthedocs.io/en/latest/)
-- Pandas and Numpy
+Documentación detallada: [README-WEB.md](README-WEB.md).
 
-## Installation
+## Notebook legacy
 
-1. Clone this repository.
-2. Install the required Python packages: `pip install -r requirements.txt`
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
 
-## Usage
+Abre `main_builder.ipynb` y ejecútalo de arriba hacia abajo. Requiere
+`.env.local` para las tasas de cambio. Los resultados se guardan en `build/`.
 
-1. Run the main script: `python main.py`
-2. The script will generate a Word document with the report.
+## Referencias de cálculo
 
-## Contributing
+- [Explorador Solar Minenergía](https://solar.minenergia.cl/inicio)
+- [Modelo fotovoltaico](https://solar.minenergia.cl/downloads/fotovoltaico.pdf)
+- [Modelo de radiación](https://solar.minenergia.cl/downloads/radiacion.pdf)
+- [NASA POWER](https://power.larc.nasa.gov/data-access-viewer/)
 
-Contributions are welcome! Please read the contributing guidelines before making any
-changes.
+## Licencia
 
-## License
-
-This project is licensed under the terms of the MIT license.
+MIT.

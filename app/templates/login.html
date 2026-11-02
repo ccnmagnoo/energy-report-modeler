@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingresar · Modelador de Reportes FV</title>
+  <link rel="stylesheet" href="{{ request.url_for('static', path='css/app.css') }}">
+</head>
+<body class="login-body">
+  <div class="login-panel">
+    <div class="login-brand">
+      <span class="brand-mark large">FV</span>
+      <div>
+        <h1>Modelador de Reportes FV</h1>
+        <p>Estudios, memorias de cálculo y documentos para proyectos fotovoltaicos.</p>
+      </div>
+    </div>
+
+    <form method="post" action="/login" class="stack">
+      <label>
+        Correo
+        <input type="email" name="email" value="admin@local" autocomplete="username" required>
+      </label>
+      <label>
+        Contraseña
+        <input type="password" name="password" value="admin123" autocomplete="current-password" required>
+      </label>
+      {% if error %}<div class="form-error">{{ error }}</div>{% endif %}
+      <button class="btn btn-primary" type="submit">Ingresar</button>
+    </form>
+
+    <div class="login-hint">
+      <strong>Credenciales iniciales</strong>
+      <p><code>admin@local</code> / <code>admin123</code>. Cámbialas en un despliegue real.</p>
+    </div>
+  </div>
+</body>
+</html>

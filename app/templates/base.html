@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Modelador FV{% endblock %} · Modelador de Reportes FV</title>
+  <link rel="stylesheet" href="{{ request.url_for('static', path='css/app.css') }}">
+  <script defer src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  {% set path = request.url.path %}
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="/">
+        <span class="brand-mark">FV</span>
+        <span>
+          <strong>Modelador</strong>
+          <small>Reportes FV</small>
+        </span>
+      </a>
+      <nav class="nav">
+        <a class="nav-item {% if path == '/' %}active{% endif %}" href="/">
+          <span class="nav-icon">◫</span> Panel
+        </a>
+        <a class="nav-item {% if path.startswith('/projects') %}active{% endif %}" href="/projects">
+          <span class="nav-icon">▤</span> Proyectos
+        </a>
+        <a class="nav-item {% if path.startswith('/catalog') %}active{% endif %}" href="/catalog">
+          <span class="nav-icon">▦</span> Catálogo
+        </a>
+      </nav>
+      <div class="sidebar-note">
+        <strong>MVP local</strong>
+        <p>Los documentos generados son borradores y requieren revisión profesional.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">{% block breadcrumb %}Panel{% endblock %}</div>
+        <div class="user-chip">
+          <span class="avatar">{{ user.name[:1]|upper }}</span>
+          <span class="user-meta">
+            <strong>{{ user.name }}</strong>
+            <small>{{ user.role }}</small>
+          </span>
+          <a class="logout" href="/logout">Salir</a>
+        </div>
+      </header>
+
+      {% if request.query_params.get('notice') %}
+        <div class="flash" role="status">{{ request.query_params.get('notice') }}</div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Emplazamiento · {{ project.name }}{% endblock %}
+{% block breadcrumb %}<a href="/projects">Proyectos</a> / <a href="/projects/{{ project.id }}">{{ project.name }}</a> / Emplazamiento{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script defer src="{{ request.url_for('static', path='js/site-map.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">GIS y techumbre</p>
+    <h1>Emplazamiento y techumbre</h1>
+    <p class="muted">Busca la dirección, ajusta las coordenadas y dibuja el polígono de la cubierta.</p>
+  </div>
+  <a class="btn btn-secondary" href="/projects/{{ project.id }}">Volver al proyecto</a>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><div><h2>Datos del emplazamiento</h2><p class="muted">Geocodificación con OpenStreetMap/Nominatim.</p></div></div>
+    <form method="post" action="/projects/{{ project.id }}/site" class="stack">
+      <label>Dirección
+        <div class="input-row">
+          <input id="address" name="address" value="{{ site.address if site else '' }}" placeholder="Calle, número, comuna">
+          <button class="btn btn-secondary" type="button" id="geocode-button">Buscar</button>
+        </div>
+      </label>
+      <div id="geocode-results" class="geocode-results"></div>
+      <div class="form-grid two">
+        <label>Comuna <input name="comuna" value="{{ site.comuna if site else '' }}"></label>
+        <label>Región <input name="region" value="{{ site.region if site else '' }}"></label>
+        <label>Latitud <input id="latitude" name="latitude" value="{{ site.latitude if site else '-33.45' }}" inputmode="decimal"></label>
+        <label>Longitud <input id="longitude" name="longitude" value="{{ site.longitude if site else '-70.67' }}" inputmode="decimal"></label>
+      </div>
+      <button class="btn btn-primary" type="submit">Guardar emplazamiento</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Parámetros de techumbre</h2><p class="muted">Se aplican al guardar el polígono.</p></div></div>
+    <div class="form-grid two">
+      <label>Nombre <input id="roof-name" value="{{ roof.name if roof else 'Techumbre principal' }}"></label>
+      <label>Material
+        <select id="roof-material">
+          {% for value in ['Techumbre metálica','Cubierta zinc','PV4','Hormigón','Sandwich'] %}
+          <option value="{{ value }}" {% if roof and roof.material == value %}selected{% endif %}>{{ value }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Inclinación <span class="hint">°</span><input id="roof-tilt" value="{{ roof.tilt_deg if roof else 20 }}" inputmode="decimal"></label>
+      <label>Azimut <span class="hint">°</span><input id="roof-azimuth" value="{{ roof.azimuth_deg if roof else 180 }}" inputmode="decimal"></label>
+      <label>Factor utilizable <span class="hint">0–1</span><input id="roof-usable" value="{{ roof.usable_factor if roof else 0.9 }}" inputmode="decimal"></label>
+    </div>
+    <div class="map-actions">
+      <button class="btn btn-primary" type="button" id="save-roof">Guardar polígono</button>
+      <span class="muted" id="draw-status">Dibuja al menos 3 vértices.</span>
+    </div>
+    {% if roof %}
+    <div class="notice-box">
+      <strong>Techumbre registrada:</strong> {{ roof.area_m2|num(1) }} m².
+      Puedes volver a dibujar para reemplazar la geometría.
+    </div>
+    <details class="mt-16">
+      <summary class="details-summary">Añadir obstáculo</summary>
+      <div class="form-grid two mt-16">
+        <label>Nombre <input id="obstacle-name" value="Obstáculo"></label>
+        <label>Altura <span class="hint">m</span><input id="obstacle-height" value="1.0" inputmode="decimal"></label>
+        <label>Tipo
+          <select id="obstacle-kind">
+            <option value="chimenea">Chimenea</option>
+            <option value="ducto">Ducto</option>
+            <option value="lucarna">Lucarna</option>
+            <option value="antena">Antena</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
+      </div>
+      <button class="btn btn-secondary mt-16" type="button" id="save-obstacle">Guardar obstáculo dibujado</button>
+    </details>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card map-card">
+  <div class="map-toolbar">
+    <div class="segmented">
+      <button type="button" class="seg active" data-draw-mode="roof">Techumbre</button>
+      <button type="button" class="seg" data-draw-mode="obstacle" {% if not roof %}disabled title="Guarda primero la techumbre"{% endif %}>Obstáculo</button>
+    </div>
+    <div class="map-tools">
+      <button type="button" class="btn btn-small btn-ghost" id="clear-draw">Limpiar dibujo</button>
+      <span class="map-hint">Clic para agregar vértices · doble clic para cerrar</span>
+    </div>
+  </div>
+  <div id="site-map" class="map"></div>
+</section>
+
+{% if roofs|length > 1 %}
+<section class="card">
+  <div class="card-head"><div><h2>Techumbres registradas</h2></div></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Nombre</th><th>Superficie</th><th>Inclinación</th><th>Azimut</th><th>Material</th></tr></thead>
+      <tbody>
+        {% for item in roofs %}
+        <tr><td>{{ item.name }}</td><td>{{ item.area_m2|num(1) }} m²</td><td>{{ item.tilt_deg }}°</td><td>{{ item.azimuth_deg }}°</td><td>{{ item.material }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+<script id="site-data" type="application/json">{{ site_data|tojson }}</script>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}{{ design.name }}{% endblock %}
+{% block breadcrumb %}<a href="/projects">Proyectos</a> / <a href="/projects/{{ project.id }}">{{ project.name }}</a> / {{ design.name }}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script defer src="{{ request.url_for('static', path='js/design-map.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Diseño fotovoltaico</p>
+    <h1>{{ design.name }}</h1>
+    <p class="muted">{{ project.name }} · {{ design.panel.label }} · {{ design.inverter.label }} · <span class="badge badge-{{ design.status }}">{{ design.status }}</span></p>
+  </div>
+  <div class="head-actions">
+    <form method="post" action="/designs/{{ design.id }}/layout" class="inline-form"><button class="btn btn-secondary" type="submit">Recalcular distribución</button></form>
+    <form method="post" action="/designs/{{ design.id }}/simulate" class="inline-form"><button class="btn btn-primary" type="submit">Simular producción</button></form>
+    <form method="post" action="/designs/{{ design.id }}/financial" class="inline-form"><button class="btn btn-secondary" type="submit">Evaluar economía</button></form>
+    <form method="post" action="/designs/{{ design.id }}/documents" class="inline-form"><button class="btn btn-secondary" type="submit">Generar documentos</button></form>
+  </div>
+</section>
+
+<section class="stats-grid compact">
+  <article class="stat-card"><span class="stat-label">Módulos</span><strong>{{ design.panel_count }}</strong></article>
+  <article class="stat-card"><span class="stat-label">Potencia DC</span><strong>{{ design.dc_kw|num(2) }} <small>kWp</small></strong></article>
+  <article class="stat-card"><span class="stat-label">Potencia AC</span><strong>{{ design.ac_kw|num(2) }} <small>kW</small></strong></article>
+  <article class="stat-card"><span class="stat-label">Ocupación</span><strong>{{ design.occupancy|pct(1) }}</strong></article>
+  <article class="stat-card"><span class="stat-label">CAPEX</span><strong>{{ capex|clp }}</strong></article>
+</section>
+
+<section class="card map-card">
+  <div class="card-head">
+    <div><h2>Distribución de módulos</h2><p class="muted">{{ design.panel_count }} módulos · {{ design.panel.label }}</p></div>
+    <span class="badge badge-ok">Layout automático</span>
+  </div>
+  <div id="design-map" class="map"></div>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><div><h2>Producción estimada</h2><p class="muted">Modelo pvlib con datos horarios.</p></div></div>
+    {% if simulation %}
+    <div class="metric-grid">
+      <div><span>Energía anual</span><strong>{{ simulation.annual_kwh|num(0) }} <small>kWh</small></strong></div>
+      <div><span>Rendimiento específico</span><strong>{{ simulation.specific_yield|num(0) }} <small>kWh/kWp</small></strong></div>
+      <div><span>Performance ratio</span><strong>{{ simulation.performance_ratio|pct(1) }}</strong></div>
+      <div><span>Fuente</span><strong class="text">{{ simulation.weather_source }}</strong></div>
+    </div>
+    {% if simulation.result_json.warning %}
+    <div class="notice warning">{{ simulation.result_json.warning }}</div>
+    {% endif %}
+    <div class="table-wrap mt-16">
+      <table>
+        <thead><tr><th>Mes</th><th>Producción kWh</th></tr></thead>
+        <tbody>
+          {% for row in simulation.result_json.get('monthly', []) %}
+          <tr><td>{{ row.month }}</td><td>{{ row.kwh|num(1) }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>Ejecuta “Simular producción” para calcular la generación anual.</p></div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Evaluación económica</h2><p class="muted">Flujo de caja simplificado.</p></div></div>
+    {% if financial %}
+    <div class="metric-grid">
+      <div><span>CAPEX</span><strong>{{ financial.capex_clp|clp }}</strong></div>
+      <div><span>Ahorro anual</span><strong>{{ financial.annual_savings_clp|clp }}</strong></div>
+      <div><span>VAN</span><strong class="{% if financial.npv_clp >= 0 %}positive{% else %}negative{% endif %}">{{ financial.npv_clp|clp }}</strong></div>
+      <div><span>TIR</span><strong>{% if financial.irr is not none %}{{ financial.irr|pct(2) }}{% else %}—{% endif %}</strong></div>
+      <div><span>Payback</span><strong>{{ financial.payback_years|num(1) }} <small>años</small></strong></div>
+      <div><span>LCOE</span><strong>{{ financial.lcoe_clp_kwh|clp }} <small>/kWh</small></strong></div>
+    </div>
+    {% else %}
+    <div class="empty-state"><p>Ejecuta “Evaluar economía” después de simular la producción.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head"><div><h2>Listado de equipos</h2><p class="muted">Snapshot de precios al momento del cálculo.</p></div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Rol</th><th>Descripción</th><th>Cant.</th><th>Unitario</th><th>Total</th></tr></thead>
+        <tbody>
+          {% for item in bom_items %}
+          <tr>
+            <td>{{ item.role }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.quantity|num(0) }}</td>
+            <td>{{ item.unit_price_clp|clp }}</td>
+            <td>{{ item.total_clp|clp }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot><tr><th colspan="4">CAPEX total</th><th>{{ capex|clp }}</th></tr></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><div><h2>Cumplimiento y advertencias</h2><p class="muted">Chequeos automáticos del MVP.</p></div></div>
+    {% if compliance %}
+    <ul class="check-list">
+      {% for check in compliance %}
+      <li class="check-{{ check.status }}">
+        <span class="check-dot"></span>
+        <div><strong>{{ check.rule }}</strong><p>{{ check.message }}</p></div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state"><p>No hay chequeos registrados.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <div class="card-head">
+    <div><h2>Documentos del diseño</h2><p class="muted">La generación requiere simulación y evaluación económica.</p></div>
+    <a class="btn btn-ghost" href="/projects/{{ project.id }}/documents">Ver documentos del proyecto</a>
+  </div>
+  <div class="inline-actions">
+    <form method="post" action="/designs/{{ design.id }}/compliance" class="inline-form"><button class="btn btn-small btn-ghost" type="submit">Actualizar chequeos</button></form>
+    <form method="post" action="/designs/{{ design.id }}/documents" class="inline-form"><button class="btn btn-small btn-primary" type="submit">Generar DOCX + PDF + TOML</button></form>
+  </div>
+</section>
+
+<script id="design-data" type="application/json">{{ design_data|tojson }}</script>
+{% endblock %}

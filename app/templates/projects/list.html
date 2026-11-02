@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Proyectos{% endblock %}
+{% block breadcrumb %}Proyectos{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Expedientes</p>
+    <h1>Proyectos</h1>
+    <p class="muted">Estudios fotovoltaicos, emplazamientos y documentos asociados.</p>
+  </div>
+  <a class="btn btn-primary" href="/projects/new">+ Nuevo proyecto</a>
+</section>
+
+<section class="card">
+  {% if projects %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Proyecto</th><th>Cliente</th><th>Emplazamiento</th><th>Diseños</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+        <tr>
+          <td>
+            <a class="strong-link" href="/projects/{{ project.id }}">{{ project.name }}</a>
+            <small>{{ project.code or "Sin código" }}</small>
+          </td>
+          <td>{{ project.client_name or "—" }}<small>{{ project.client_rut or "" }}</small></td>
+          <td>
+            {% if project.site %}
+              {{ project.site.comuna or "—" }}<small>{{ project.site.address or "" }}</small>
+            {% else %}
+              <span class="muted">Sin emplazamiento</span>
+            {% endif %}
+          </td>
+          <td>{{ project.designs|length }}</td>
+          <td><span class="badge badge-{{ project.status }}">{{ project.status }}</span></td>
+          <td><a class="btn btn-small btn-ghost" href="/projects/{{ project.id }}">Abrir</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <h2>No hay proyectos</h2>
+    <p>Crea un proyecto para registrar el emplazamiento, diseñar el sistema y generar documentos.</p>
+    <a class="btn btn-primary" href="/projects/new">Crear primer proyecto</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

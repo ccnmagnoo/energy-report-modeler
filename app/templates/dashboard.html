@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Panel{% endblock %}
+{% block breadcrumb %}Panel de control{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Resumen operativo</p>
+    <h1>Panel de control</h1>
+    <p class="muted">Proyectos, diseños y documentos del modelador fotovoltaico.</p>
+  </div>
+  <a class="btn btn-primary" href="/projects/new">+ Nuevo proyecto</a>
+</section>
+
+<section class="stats-grid">
+  <article class="stat-card">
+    <span class="stat-label">Proyectos</span>
+    <strong>{{ stats.projects }}</strong>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Diseños</span>
+    <strong>{{ stats.designs }}</strong>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Potencia diseñada</span>
+    <strong>{{ stats.kw|num(1) }} <small>kWp</small></strong>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Documentos</span>
+    <strong>{{ stats.documents }}</strong>
+  </article>
+</section>
+
+<div class="grid-2">
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Proyectos recientes</h2>
+        <p class="muted">Últimos expedientes actualizados.</p>
+      </div>
+      <a class="link" href="/projects">Ver todos</a>
+    </div>
+    {% if projects %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Proyecto</th><th>Cliente</th><th>Comuna</th><th>Estado</th></tr></thead>
+          <tbody>
+            {% for project in projects %}
+            <tr>
+              <td><a class="strong-link" href="/projects/{{ project.id }}">{{ project.name }}</a><small>{{ project.code or "Sin código" }}</small></td>
+              <td>{{ project.client_name or "—" }}</td>
+              <td>{{ project.site.comuna if project.site else "—" }}</td>
+              <td><span class="badge badge-{{ project.status }}">{{ project.status }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>Aún no hay proyectos. Crea el primero para comenzar.</p>
+        <a class="btn btn-secondary" href="/projects/new">Crear proyecto</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2>Diseños recientes</h2>
+        <p class="muted">Últimos cálculos generados.</p>
+      </div>
+    </div>
+    {% if latest_designs %}
+      <ul class="activity-list">
+        {% for design in latest_designs %}
+        <li>
+          <div>
+            <a class="strong-link" href="/designs/{{ design.id }}">{{ design.name }}</a>
+            <small>{{ design.project.name }}</small>
+          </div>
+          <div class="activity-meta">
+            <strong>{{ design.dc_kw|num(1) }} kWp</strong>
+            <span>{{ design.panel_count }} módulos</span>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state">
+        <p>No hay diseños todavía.</p>
+      </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
